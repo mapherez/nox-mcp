@@ -1,0 +1,85 @@
+{
+  "name": "@nox/mcp",
+  "version": "0.1.0",
+  "description": "Native MCP tools, authorization adapters and cancellable desktop bridges for NoX apps",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "files": [
+    "typescript/dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./typescript/dist/index.d.ts",
+      "import": "./typescript/dist/index.js"
+    },
+    "./contract": {
+      "types": "./typescript/dist/contract.d.ts",
+      "import": "./typescript/dist/contract.js"
+    },
+    "./bridge": {
+      "types": "./typescript/dist/bridge.d.ts",
+      "import": "./typescript/dist/bridge.js"
+    },
+    "./node": {
+      "types": "./typescript/dist/node.d.ts",
+      "import": "./typescript/dist/node.js"
+    },
+    "./better-auth": {
+      "types": "./typescript/dist/better-auth.d.ts",
+      "import": "./typescript/dist/better-auth.js"
+    },
+    "./bridge/client": {
+      "types": "./typescript/dist/bridge-client.d.ts",
+      "import": "./typescript/dist/bridge-client.js"
+    },
+    "./bridge/server": {
+      "types": "./typescript/dist/bridge-server.d.ts",
+      "import": "./typescript/dist/bridge-server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p typescript/tsconfig.json",
+    "prepare": "npm run build",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@better-auth/mcp": "^1.7.2",
+    "better-auth": "^1.7.2",
+    "ws": "^8.19.0",
+    "zod": "^4.6.0"
+  },
+  "peerDependenciesMeta": {
+    "@modelcontextprotocol/node": {
+      "optional": true
+    },
+    "@better-auth/mcp": {
+      "optional": true
+    },
+    "better-auth": {
+      "optional": true
+    },
+    "ws": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.13",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.9.3",
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@better-auth/mcp": "^1.7.2",
+    "better-auth": "^1.7.2",
+    "ws": "^8.19.0",
+    "zod": "^4.6.0"
+  },
+  "private": true
+}

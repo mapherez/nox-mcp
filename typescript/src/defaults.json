@@ -1,0 +1,11 @@
+{
+  "bridgeProtocolVersion": "2.0",
+  "legacyBridgeProtocolVersion": "1.0",
+  "manifestSchemaVersion": 1,
+  "requestTimeoutMs": 20000,
+  "heartbeatIntervalMs": 15000,
+  "offlineAfterMs": 45000,
+  "ticketTtlSeconds": 30,
+  "maxPayloadBytes": 2097152,
+  "maxInFlightRequests": 32
+}
