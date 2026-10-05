@@ -422,8 +422,8 @@ impl Drop for ExecutionGuard {
     }
 }
 impl<E: Executor> ServerHandler for McpServer<E> {
-    fn get_info(&self) -> ServerInfo {
-        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
+    fn get_info(&self) -> ServerConfig {
+        ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
             .with_server_info(Implementation::new(self.name.clone(), self.version.clone()))
             .with_instructions(self.instructions.clone())
     }
