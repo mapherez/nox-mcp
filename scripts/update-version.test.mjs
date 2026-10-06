@@ -3,8 +3,10 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { readVersionFiles, updateVersion } from './update-version.mjs';
+import { release } from './release.mjs';
 
 function git(root, ...args) {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -97,4 +99,88 @@ test('interactive script reports inconsistencies and accepts the typed version f
   assert.match(result.stdout, /Nova versao/);
   assert.match(result.stdout, /tag v0\.4\.0 criados/);
   assert.equal(git(root, 'rev-parse', 'v0.4.0^{commit}'), git(root, 'rev-parse', 'HEAD'));
+});
+
+test('release validates synchronized versions before committing and pushes both refs to origin', async t => {
+  const root = await repository(t);
+  const remote = await mkdtemp(resolve(tmpdir(), 'nox-release-origin-'));
+  t.after(() => rm(remote, { recursive: true, force: true }));
+  git(remote, 'init', '--bare');
+  git(root, 'remote', 'add', 'origin', remote);
+  const head = git(root, 'rev-parse', 'HEAD');
+  let checked = false;
+  const url = await release(root, '0.4.0', { check: async () => {
+    assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+    assert.equal(git(root, 'tag', '--list'), '');
+    for (const file of await readVersionFiles(root)) assert.ok(file.versions.every(version => version === '0.4.0'));
+    checked = true;
+  } });
+  assert.ok(checked);
+  assert.equal(url, 'https://github.com/mapherez/nox-mcp/releases/download/v0.4.0/nox-mcp.tgz');
+  assert.equal(git(remote, 'rev-parse', 'v0.4.0^{commit}'), git(root, 'rev-parse', 'HEAD'));
+  const branch = git(root, 'symbolic-ref', '--short', 'HEAD');
+  assert.equal(git(remote, 'rev-parse', `refs/heads/${branch}`), git(root, 'rev-parse', 'HEAD'));
+  assert.equal(git(root, 'log', '-1', '--format=%s'), 'chore: release v0.4.0');
+});
+
+test('failed release checks restore versions and never commit, tag or push', async t => {
+  const root = await repository(t);
+  git(root, 'remote', 'add', 'origin', root);
+  const initial = await readVersionFiles(root);
+  const head = git(root, 'rev-parse', 'HEAD');
+  await assert.rejects(release(root, '0.4.0', { check: () => { throw new Error('Tests failed'); } }), /Tests failed/);
+  assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+  assert.equal(git(root, 'tag', '--list'), '');
+  assert.equal(git(root, 'status', '--porcelain'), '');
+  assert.deepEqual((await readVersionFiles(root)).map(file => file.original), initial.map(file => file.original));
+});
+
+test('a remote-only tag blocks release before any changes', async t => {
+  const root = await repository(t);
+  const remote = await mkdtemp(resolve(tmpdir(), 'nox-release-origin-'));
+  t.after(() => rm(remote, { recursive: true, force: true }));
+  git(remote, 'init', '--bare');
+  git(root, 'remote', 'add', 'origin', remote);
+  git(root, 'tag', '-a', 'v0.4.0', '-m', 'Existing release');
+  git(root, 'push', 'origin', 'refs/tags/v0.4.0');
+  const originalTag = git(remote, 'rev-parse', 'v0.4.0');
+  git(root, 'tag', '-d', 'v0.4.0');
+  await assert.rejects(release(root, '0.4.0', { check: () => assert.fail('Must not test') }), /ja existe em origin/);
+  assert.equal(git(root, 'status', '--porcelain'), '');
+  assert.equal(git(root, 'tag', '--list'), '');
+  assert.equal(git(remote, 'rev-parse', 'v0.4.0'), originalTag);
+});
+
+test('Go major 2 requires /v2 and accepts the matching module path', async t => {
+  const root = await repository(t);
+  await writeFile(resolve(root, 'go.mod'), 'module github.com/mapherez/nox-mcp/v2\n\ngo 1.26.0\n');
+  git(root, 'add', 'go.mod');
+  git(root, 'commit', '-m', 'Migrate Go module to v2');
+  await assert.rejects(updateVersion(root, '1.0.0'), /module path Go/);
+  await assert.rejects(updateVersion(root, '3.0.0'), /module path Go/);
+  assert.equal(await updateVersion(root, '2.0.0'), 'v2.0.0');
+});
+
+test('atomic push failure retains local release but publishes neither ref', async t => {
+  const root = await repository(t);
+  const remote = await mkdtemp(resolve(tmpdir(), 'nox-release-origin-'));
+  t.after(() => rm(remote, { recursive: true, force: true }));
+  git(remote, 'init', '--bare');
+  git(root, 'remote', 'add', 'origin', remote);
+  await writeFile(resolve(remote, 'hooks/pre-receive'), '#!/bin/sh\nexit 1\n', { mode: 0o755 });
+  await assert.rejects(release(root, '0.4.0', { check: () => {} }), /Push falhou.*ficaram locais/);
+  assert.equal(git(root, 'cat-file', '-t', 'v0.4.0'), 'tag');
+  assert.equal(git(remote, 'for-each-ref'), '');
+});
+
+test('CI validates tag and SDK versions on a detached checkout', async t => {
+  const root = await repository(t);
+  await updateVersion(root, '0.4.0');
+  git(root, 'checkout', '--detach', 'v0.4.0');
+  const check = tag => spawnSync(process.execPath, [fileURLToPath(new URL('./check-release-version.mjs', import.meta.url)), tag], { cwd: root, encoding: 'utf8' });
+  assert.equal(check('v0.4.0').status, 0);
+  const mismatched = check('v0.5.0');
+  assert.equal(mismatched.status, 1);
+  assert.match(mismatched.stderr, /nao corresponde/);
+  assert.equal(check('0.4.0').status, 1);
 });

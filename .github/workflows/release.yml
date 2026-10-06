@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Validate release version
+        run: node scripts/check-release-version.mjs "$RELEASE_TAG"
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+      - name: Refuse an existing release
+        run: |
+          # A 404 is expected; auth, network and other API errors must fail.
+          if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > /dev/null 2> release-error.txt; then
+            echo "Release $RELEASE_TAG already exists; refusing to replace it."
+            exit 1
+          elif ! grep -q 'HTTP 404' release-error.txt; then
+            cat release-error.txt
+            exit 1
+          fi
+          rm release-error.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+      - run: npm ci --ignore-scripts
+      - name: Test TypeScript and build package
+        run: npm test
+      - name: Test Go
+        run: go test -mod=readonly ./...
+      - name: Test Rust
+        run: cargo test --locked --manifest-path rust/Cargo.toml
+      - name: Pack and verify consumer installation
+        run: npm run package:check -- "$RUNNER_TEMP/nox-mcp.tgz"
+      - name: Create GitHub Release
+        run: |
+          args=()
+          if [[ "$RELEASE_TAG" == *-* ]]; then args+=(--prerelease); fi
+          gh release create "$RELEASE_TAG" "$RUNNER_TEMP/nox-mcp.tgz" \
+            --verify-tag --title "$RELEASE_TAG" --generate-notes "${args[@]}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}

@@ -49,7 +49,7 @@ export async function readVersionFiles(root) {
     : tomlFile(path, texts[index], index === 3));
 }
 
-export async function updateVersion(root, input) {
+export async function validateVersion(root, input) {
   const version = input.trim().replace(/^v/, '');
   const parsed = version.match(versionPattern);
   if (!parsed) throw new Error('Versao invalida. Usa X.Y.Z ou X.Y.Z-prerelease (ex.: 0.4.0 ou 0.4.0-beta.1).');
@@ -61,6 +61,11 @@ export async function updateVersion(root, input) {
   if (!modulePath || (BigInt(parsed[1]) >= 2n ? majorSuffix !== parsed[1] : majorSuffix !== undefined)) {
     throw new Error(`A versao ${version} exige primeiro migrar o module path Go para o major correspondente (v2+ usa /vN).`);
   }
+  return { version, files };
+}
+
+export async function updateVersion(root, input, { beforeCommit = async () => {} } = {}) {
+  const { version, files } = await validateVersion(root, input);
   if (resolve(git(root, 'rev-parse', '--show-toplevel')) !== resolve(root)) {
     throw new Error('Executa o script no repositorio nox-mcp, nao num repositorio pai.');
   }
@@ -75,6 +80,14 @@ export async function updateVersion(root, input) {
   const head = git(root, 'rev-parse', 'HEAD');
   try {
     for (const file of updates) await writeFile(resolve(root, file.path), file.updated);
+    // Validate the exact versions being released before creating a commit or tag.
+    await beforeCommit();
+    const changed = git(root, 'diff', '--name-only').split('\n').filter(Boolean);
+    if (changed.some(path => !updates.some(file => file.path === path)) ||
+        git(root, 'diff', '--cached', '--name-only') ||
+        git(root, 'ls-files', '--others', '--exclude-standard')) {
+      throw new Error('A validacao alterou ficheiros fora da atualizacao de versao. Revê as alteracoes antes de publicar.');
+    }
     git(root, 'add', '--', ...updates.map(file => file.path));
     git(root, 'commit', '-m', `chore: release ${tag}`);
   } catch (error) {
