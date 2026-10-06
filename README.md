@@ -61,6 +61,26 @@ github.com/mapherez/nox-mcp/go
 
 NoX MCP is currently consumed directly from this repository and is not automatically published to npm, crates.io, or other public package registries.
 
+## Updating the project version
+
+Commit your changes first, then run:
+
+```sh
+npm run version:update
+```
+
+The script shows the current version from `package.json` and the versions in each manifest and lockfile, including any inconsistencies. Enter the new version (for example, `0.4.0` or `0.4.0-beta.1`); press Enter to cancel. You can also pass it directly with `npm run version:update -- 0.4.0`.
+
+It synchronizes `package.json`, both project version fields in `package-lock.json`, the package version in `rust/Cargo.toml`, and the `nox-mcp` entry in `rust/Cargo.lock`. It then creates a release commit and an annotated local tag such as `v0.4.0`, pointing to that commit. Dependencies, language requirements, and protocol versions retain their own versions. Existing tags are never overwritten.
+
+Go uses the Git version tag; `go.mod` does not contain this module's release version. Versions `v2` and above require a matching `/vN` module path before running this script ([Go module versioning](https://go.dev/doc/modules/version-numbers)).
+
+The script does not push. Publish the commit and tag when ready:
+
+```sh
+git push --follow-tags
+```
+
 ## License
 
 Licensed under the [MIT License](LICENSE).
