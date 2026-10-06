@@ -1,6 +1,6 @@
 {
   "name": "@nox/mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Native MCP tools, authorization adapters and cancellable desktop bridges for NoX apps",
   "type": "module",
   "license": "MIT",
