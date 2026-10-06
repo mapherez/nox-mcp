@@ -44,7 +44,7 @@ test('release synchronizes only project versions and tags the updated commit', a
   assert.equal(await updateVersion(root, 'v0.4.0-beta.1'), 'v0.4.0-beta.1');
   for (const file of await readVersionFiles(root)) {
     assert.ok(file.versions.every(version => version === '0.4.0-beta.1'));
-    assert.equal(git(root, 'show', `v0.4.0-beta.1:${file.path}`), file.original.replaceAll('\r\n', '\n').trim());
+    assert.equal(git(root, 'show', `v0.4.0-beta.1:${file.path}`).replaceAll('\r\n', '\n'), file.original.replaceAll('\r\n', '\n').trim());
   }
   assert.notEqual(git(root, 'rev-parse', 'HEAD'), head);
   assert.equal(git(root, 'rev-parse', 'v0.4.0-beta.1^{commit}'), git(root, 'rev-parse', 'HEAD'));
@@ -54,9 +54,24 @@ test('release synchronizes only project versions and tags the updated commit', a
   const lock = JSON.parse(await readFile(resolve(root, 'package-lock.json'), 'utf8'));
   assert.equal(pkg.dependencies.example, '0.1.0');
   assert.equal(lock.packages['node_modules/example'].version, '0.1.0');
-  assert.equal(await readFile(resolve(root, 'rust/Cargo.toml'), 'utf8'), initial[2].original.replace('version = "0.1.0"', 'version = "0.4.0-beta.1"'));
   assert.equal(await readFile(resolve(root, 'rust/Cargo.lock'), 'utf8'), initial[3].original.replace('name = "nox-mcp"\nversion = "0.1.0"', 'name = "nox-mcp"\nversion = "0.4.0-beta.1"'));
   assert.equal(await readFile(resolve(root, 'go.mod'), 'utf8'), 'module github.com/mapherez/nox-mcp\n\ngo 1.26.0\n');
+});
+
+test('updateVersion preserves original CRLF line endings in rust/Cargo.toml', async t => {
+  const root = await repository(t);
+  const path = resolve(root, 'rust/Cargo.toml');
+  const original = await readFile(path, 'utf8');
+  assert.match(original, /\r\n/);
+  assert.doesNotMatch(original, /(?<!\r)\n/);
+
+  await updateVersion(root, '0.4.0-beta.1');
+
+  // Compare the raw working-tree contents, without Git or newline normalization.
+  const updated = await readFile(path, 'utf8');
+  assert.equal(updated, original.replace('version = "0.1.0"', 'version = "0.4.0-beta.1"'));
+  assert.match(updated, /\r\n/);
+  assert.doesNotMatch(updated, /(?<!\r)\n/);
 });
 
 test('invalid versions, incompatible Go majors, existing tags and dirty trees change nothing', async t => {
