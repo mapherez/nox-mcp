@@ -44,6 +44,7 @@
   },
   "scripts": {
     "build": "tsc -p typescript/tsconfig.json",
+    "test": "npm run build && node --test typescript/test/*.test.mjs",
     "prepare": "npm run build",
     "prepack": "npm run build"
   },

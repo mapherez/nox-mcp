@@ -10,6 +10,7 @@ export interface ExecutionContext {
 }
 export interface ToolDefinition {
   name: string; title?: string; description: string;
+  _meta?: Record<string, unknown>;
   inputSchema: z.ZodType; outputSchema: z.ZodType;
   requiredScopes?: readonly string[];
   annotations?: { readOnlyHint?: boolean; destructiveHint?: boolean; idempotentHint?: boolean; openWorldHint?: boolean };
@@ -32,7 +33,7 @@ export function createServer(options: ServerOptions): McpServer {
   if (![timeoutMs, maxBytes, maxInFlight].every(value => Number.isSafeInteger(value) && value > 0)) throw new Error('Invalid server limits.');
   let inFlight = 0;
   for (const tool of options.tools) {
-    server.registerTool(tool.name, { title: tool.title, description: tool.description, inputSchema: tool.inputSchema, outputSchema: tool.outputSchema, annotations: tool.annotations }, async (input: unknown, extra) => {
+    server.registerTool(tool.name, { title: tool.title, description: tool.description, inputSchema: tool.inputSchema, outputSchema: tool.outputSchema, annotations: tool.annotations, _meta: tool._meta }, async (input: unknown, extra) => {
       const controller = new AbortController();
       const cancel = () => controller.abort(new McpError('CANCELLED', 'The request was cancelled', tool.annotations?.readOnlyHint === true, tool.annotations?.readOnlyHint ? undefined : { outcome: 'unknown' }));
       extra.mcpReq.signal.addEventListener('abort', cancel, { once: true });
