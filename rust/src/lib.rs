@@ -281,6 +281,8 @@ struct Entry {
     name: String,
     title: String,
     description: String,
+    #[serde(rename = "_meta")]
+    meta: Option<MetaObject>,
     input_schema: Map<String, Value>,
     output_schema: Map<String, Value>,
     annotations: ToolAnnotations,
@@ -307,6 +309,7 @@ pub fn load_tools(json: &str) -> Result<Vec<Tool>, BrokerError> {
                 .with_title(e.title)
                 .with_annotations(e.annotations);
             tool.output_schema = Some(Arc::new(e.output_schema));
+            tool.meta = e.meta;
             Ok(tool)
         })
         .collect()

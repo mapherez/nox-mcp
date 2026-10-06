@@ -38,6 +38,7 @@ func (c ExecutionContext) CheckActive() error { return c.Err() }
 
 type Tool struct {
 	Name, Title, Description          string
+	Meta                              map[string]any
 	InputSchema, OutputSchema         *jsonschema.Schema
 	RequiredScopes                    []string
 	ReadOnly, Destructive, Idempotent bool
@@ -94,7 +95,7 @@ func New(options Options) (*Runtime, error) {
 			return nil, fmt.Errorf("output schema: %w", err)
 		}
 		r.tools[t.Name] = compiledTool{t, input, output}
-		r.Server.AddTool(&mcp.Tool{Name: t.Name, Title: t.Title, Description: t.Description, InputSchema: t.InputSchema, OutputSchema: t.OutputSchema, Annotations: &mcp.ToolAnnotations{ReadOnlyHint: t.ReadOnly, DestructiveHint: &t.Destructive, IdempotentHint: t.Idempotent}}, func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		r.Server.AddTool(&mcp.Tool{Name: t.Name, Title: t.Title, Description: t.Description, Meta: t.Meta, InputSchema: t.InputSchema, OutputSchema: t.OutputSchema, Annotations: &mcp.ToolAnnotations{ReadOnlyHint: t.ReadOnly, DestructiveHint: &t.Destructive, IdempotentHint: t.Idempotent}}, func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			var input map[string]any
 			if len(req.Params.Arguments) > r.options.MaxPayloadBytes || json.Unmarshal(req.Params.Arguments, &input) != nil {
 				return result(failure("INVALID_INPUT", "Invalid input"), true), nil
