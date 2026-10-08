@@ -194,6 +194,79 @@ Depending on the implementation, this includes:
 
 Applications remain responsible for deciding which transports should be exposed and how they should be authenticated.
 
+### TypeScript HTTP response modes (next release)
+
+Updating from `0.4.1` changes normal HTTP exchanges to **JSON by default**.
+Applications pinned to the previous release retain their existing behavior.
+Both the legacy `initialize`/`tools/list`/`tools/call` flow and modern
+`server/discover`/tool exchanges use the SDK's native `application/json`
+responses. There is no SSE-to-JSON conversion in applications.
+
+```ts
+import { createHttpHandler, type HttpHandlerOptions } from '@nox/mcp';
+import { toNodeHandler } from '@nox/mcp/node';
+
+const options: HttpHandlerOptions = {
+  appId: 'example', name: 'example', version: '1.0.0', tools,
+  // responseMode: 'json' is the default.
+};
+const handler = createHttpHandler(options);
+const nodeHandler = toNodeHandler(handler);
+// Mount nodeHandler in the application's HTTP server.
+// await handler.close() when shutting the server down.
+```
+
+JSON mode accepts `Accept: application/json`, compatible `application/*` and
+`*/*` wildcards, an absent Accept header, and clients advertising both JSON
+and SSE. A more specific exclusion such as `application/json;q=0, */*;q=1`
+returns `406` before tool execution. Only the library's internal request is
+normalized for the installed SDK's dual-Accept requirement.
+
+Apps that rely on progress, intermediate notifications, or clients that
+exclusively interpret SSE must opt in:
+
+```ts
+const handler = createHttpHandler({ ...options, responseMode: 'sse' });
+```
+
+SSE clients must accept both `application/json` (including transport errors)
+and `text/event-stream`. JSON mode delivers the terminal result and drops
+intermediate notifications. The SDK currently logs this behavior when a JSON
+handler is created. Modern `subscriptions/listen` remains a dedicated SSE
+stream in either mode and requires an Accept header allowing SSE.
+
+The endpoint remains stateless: it creates no sessions, answers legacy
+initialization notifications with an empty `202`, and rejects GET/DELETE
+session operations with `405`. Auth information from upstream middleware is
+passed to `resolveAuth`; schemas, `_meta`, scopes, execution limits and
+`formatError` remain shared through `createServer`. HTTP bodies retain the
+SDK's 4 MiB bound; `maxPayloadBytes` separately bounds tool input and output.
+Disconnecting or closing the handler cancels active work and settles pending
+JSON exchanges. Legacy batch cancellation returns a terminal JSON-RPC
+cancellation error because the SDK suppresses the cancelled handler's reply.
+
+The Go transport already configures JSON responses and keeps its current
+behavior. This change standardizes HTTP response formats; the cause of the
+earlier transient Codex connection failure has not been identified.
+
+See [HTTP validation](typescript/HTTP_VALIDATION.md) for automated checks,
+real Codex/LM Studio versions and results, and reproduction scripts.
+
+### Application migration
+
+For NoX Bot, after publishing and pinning the new release in the Bot repository:
+
+1. Update its fixed `@nox/mcp` release dependency and lockfile.
+2. Remove the local transport adapter and use `createHttpHandler` directly.
+3. Validate initialization, tool discovery, harmless calls and authentication
+   with its actual clients; set `responseMode: 'sse'` if intermediate events
+   are required.
+
+That migration is a later change in the Bot repository. Before recommending
+an update for NoteX or Yard, confirm their current response parsing, progress,
+notification and authentication flows. They are not migrated by this library
+change.
+
 ## Authorization
 
 NoX MCP provides reusable authorization primitives for applications that need protected MCP resources.

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { createMcpHandler, McpServer, type AuthInfo } from '@modelcontextprotocol/server';
+import { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { defaults, McpError, type McpErrorBody } from './contract.js';
 export * from './contract.js';
@@ -70,6 +70,4 @@ export function createServer(options: ServerOptions): McpServer {
   }
   return server;
 }
-export function createHttpHandler(options: Omit<ServerOptions, 'auth'> & { resolveAuth?(authInfo?: AuthInfo): ServerOptions['auth']; onerror?(error: Error): void }) {
-  return createMcpHandler(({ authInfo }) => createServer({ ...options, auth: options.resolveAuth?.(authInfo) }), { legacy: 'stateless', onerror: options.onerror });
-}
+export { createHttpHandler, type HttpHandlerOptions } from './http.js';

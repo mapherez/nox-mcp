@@ -51,11 +51,11 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@modelcontextprotocol/server": "^2.0.0"
+    "@modelcontextprotocol/server": "^2.3.1"
   },
   "peerDependencies": {
-    "@modelcontextprotocol/node": "^2.0.0",
     "@better-auth/mcp": "^1.7.2",
+    "@modelcontextprotocol/node": "^2.0.0",
     "better-auth": "^1.7.2",
     "ws": "^8.19.0",
     "zod": "^4.6.0"
@@ -75,12 +75,13 @@
     }
   },
   "devDependencies": {
+    "@better-auth/mcp": "^1.7.2",
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@modelcontextprotocol/node": "^2.0.0",
     "@types/node": "^24.10.13",
     "@types/ws": "^8.18.1",
-    "typescript": "^5.9.3",
-    "@modelcontextprotocol/node": "^2.0.0",
-    "@better-auth/mcp": "^1.7.2",
     "better-auth": "^1.7.2",
+    "typescript": "^5.9.3",
     "ws": "^8.19.0",
     "zod": "^4.6.0"
   },

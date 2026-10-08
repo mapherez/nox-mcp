@@ -30,7 +30,7 @@ try {
   const consumer = resolve(temporary, 'consumer');
   await mkdir(consumer);
   await writeFile(resolve(consumer, 'package.json'), JSON.stringify({ name: 'nox-consumer-check', version: '1.0.0', private: true, type: 'module',
-    dependencies: { ws: pkg.peerDependencies.ws },
+    dependencies: { ws: pkg.peerDependencies.ws, '@modelcontextprotocol/node': pkg.peerDependencies['@modelcontextprotocol/node'] },
   }));
   const tarball = resolve(temporary, packed.filename);
   // Keep lifecycle scripts enabled: this must work without tsc or SDK dev deps.
@@ -50,8 +50,13 @@ try {
     await import('@nox/mcp/bridge/server');
   `], { cwd: consumer, stdio: 'inherit' });
 
+  // Exercise the installed tarball through the public Node adapter, with no
+  // checkout imports and no application-level transport adaptation.
+  await copyFile(resolve(root, 'scripts/consumer-http.mjs'), resolve(consumer, 'consumer-http.mjs'));
+  execFileSync(process.execPath, ['consumer-http.mjs'], { cwd: consumer, stdio: 'inherit' });
+
   if (process.argv[2]) await copyFile(tarball, resolve(process.argv[2]));
-  console.log(`Verified @nox/mcp ${pkg.version}: ${packed.files.length} files, ${packed.size} bytes; consumer install and imports passed without TypeScript.`);
+  console.log(`Verified @nox/mcp ${pkg.version}: ${packed.files.length} files, ${packed.size} bytes; consumer install, imports and HTTP JSON/SSE passed without TypeScript.`);
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }
