@@ -1,0 +1,1420 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "manifest-existing",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": true
+    },
+    {
+      "id": "manifest-metadata",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            },
+            "_meta": {
+              "cli": "resource get",
+              "custom": {
+                "flags": [
+                  "a",
+                  2,
+                  null
+                ],
+                "enabled": false
+              }
+            }
+          }
+        ]
+      },
+      "loadTools": true
+    },
+    {
+      "id": "manifest-optional-absent",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {}
+          }
+        ]
+      },
+      "loadTools": true
+    },
+    {
+      "id": "manifest-extensions",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false,
+              "custom": "hint"
+            },
+            "extension": [
+              null,
+              0
+            ],
+            "scope": "resource:read",
+            "requiredScopes": [
+              "resource:read"
+            ]
+          }
+        ],
+        "custom": {
+          "enabled": false
+        }
+      },
+      "loadTools": true
+    },
+    {
+      "id": "manifest-schema-keywords",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "definitions": {
+                "identifier": {
+                  "type": "string",
+                  "pattern": "^[a-z]+$"
+                }
+              },
+              "properties": {
+                "id": {
+                  "$ref": "#/definitions/identifier"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": true
+    },
+    {
+      "id": "manifest-empty",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": []
+      },
+      "loadTools": true
+    },
+    {
+      "id": "manifest-other-protocol",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "1.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false,
+      "loaderReason": "Runtime loader only supports bridge protocol 2.0."
+    },
+    {
+      "id": "manifest-duplicate-tools",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false,
+      "loaderReason": "Executable tools must have unique names."
+    },
+    {
+      "id": "manifest-non-object-tool-schema",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "string"
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false,
+      "loaderReason": "MCP loader requires object input/output schemas."
+    },
+    {
+      "id": "manifest-opaque-metadata",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            },
+            "_meta": 7
+          }
+        ]
+      },
+      "loadTools": false,
+      "loaderReason": "rmcp Tool metadata is an object; structural legacy manifest metadata remains opaque."
+    },
+    {
+      "id": "manifest-null-metadata",
+      "schema": "manifest",
+      "valid": true,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            },
+            "_meta": null
+          }
+        ]
+      },
+      "loadTools": true
+    },
+    {
+      "id": "manifest-missing-annotations",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          }
+        ]
+      },
+      "loadTools": false
+    },
+    {
+      "id": "manifest-invalid-version",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 2,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false
+    },
+    {
+      "id": "manifest-empty-name",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false
+    },
+    {
+      "id": "manifest-long-name",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false
+    },
+    {
+      "id": "manifest-invalid-annotation",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": "true",
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false
+    },
+    {
+      "id": "manifest-invalid-scopes",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            },
+            "requiredScopes": [
+              3
+            ]
+          }
+        ]
+      },
+      "loadTools": true,
+      "loaderReason": "Legacy Rust loader ignores scope fields; execution scopes are configured separately."
+    },
+    {
+      "id": "manifest-missing-input-schema",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false
+    },
+    {
+      "id": "manifest-array-output-schema",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": [],
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "loadTools": false
+    },
+    {
+      "id": "manifest-invalid-tools",
+      "schema": "manifest",
+      "valid": false,
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": {}
+      },
+      "loadTools": false
+    },
+    {
+      "id": "request-existing",
+      "schema": "request",
+      "data": {
+        "type": "request",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "command": "read_resource",
+        "input": {
+          "id": "one"
+        },
+        "deadlineAt": "2026-10-20T10:00:00Z"
+      },
+      "valid": true
+    },
+    {
+      "id": "request-null-input",
+      "schema": "request",
+      "data": {
+        "type": "request",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "command": "read_resource",
+        "input": null,
+        "deadlineAt": "2026-10-20T10:00:00Z"
+      },
+      "valid": true
+    },
+    {
+      "id": "request-offset-and-extensions",
+      "schema": "request",
+      "data": {
+        "type": "request",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "command": "read_resource",
+        "input": {
+          "id": "one"
+        },
+        "deadlineAt": "2026-10-20T10:00:00.123+01:00",
+        "extension": {
+          "enabled": false
+        }
+      },
+      "valid": true
+    },
+    {
+      "id": "request-bad-uuid",
+      "schema": "request",
+      "data": {
+        "type": "request",
+        "requestId": "local-mcp-1",
+        "command": "read_resource",
+        "input": {
+          "id": "one"
+        },
+        "deadlineAt": "2026-10-20T10:00:00Z"
+      },
+      "valid": false
+    },
+    {
+      "id": "request-bad-date",
+      "schema": "request",
+      "data": {
+        "type": "request",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "command": "read_resource",
+        "input": {
+          "id": "one"
+        },
+        "deadlineAt": "2026-02-30T10:00:00Z"
+      },
+      "valid": false
+    },
+    {
+      "id": "request-missing-input",
+      "schema": "request",
+      "data": {
+        "type": "request",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "command": "read_resource",
+        "deadlineAt": "2026-10-20T10:00:00Z"
+      },
+      "valid": false
+    },
+    {
+      "id": "error-existing",
+      "schema": "error",
+      "data": {
+        "code": "CONFLICT",
+        "message": "Conflict",
+        "retryable": false,
+        "details": {
+          "version": 2
+        }
+      },
+      "valid": true
+    },
+    {
+      "id": "error-default",
+      "schema": "error",
+      "data": {
+        "code": "CUSTOM",
+        "message": "Custom",
+        "currentVersion": 3
+      },
+      "valid": true
+    },
+    {
+      "id": "error-bad-retryable",
+      "schema": "error",
+      "data": {
+        "code": "CUSTOM",
+        "message": "Custom",
+        "retryable": "false"
+      },
+      "valid": false
+    },
+    {
+      "id": "error-empty-code",
+      "schema": "error",
+      "data": {
+        "code": "",
+        "message": "Error"
+      },
+      "valid": false
+    },
+    {
+      "id": "response-success",
+      "schema": "response",
+      "data": {
+        "type": "response",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "ok": true,
+        "result": {
+          "custom": 0
+        }
+      },
+      "valid": true
+    },
+    {
+      "id": "response-null-result",
+      "schema": "response",
+      "data": {
+        "type": "response",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "ok": true,
+        "result": null
+      },
+      "valid": true
+    },
+    {
+      "id": "response-custom-error",
+      "schema": "response",
+      "data": {
+        "type": "response",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "ok": false,
+        "error": {
+          "code": "CUSTOM",
+          "message": "Error",
+          "currentVersion": 2
+        }
+      },
+      "valid": true
+    },
+    {
+      "id": "response-missing-result",
+      "schema": "response",
+      "data": {
+        "type": "response",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "ok": true
+      },
+      "valid": false
+    },
+    {
+      "id": "response-invalid-discriminator",
+      "schema": "response",
+      "data": {
+        "type": "response",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "ok": 0,
+        "result": {}
+      },
+      "valid": false
+    },
+    {
+      "id": "desktop-authenticate",
+      "schema": "desktop",
+      "data": {
+        "type": "authenticate",
+        "ticket": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "valid": true
+    },
+    {
+      "id": "desktop-short-ticket",
+      "schema": "desktop",
+      "data": {
+        "type": "authenticate",
+        "ticket": "short"
+      },
+      "valid": false
+    },
+    {
+      "id": "desktop-ready-current",
+      "schema": "desktop",
+      "data": {
+        "type": "ready",
+        "protocolVersion": "2.0",
+        "appVersion": "1.0"
+      },
+      "valid": true
+    },
+    {
+      "id": "desktop-ready-legacy",
+      "schema": "desktop",
+      "data": {
+        "type": "ready",
+        "protocolVersion": "1.0",
+        "appVersion": "1.0"
+      },
+      "valid": true
+    },
+    {
+      "id": "desktop-ready-unsupported",
+      "schema": "desktop",
+      "data": {
+        "type": "ready",
+        "protocolVersion": "3.0",
+        "appVersion": "1.0"
+      },
+      "valid": false
+    },
+    {
+      "id": "desktop-response",
+      "schema": "desktop",
+      "data": {
+        "type": "response",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "ok": true,
+        "result": {}
+      },
+      "valid": true
+    },
+    {
+      "id": "desktop-wrong-direction",
+      "schema": "desktop",
+      "data": {
+        "type": "request",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "command": "read_resource",
+        "input": {
+          "id": "one"
+        },
+        "deadlineAt": "2026-10-20T10:00:00Z"
+      },
+      "valid": false
+    },
+    {
+      "id": "server-authenticated",
+      "schema": "server",
+      "data": {
+        "type": "authenticated",
+        "extension": 1
+      },
+      "valid": true
+    },
+    {
+      "id": "server-request",
+      "schema": "server",
+      "data": {
+        "type": "request",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "command": "read_resource",
+        "input": {
+          "id": "one"
+        },
+        "deadlineAt": "2026-10-20T10:00:00Z"
+      },
+      "valid": true
+    },
+    {
+      "id": "server-cancel",
+      "schema": "server",
+      "data": {
+        "type": "cancel",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000"
+      },
+      "valid": true
+    },
+    {
+      "id": "server-revoked",
+      "schema": "server",
+      "data": {
+        "type": "session_revoked",
+        "reason": "Logout"
+      },
+      "valid": true
+    },
+    {
+      "id": "server-bad-id",
+      "schema": "server",
+      "data": {
+        "type": "cancel",
+        "requestId": "bad"
+      },
+      "valid": false
+    },
+    {
+      "id": "server-wrong-direction",
+      "schema": "server",
+      "data": {
+        "type": "authenticate",
+        "ticket": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "valid": false
+    },
+    {
+      "id": "request-minute-precision-rejected",
+      "schema": "request",
+      "valid": false,
+      "data": {
+        "type": "request",
+        "requestId": "123e4567-e89b-42d3-a456-426614174000",
+        "command": "read_resource",
+        "input": {},
+        "deadlineAt": "2026-10-20T10:00Z"
+      }
+    }
+  ],
+  "schemaCases": [
+    {
+      "id": "tool-input-valid",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "data": {
+        "id": "one",
+        "count": 0,
+        "enabled": false,
+        "labels": []
+      },
+      "valid": true
+    },
+    {
+      "id": "tool-input-missing",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "data": {},
+      "valid": false
+    },
+    {
+      "id": "tool-input-unknown",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "data": {
+        "id": "one",
+        "extra": 1
+      },
+      "valid": false
+    },
+    {
+      "id": "tool-input-wrong-type",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "data": {
+        "id": 1
+      },
+      "valid": false
+    },
+    {
+      "id": "tool-input-invalid-number",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "data": {
+        "id": "one",
+        "count": 1.5
+      },
+      "valid": false
+    },
+    {
+      "id": "tool-output-nullable",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "data": {
+        "value": null
+      },
+      "valid": true
+    },
+    {
+      "id": "tool-output-ref",
+      "schema": {
+        "type": "object",
+        "definitions": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "value": {
+            "$ref": "#/definitions/value"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "data": {
+        "value": "ok"
+      },
+      "valid": true
+    }
+  ]
+}

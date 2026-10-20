@@ -279,6 +279,17 @@ Authorization remains independent from the tool implementation itself, allowing 
 
 The [`contracts/`](contracts/) directory contains shared protocol definitions and schemas used across implementations.
 
+This directory is the only authoritative source. Run `npm run contracts:sync` after
+editing a contract or its defaults, and commit the generated Go/Rust copies and
+TypeScript validators together. `npm run contracts:check` rejects drift without
+changing files; tests, branch/PR CI and releases run this check automatically.
+Go and Rust packages contain the generated schemas and build without Node.js or
+access to this repository's root contracts directory.
+
+See [contract maintenance and compatibility](contracts/README.md) for the shared
+conformance corpus, preserved legacy differences, and the checks required when
+adding or changing a contract.
+
 These contracts exist to keep behavior consistent between TypeScript, Rust, and Go without forcing the languages to share the same internal architecture.
 
 ## Releases

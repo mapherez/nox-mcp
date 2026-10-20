@@ -14,7 +14,11 @@ try {
     cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'],
   });
   // Use the normal pack lifecycle: prepack builds dist, with no special CI artifact.
-  const [packed] = JSON.parse(npm(root, 'pack', '--json', '--pack-destination', temporary));
+  const packOutput = JSON.parse(npm(root, 'pack', '--json', '--pack-destination', temporary));
+  // npm 11 returns an array; npm 12 keys the same records by package name.
+  const packages = Array.isArray(packOutput) ? packOutput : Object.values(packOutput);
+  assert.equal(packages.length, 1, 'Expected exactly one packed package');
+  const [packed] = packages;
   const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
   const paths = new Set(packed.files.map(file => file.path));
   assert.equal(packed.version, pkg.version);
