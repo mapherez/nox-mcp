@@ -4,6 +4,7 @@ import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { extractArchive } from './extract-archive.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const temporary = await mkdtemp(resolve(tmpdir(), 'nox-native-packages-'));
@@ -42,7 +43,7 @@ func main() {
   run('cargo', ['package', '--allow-dirty', '--no-verify', '--locked', '--offline', '--manifest-path', 'rust/Cargo.toml'], root, { ...process.env, CARGO_TARGET_DIR: packageTarget });
   const unpacked = resolve(temporary, 'unpacked');
   await mkdir(unpacked);
-  run('tar', ['-xzf', resolve(packageTarget, `package/nox-mcp-${version}.crate`), '-C', unpacked], root);
+  extractArchive(resolve(packageTarget, `package/nox-mcp-${version}.crate`), unpacked);
   const crate = resolve(unpacked, `nox-mcp-${version}`);
   run('cargo', ['test', '--locked', '--offline', '--manifest-path', resolve(crate, 'Cargo.toml')], root);
   const rustConsumer = resolve(temporary, 'rust-consumer');
