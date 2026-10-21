@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { Ajv } from 'ajv';
 import { z } from 'zod';
-import { ProtocolError, type McpServer, type ServerContext, type Tool } from '@modelcontextprotocol/server';
+import { MissingRequiredClientCapabilityError, UnsupportedProtocolVersionError, SUPPORTED_PROTOCOL_VERSIONS, ProtocolError, ProtocolErrorCode, type McpServer, type ServerContext, type Tool } from '@modelcontextprotocol/server';
 import { discoverySchemas } from './discovery-contracts.generated.js';
 
 export const DISCOVERY_EXTENSION = 'nox/discovery';
@@ -221,11 +221,21 @@ export function installDiscovery(server: McpServer, options: DiscoveryOptions): 
     const policy = await options.resolveView(context, tools);
     return {viewId:policy.viewId,presentation:policy.presentation,definitions:tools.filter(t=>!policy.visible || policy.visible.includes(t.name)).map(tool=>({tool,...(options.descriptors?.[tool.name] ? {cli:options.descriptors[tool.name]} : {}),...(policy.unavailable?.includes(tool.name) ? {availability:'unavailable' as const} : {})}))};
   };
-  const boundary = async <T>(work:()=>T|Promise<T>):Promise<T> => { try { return await work(); } catch(error) { if (error instanceof DiscoveryError) throw new ProtocolError(-32602,error.reason,{reason:error.reason}); throw error; } };
+  const boundary = async <T>(work:()=>T|Promise<T>):Promise<T> => { try { return await work(); } catch(error) { if (error instanceof DiscoveryError) throw new ProtocolError(ProtocolErrorCode.InvalidParams,error.reason,{reason:error.reason}); throw error; } };
   const negotiated = (ctx:ServerContext) => {
     const envelope = ctx.mcpReq.envelope as Partial<ReturnType<typeof discoveryMeta>> | undefined;
     const settings = envelope?.['io.modelcontextprotocol/clientCapabilities']?.extensions?.[DISCOVERY_EXTENSION];
-    if (envelope?.['io.modelcontextprotocol/protocolVersion'] !== DISCOVERY_PROTOCOL || settings?.version !== DISCOVERY_VERSION) fail('EXTENSION_NOT_NEGOTIATED');
+    const requested=envelope?.['io.modelcontextprotocol/protocolVersion'];
+    // HTTP validates this at its entry. An already-open stdio connection can
+    // still dispatch a later request with an unknown revision in SDK 2.3.1.
+    // SUPPORTED_PROTOCOL_VERSIONS is the SDK's legacy compatibility list.
+    const supported=[DISCOVERY_PROTOCOL,...SUPPORTED_PROTOCOL_VERSIONS];
+    if(typeof requested==='string'&&!supported.includes(requested)) throw new UnsupportedProtocolVersionError({supported,requested});
+    if (requested !== DISCOVERY_PROTOCOL) fail('EXTENSION_NOT_NEGOTIATED');
+    if (!envelope?.['io.modelcontextprotocol/clientCapabilities']) fail('INVALID_DISCOVERY');
+    if (settings?.version !== DISCOVERY_VERSION) throw new MissingRequiredClientCapabilityError({
+      requiredCapabilities: { extensions: { [DISCOVERY_EXTENSION]: { version: DISCOVERY_VERSION } } },
+    });
   };
   server.server.registerCapabilities({extensions:{[DISCOVERY_EXTENSION]:discoveryCapability}});
   server.server.setRequestHandler('nox/tools/catalog',{params:z.record(z.string(),z.unknown())},(params,ctx)=>boundary(async()=>{negotiated(ctx);return service.catalog(await view(ctx),params);}));

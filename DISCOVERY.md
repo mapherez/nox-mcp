@@ -31,7 +31,15 @@ O cliente consulta `server/discover`, verifica a extensão e escolhe `1.0`. Cada
 }
 ```
 
-As capacidades não são inferidas de um pedido anterior. Uma versão incompatível ou capacidades ausentes produzem `EXTENSION_NOT_NEGOTIATED`. Em protocolos anteriores, ou sem a extensão anunciada, o consumidor utiliza `tools/list` e a cache MCP convencional. Os helpers incrementais não fazem downgrade silencioso: o consumidor escolhe o caminho depois da descoberta.
+As capacidades não são inferidas de um pedido anterior. Em MCP `2026-07-28`, os dois métodos exigem `clientCapabilities.extensions["nox/discovery"].version: "1.0"`. Se essa capacidade estiver ausente ou anunciar uma versão incompatível, respondem com JSON-RPC `-32021` (`MissingRequiredClientCapability`) e os dados seguintes:
+
+```json
+{"requiredCapabilities":{"extensions":{"nox/discovery":{"version":"1.0"}}}}
+```
+
+Uma versão da extensão incompatível não é uma versão do protocolo incompatível. Um protocolo desconhecido produz `-32022`, com `data.requested` e `data.supported`. A ausência do campo obrigatório `io.modelcontextprotocol/clientCapabilities` no envelope moderno é um pedido mal formado (`-32602`); um objeto de capacidades válido, mas sem a extensão exigida, produz `-32021`.
+
+Em protocolos anteriores, ou sem a extensão anunciada pelo servidor, o consumidor utiliza `tools/list` e a cache MCP convencional. A tentativa de usar os métodos NoX num protocolo legado mantém a rejeição anterior (`EXTENSION_NOT_NEGOTIATED`); não se aplica a negociação moderna a clientes legados. Os helpers incrementais não fazem downgrade silencioso: o consumidor escolhe o caminho depois da descoberta.
 
 Referências: [versionamento MCP](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning), [cache MCP](https://modelcontextprotocol.io/specification/2026-07-28/server/utilities/caching), [JCS, RFC 8785](https://www.rfc-editor.org/rfc/rfc8785).
 
@@ -272,7 +280,15 @@ Os serviços memoizam hashes por conteúdo, com um limite interno de 4 096 entra
 
 O cliente usa uma cache por origem configurada de confiança e partição local de credenciais, separada ainda por `serverId`, `viewId` e pelo perfil fixo de protocolo/extensão. Não usar apenas `serverInfo.name`. O servidor fornece um `serverId` estável por instalação e um `viewId` opaco que distingue utilizadores, tenants e revisões relevantes de política. Não incluir tokens ou API Keys nesses campos. `sync` revalida sempre o catálogo; o consumidor pode evitar a chamada enquanto a cache estiver fresca, respeitando TTL e notificações MCP aplicáveis.
 
-`expectedFingerprint`, quando fornecido em `_meta["nox/discovery"]` numa chamada, compara a definição atual antes do dispatch para o executor. `STALE_DEFINITION` exige atualizar a definição e repetir qualquer revisão/consentimento. `FORBIDDEN` oculta ferramentas fora da visão; `UNAVAILABLE` impede executar uma ferramenta temporariamente indisponível. As rejeições da extensão usam JSON-RPC `-32602` com `data.reason`. Os erros de domínio do executor mantêm os envelopes MCP existentes. O consumidor deve tratar ambos como falha, sem interpretar texto como autorização. Os clientes verificam também o hash do catálogo completo antes de aceitar remoções.
+`expectedFingerprint`, quando fornecido em `_meta["nox/discovery"]` numa chamada, compara a definição atual antes do dispatch para o executor. `STALE_DEFINITION` exige atualizar a definição e repetir qualquer revisão/consentimento. `FORBIDDEN` oculta ferramentas fora da visão; `UNAVAILABLE` impede executar uma ferramenta temporariamente indisponível. Estas rejeições e a validação dos parâmetros mantêm JSON-RPC `-32602` com `data.reason`. A capacidade obrigatória ausente usa `-32021`, conforme a secção de negociação. Os erros de domínio do executor mantêm os envelopes MCP existentes. O consumidor deve tratar ambos como falha, sem interpretar texto como autorização. Os clientes verificam também o hash do catálogo completo antes de aceitar remoções.
+
+### Erros por HTTP e respostas SSE
+
+Uma resposta JSON a `-32021` usa HTTP **400**, tal como a rejeição de uma versão de protocolo desconhecida (`-32022`). Se o transporte já tiver enviado os headers de um stream SSE, o status **200** mantém-se: o erro JSON-RPC deve ser o evento terminal do mesmo stream, com o mesmo `id`, antes do encerramento. Alguns transportes iniciam SSE antes de executar o handler. Em stdio não existe status HTTP; o envelope de erro é o mesmo. Ver [protocolo base MCP](https://modelcontextprotocol.io/specification/2026-07-28/basic) e [erros do SDK TypeScript](https://ts.sdk.modelcontextprotocol.io/v2/servers/errors).
+
+A validação dos parâmetros dentro de um handler (`-32602`) mantém o mapeamento HTTP dos SDKs instalados: TypeScript 2.3.1 responde com JSON/200; Go 1.8.0 e rmcp 3.5.0 com JSON/400. A rejeição de campos obrigatórios do envelope antes do dispatch usa JSON/400 nas três implementações. Esta correção não altera esses comportamentos.
+
+**Limitação confirmada no SDK Go 1.8.0:** se um handler emitir progresso SSE e só depois devolver `-32021`, o transporte tenta mudar o status e escreve o erro como JSON bruto, sem enquadramento SSE. O diagnóstico de integração reproduz esta falha e assinala-a explicitamente; não a considera um evento SSE conforme. A negociação NoX ocorre antes de emitir progresso e devolve JSON/400 corretamente, incluindo em modo SSE. Não se alterou a dependência nem se substituiu o transporte para corrigir um caso externo à negociação NoX. Handlers/middleware próprios que possam falhar depois de emitir progresso devem ter esta limitação em conta.
 
 ## Gestão dos contratos e testes
 

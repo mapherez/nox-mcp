@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	nox "github.com/mapherez/nox-mcp/go"
+	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"net"
 	"net/http"
@@ -24,6 +25,14 @@ func main() {
 	caps := &mcp.ServerCapabilities{}
 	caps.AddExtension(nox.DiscoveryExtension, nox.DiscoveryCapability())
 	server := mcp.NewServer(&mcp.Implementation{Name: "fixture", Version: "0.5.0"}, &mcp.ServerOptions{Capabilities: caps, SupportedProtocolVersions: []string{"2025-11-25", "2026-07-28"}})
+	// Test-only late failure after committing a progress notification to SSE.
+	must(mcp.AddReceivingCustomMethod(server, "test/stream-capability", func(ctx context.Context, ss *mcp.ServerSession, _ *mcp.ParamsBase) (*mcp.ResultBase, error) {
+		if err := ss.NotifyProgress(ctx, &mcp.ProgressNotificationParams{ProgressToken: "late", Progress: 1}); err != nil {
+			return nil, err
+		}
+		data, _ := json.Marshal(nox.JSON{"requiredCapabilities": nox.JSON{"extensions": nox.JSON{nox.DiscoveryExtension: nox.JSON{"version": nox.DiscoveryVersion}}}})
+		return nil, &jsonrpc.Error{Code: mcp.CodeMissingRequiredClientCapabilities, Message: "Missing required client capability", Data: data}
+	}))
 	server.AddTool(&tool, func(_ context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		var input map[string]any
 		_ = json.Unmarshal(req.Params.Arguments, &input)
@@ -57,7 +66,8 @@ func main() {
 		listener, e := net.Listen("tcp", "127.0.0.1:0")
 		must(e)
 		fmt.Printf("http://%s/mcp\n", listener.Addr())
-		must(http.Serve(listener, mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server { return server }, &mcp.StreamableHTTPOptions{Stateless: true, JSONResponse: true})))
+		sse := len(os.Args) > 2 && os.Args[2] == "--sse"
+		must(http.Serve(listener, mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server { return server }, &mcp.StreamableHTTPOptions{Stateless: true, JSONResponse: !sse})))
 	} else {
 		must(server.Run(context.Background(), &mcp.StdioTransport{}))
 	}

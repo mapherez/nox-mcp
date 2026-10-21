@@ -1,4 +1,91 @@
 {
+  "negotiationCases": [
+    {
+      "id": "missing-extension",
+      "capabilities": {},
+      "code": -32021,
+      "httpStatus": 400
+    },
+    {
+      "id": "other-extension",
+      "capabilities": {
+        "extensions": {
+          "other/extension": {}
+        }
+      },
+      "code": -32021,
+      "httpStatus": 400
+    },
+    {
+      "id": "empty-settings",
+      "capabilities": {
+        "extensions": {
+          "nox/discovery": {}
+        }
+      },
+      "code": -32021,
+      "httpStatus": 400
+    },
+    {
+      "id": "incompatible-extension-version",
+      "capabilities": {
+        "extensions": {
+          "nox/discovery": {
+            "version": "2.0"
+          }
+        }
+      },
+      "code": -32021,
+      "httpStatus": 400
+    },
+    {
+      "id": "version-1",
+      "capabilities": {
+        "extensions": {
+          "nox/discovery": {
+            "version": "1.0"
+          }
+        }
+      },
+      "code": null,
+      "httpStatus": 200
+    },
+    {
+      "id": "invalid-parameters",
+      "capabilities": {
+        "extensions": {
+          "nox/discovery": {
+            "version": "1.0"
+          }
+        }
+      },
+      "invalidParams": true,
+      "code": -32602,
+      "httpStatus": 400,
+      "httpStatusBySDK": {
+        "typescript": 200
+      }
+    },
+    {
+      "id": "missing-capabilities-field",
+      "omitCapabilities": true,
+      "code": -32602,
+      "httpStatus": 400
+    },
+    {
+      "id": "unsupported-protocol",
+      "protocol": "2099-01-01",
+      "capabilities": {
+        "extensions": {
+          "nox/discovery": {
+            "version": "1.0"
+          }
+        }
+      },
+      "code": -32022,
+      "httpStatus": 400
+    }
+  ],
   "schemaCases": [
     {
       "schema": "cli",

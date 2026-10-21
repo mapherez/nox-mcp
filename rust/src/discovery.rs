@@ -370,11 +370,16 @@ impl Discovery {
     }
 }
 pub fn negotiated(meta: &Value) -> Result<()> {
-    if meta["io.modelcontextprotocol/protocolVersion"] != PROTOCOL
-        || meta["io.modelcontextprotocol/clientCapabilities"]["extensions"][EXTENSION]["version"]
-            != VERSION
-    {
+    // Unsupported protocol revisions are rejected by rmcp before dispatch.
+    // Retain the existing fallback for supported legacy protocols.
+    if meta["io.modelcontextprotocol/protocolVersion"] != PROTOCOL {
         error("EXTENSION_NOT_NEGOTIATED")
+    } else if !meta["io.modelcontextprotocol/clientCapabilities"].is_object() {
+        error("INVALID_DISCOVERY")
+    } else if meta["io.modelcontextprotocol/clientCapabilities"]["extensions"][EXTENSION]["version"]
+        != VERSION
+    {
+        error("MISSING_REQUIRED_CLIENT_CAPABILITY")
     } else {
         Ok(())
     }
@@ -559,5 +564,11 @@ impl ServerDiscovery {
     }
 }
 pub fn protocol_error(e: DiscoveryError) -> rmcp::ErrorData {
+    if e.0 == "MISSING_REQUIRED_CLIENT_CAPABILITY" {
+        let required =
+            serde_json::from_value(json!({"extensions": {EXTENSION: {"version": VERSION}}}))
+                .expect("static client capability");
+        return rmcp::ErrorData::missing_required_client_capability(required);
+    }
     rmcp::ErrorData::invalid_params(e.0, Some(json!({"reason":e.0})))
 }

@@ -782,8 +782,21 @@ func installDiscovery(server *mcp.Server, options DiscoveryOptions) error {
 			if extension {
 				meta := object(params["_meta"])
 				settings := object(object(object(meta[mcp.MetaKeyClientCapabilities])["extensions"])[DiscoveryExtension])
-				if meta[mcp.MetaKeyProtocolVersion] != DiscoveryProtocol || settings["version"] != DiscoveryVersion {
+				// Protocol support is checked by the SDK before dispatch. Keep the
+				// existing fallback for supported legacy protocols separate.
+				if meta[mcp.MetaKeyProtocolVersion] != DiscoveryProtocol {
 					return wireError(discoveryError("EXTENSION_NOT_NEGOTIATED"))
+				}
+				if object(meta[mcp.MetaKeyClientCapabilities]) == nil {
+					return wireError(discoveryError("INVALID_DISCOVERY"))
+				}
+				if settings["version"] != DiscoveryVersion {
+					required := &mcp.ClientCapabilities{}
+					required.AddExtension(DiscoveryExtension, JSON{"version": DiscoveryVersion})
+					// SDK 1.8 serializes the deprecated Roots struct as roots:{}.
+					// Require only the extension, not an additional roots capability.
+					data, _ := json.Marshal(JSON{"requiredCapabilities": JSON{"extensions": required.Extensions}})
+					return nil, &jsonrpc.Error{Code: mcp.CodeMissingRequiredClientCapabilities, Message: "Missing required client capability", Data: data}
 				}
 			}
 			ss := req.GetSession().(*mcp.ServerSession)
