@@ -4,10 +4,11 @@ import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promi
 import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { consumerProfile } from './consumer-options.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const temporary = await mkdtemp(resolve(tmpdir(), 'nox-package-'));
-const minimum = process.argv.includes('--minimum');
+const minimum = consumerProfile(process.argv.slice(2),process.env)==='minimum';
 const destination = process.argv.slice(2).find(arg=>!arg.startsWith('--'));
 
 try {

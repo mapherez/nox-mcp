@@ -288,7 +288,9 @@ Uma resposta JSON a `-32021` usa HTTP **400**, tal como a rejeição de uma vers
 
 A validação dos parâmetros dentro de um handler (`-32602`) mantém o mapeamento HTTP dos SDKs: TypeScript 2.3.1 e rmcp 3.6.0 respondem com JSON/200; Go 1.8.0 e rmcp 3.5.0 com JSON/400. A rejeição de campos obrigatórios do envelope antes do dispatch usa JSON/400 nas três implementações. Os testes distinguem expressamente estas versões e não relaxam os statuses obrigatórios.
 
-**Bloqueador de release — SDK Go 1.8.0:** se um handler emitir progresso SSE e depois devolver `-32021`, `-32022`, `-32602` ou `-32601`, o transporte tenta mudar o status e escreve JSON bruto sem enquadramento SSE. O teste de conformidade e o consumidor independente **falham**, sem exceção permissiva. A negociação NoX ocorre antes de emitir progresso e devolve JSON/400 corretamente; `Runtime.HTTPHandler()` Go usa respostas JSON. Integrações SSE personalizadas estão afetadas. A investigação e as alternativas constam da [auditoria](COMPATIBILITY_AUDIT.md#d-problemas-ainda-abertos); o defeito não foi corrigido por esta revisão.
+**Investigating / Future Support — SSE Go, SDK 1.8.0:** se um handler emitir progresso SSE e depois devolver `-32021`, `-32022`, `-32602` ou `-32601`, o transporte tenta mudar o status e escreve JSON bruto sem enquadramento SSE. O suporte completo a SSE Go foi adiado explicitamente; não é anunciado como conforme. A negociação NoX ocorre antes de emitir progresso e devolve JSON/400 corretamente; `Runtime.HTTPHandler()` Go usa respostas JSON e continua suportado. Não foi identificada nesta decisão nenhuma funcionalidade atual da NoX Suite dependente do erro tardio SSE.
+
+`npm run diagnose:go-sse` reproduz os quatro erros e **termina com código 1 enquanto a resposta for inválida**. O workflow separado `Investigating / Future Go SSE` preserva essa falha visível, sem `continue-on-error`; não integra o grafo obrigatório da release. Não deve ser configurado como check obrigatório de branch protection. Os testes obrigatórios continuam a exigir stdio/HTTP JSON nas três linguagens e SSE em TypeScript/Rust. Não há exceções que aceitem framing inválido nesses transportes suportados. A causa, impacto e critérios de retoma constam da [auditoria](COMPATIBILITY_AUDIT.md#d-problemas-ainda-abertos).
 
 ## Gestão dos contratos e testes
 
@@ -302,7 +304,7 @@ Para alterar um contrato:
 4. Executar `npm test`, `go test -mod=readonly ./...`, `cargo test --locked --manifest-path rust/Cargo.toml`, `npm run test:conformance`, `npm run test:discovery` e `npm run test:native-packages`.
 5. Executar `npm run benchmark:discovery` e rever a evolução dos payloads.
 
-O CI compara as observações das três linguagens e exercita servidores reais nos seis pares linguagem/transporte. Os testes existentes da 0.5.0 continuam ativos. Os testes de pacotes confirmam a utilização fora do checkout.
+O workflow `Supported / Required compatibility` compara as observações das três linguagens e exercita servidores reais no âmbito suportado: stdio/HTTP JSON nas três linguagens e SSE em TypeScript/Rust, incluindo os percursos legados já cobertos. Os testes existentes da 0.5.0 continuam ativos. Os testes de pacotes confirmam a utilização fora do checkout. O diagnóstico separado Go SSE não constitui uma aprovação de conformidade.
 
 ## Medições e limites
 

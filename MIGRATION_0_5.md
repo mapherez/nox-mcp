@@ -6,7 +6,7 @@ A tag `0.5.0` já foi publicada. As notas históricas abaixo explicam a migraç�
 
 - Rust passa a exigir rmcp 3.5.0 ou superior compatível e os mínimos compilados indicados na [auditoria](COMPATIBILITY_AUDIT.md).
 - Com aprovação explícita do utilizador, erros MCP `isError: true` deixam de incluir `structuredContent`. Ler o corpo JSON de `content[].text`; `code`, `message`, `retryable`, detalhes e extensões mantêm-se. Os resultados de sucesso continuam em `structuredContent`. Esta mudança evita validar um erro de autenticação/domínio contra o `outputSchema` de sucesso.
-- A release permanece bloqueada pela resposta SSE inválida do SDK Go após progresso; consultar a auditoria antes de publicar.
+- O suporte completo a SSE Go foi adiado por decisão explícita: `Investigating / Future Support`. O diagnóstico continua a falhar perante a resposta inválida após progresso; stdio e HTTP JSON continuam obrigatórios. Consultar a matriz e os resultados na auditoria antes de publicar.
 
 As versões do protocolo de bridge (`1.0`/`2.0`) e do schema de manifesto (`1`) não mudam: os envelopes mantêm-se e a alteração está na validação e execução da biblioteca. Não foi redesenhado o protocolo MCP. A baseline da auditoria permanece inalterada.
 

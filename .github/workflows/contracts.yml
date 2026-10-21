@@ -1,4 +1,4 @@
-name: Contract compatibility
+name: Supported / Required compatibility
 
 on:
   workflow_call:
@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   conformance:
+    name: Supported / Required conformance / ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -47,11 +48,11 @@ jobs:
         run: npm run test:native-packages
       - name: Verify installed TypeScript package
         run: npm run package:check
-      - name: Compare discovery contracts and require valid stdio, HTTP and SSE
+      - name: Require stdio and HTTP JSON in all SDKs, plus SSE in TypeScript/Rust
         run: npm run test:discovery
 
   independent-consumers:
-    name: Consumer / ${{ matrix.language }} / ${{ matrix.profile }} / ${{ matrix.os }}
+    name: Supported / Required consumer / ${{ matrix.language }} / ${{ matrix.profile }} / ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -84,12 +85,18 @@ jobs:
       - run: npm run build
       - name: Compile and execute independent native application
         if: matrix.language != 'typescript'
-        run: npm run test:consumers -- --language=${{ matrix.language }} ${{ matrix.profile == 'minimum' && '--minimum' || '' }}
+        run: node scripts/check-consumers.mjs
+        env:
+          NOX_CONSUMER_LANGUAGE: ${{ matrix.language }}
+          NOX_CONSUMER_PROFILE: ${{ matrix.profile }}
       - name: Install tarball, compile consuming TS app and test HTTP JSON/SSE
         if: matrix.language == 'typescript'
-        run: npm run package:check -- ${{ matrix.profile == 'minimum' && '--minimum' || '' }}
+        run: npm run package:check
+        env:
+          NOX_CONSUMER_PROFILE: ${{ matrix.profile }}
 
   node-current:
+    name: Supported / Required Node / ${{ matrix.node }}
     strategy:
       fail-fast: false
       matrix:

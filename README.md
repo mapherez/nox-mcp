@@ -8,7 +8,7 @@ The project focuses on the infrastructure commonly needed around MCP: tool regis
 
 > **Status:** Alpha — APIs and contracts may evolve as the project matures.
 
-Compatibility requirements, independently tested dependency versions and open release blockers are recorded in [COMPATIBILITY_AUDIT.md](COMPATIBILITY_AUDIT.md). This working tree is **not ready for a release claiming full SSE conformance** while the Go SDK transport regression remains open.
+Compatibility requirements, tested dependency versions and CI evidence are recorded in [COMPATIBILITY_AUDIT.md](COMPATIBILITY_AUDIT.md). **Supported / Required:** stdio and HTTP JSON in TypeScript, Go and Rust; SSE in TypeScript and Rust. **Investigating / Future Support:** Go SSE, including a known invalid terminal error after progress in the upstream Go SDK. Full Go SSE conformance is not advertised.
 
 ## Features
 

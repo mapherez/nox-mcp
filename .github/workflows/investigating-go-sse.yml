@@ -1,0 +1,37 @@
+name: Investigating / Future Go SSE
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: investigating-go-sse-${{ github.ref }}
+  cancel-in-progress: true
+
+# Intentionally separate from contracts.yml and the release needs graph.
+# Known framing failures remain failed checks, never conformance successes.
+jobs:
+  go-sse-diagnostic:
+    name: Investigating / Future / Go SSE / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: npm ci --ignore-scripts
+      - name: Reproduce invalid terminal SSE framing (not supported conformance)
+        run: npm run diagnose:go-sse
