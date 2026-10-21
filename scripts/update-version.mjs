@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, realpath, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
@@ -66,7 +66,13 @@ export async function validateVersion(root, input) {
 
 export async function updateVersion(root, input, { beforeCommit = async () => {}, allowCurrentVersion = false } = {}) {
   const { version, files } = await validateVersion(root, input);
-  if (resolve(git(root, 'rev-parse', '--show-toplevel')) !== resolve(root)) {
+  // Git and Windows may spell the same directory with short names (RUNNER~1),
+  // junctions or different casing. Resolve both through the filesystem, without
+  // weakening the exact repository-root check to a prefix/case-only comparison.
+  const [gitRoot, requestedRoot] = await Promise.all([
+    realpath(git(root, 'rev-parse', '--show-toplevel')), realpath(root),
+  ]);
+  if (gitRoot !== requestedRoot) {
     throw new Error('Executa o script no repositorio nox-mcp, nao num repositorio pai.');
   }
   git(root, 'symbolic-ref', '--quiet', 'HEAD');

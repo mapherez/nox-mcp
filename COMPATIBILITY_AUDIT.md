@@ -2,7 +2,7 @@
 
 Data: 21 de outubro de 2026. Âmbito: apenas `nox-mcp`, versão pública **0.5.0**. Nenhuma release publicada, tag substituída ou aplicação consumidora alterada. Os consumidores referidos abaixo são aplicações temporárias criadas pelos testes, fora do checkout.
 
-**Estado: release bloqueada pela conformidade SSE do SDK Go.** Compilar e passar testes de contratos não elimina este bloqueador. As matrizes Linux/macOS estão configuradas, mas não foram executadas localmente nem apresentadas como resultados de CI.
+**Âmbito aprovado:** stdio e HTTP JSON nas três linguagens; SSE em TypeScript/Rust. SSE Go fica em **Investigating / Future Support**, por decisão explícita do utilizador, sem bloquear funcionalidades suportadas. O defeito não foi corrigido nem convertido numa aprovação. A preparação para integração depende dos resultados reais dos jobs obrigatórios, registados abaixo; não se anuncia conformidade total de todos os transportes/protocolos.
 
 ## A. Problemas identificados e corrigidos
 
@@ -72,7 +72,7 @@ Referência: [requisitos do envelope e erros MCP 2026-07-28](https://modelcontex
 
 ### 6. A validação aceitava deliberadamente SSE inválido
 
-Foi retirada a exceção que transformava o defeito SSE Go num teste aprovado. O verificador termina com erro após recolher os resultados dos transportes. A falha é reproduzida também num consumidor Go independente e bloqueia a release. Os detalhes e alternativas estão na secção D.
+Foi retirada a exceção que transformava o defeito SSE Go num teste aprovado. Com a decisão posterior de adiar esse transporte, o reproducer passou para `scripts/investigate-go-sse.mjs` e um workflow separado. Continua a terminar com erro perante JSON bruto depois de progresso. O verificador obrigatório não anuncia Go SSE como suportado; mantém as verificações SSE de TypeScript/Rust e todos os testes de stdio/HTTP JSON. Os detalhes e critérios de retoma estão na secção D.
 
 ### 7. Declarações TypeScript não eram verificadas por um consumidor estrito
 
@@ -81,6 +81,13 @@ O `tsc` interno tinha `skipLibCheck` e os testes de instalação só importavam 
 A entrada opcional `better-auth` arrastava declarações estrangeiras de Bun/Cloudflare/base de dados com erros de tipos. `typescript/src/better-auth.ts` publica agora projeções estruturais dos mesmos tipos de claims/opções, sem modificar o corpo da autenticação, callbacks ou requisitos. A igualdade com o upstream é verificada na compilação interna e nos perfis mínimo/recente do consumidor. Nenhum export foi renomeado. A aplicação que importa os sete exports NoX compila com `strict` **sem `skipLibCheck`**.
 
 O ensaio separado de igualdade importa o plugin upstream e usa `skipLibCheck` apenas para as suas declarações estrangeiras; as asserções da aplicação continuam a ser verificadas. Isto não é uma alegação de que as declarações completas do Better Auth foram corrigidas; a limitação de importação direta dessa biblioteca permanece na secção D.
+
+### 8. Falhas reais do CI no Windows
+
+O [run 39652399162](https://github.com/mapherez/nox-mcp/actions/runs/39652399162), no commit `64b580d`, teve 17 jobs: 10 aprovados e 7 falhados. Foram consultados os logs de todos os jobs falhados. Não revelaram outra categoria de erro além das duas falhas Windows abaixo e do SSE Go agora adiado.
+
+- **Argumentos npm/PowerShell:** no perfil mínimo, `--language` e `--minimum` foram interpretados pelo npm como configuração, deixando o script sem argumentos. O job Rust executou Go (predefinição `all`) com uma toolchain Go não selecionada. A matriz chama agora diretamente `node scripts/check-consumers.mjs` com `NOX_CONSUMER_LANGUAGE` e `NOX_CONSUMER_PROFILE`. O parser exige seleção completa, válida e sem conflitos; imprime a linguagem/perfil efetivos. O pacote TypeScript usa o mesmo perfil explícito, sem encaminhar flags pelo npm. Testes cobrem as quatro combinações nativas e rejeitam configuração incompleta/inválida/conflituosa.
+- **Raiz Git:** a comparação lexical de `resolve(...)` rejeitava caminhos Windows equivalentes, incluindo nomes curtos dos diretórios temporários. `update-version.mjs` usa agora `realpath` nos dois caminhos e compara as raízes canonizadas. Não usa prefixos nem elimina verificações de árvore limpa, branch, tags, identidade, ficheiros alterados, rollback ou push atómico. Uma integração por junction/symlink comprova a aceitação do mesmo repositório; outra confirma que um subdiretório com ficheiros de versão válidos continua rejeitado. Os testes de release só alteram repositórios temporários.
 
 ## B. Matriz real de compatibilidade
 
@@ -125,6 +132,17 @@ Features rmcp de produção: `server`, `transport-streamable-http-server`, `tran
 
 ### Transportes e erros
 
+| Funcionalidade / transporte | TypeScript | Go | Rust |
+| --- | --- | --- | --- |
+| stdio e HTTP JSON, clientes legados | Supported / Required | Supported / Required | Supported / Required |
+| SSE, incluindo framing de erros após progresso | Supported / Required | Investigating / Future Support | Supported / Required |
+| tools/list convencional; discovery incremental e negociação moderna | Supported / Required | Supported / Required | Supported / Required |
+| CLI metadata, JCS/fingerprints, snapshots, cache e autorização | Supported / Required | Supported / Required | Supported / Required |
+| Resultados/schemas, erros de domínio e rejeição antes do executor | Supported / Required | Supported / Required | Supported / Required |
+| Pacote/API pública e consumidor com resolução própria | Supported / Required | Supported / Required | Supported / Required |
+
+Esta tabela limita a garantia às funcionalidades e percursos testados do SDK; não certifica todas as funcionalidades opcionais da especificação MCP nem integrações de produtos não executadas nesta tarefa.
+
 | Cenário | JSON-RPC | HTTP JSON |
 | --- | --- | --- |
 | Extensão ausente ou versão incompatível | -32021, `requiredCapabilities` exato | 400 |
@@ -137,32 +155,37 @@ Features rmcp de produção: `server`, `transport-streamable-http-server`, `tran
 
 O mapeamento de erros de handler difere do erro obrigatório de envelope. O corpus distingue explicitamente rmcp 3.5 e 3.6; não relaxa o HTTP 400 obrigatório dos erros de negociação/envelope. Os clientes legados continuam com `initialize`, `tools/list` e `tools/call`; os métodos incrementais conservam a rejeição legada existente.
 
-### CI configurado, ainda sem execução remota nesta sessão
+### CI obrigatório e diagnóstico separado
 
 - Contratos, regressões e transportes: Windows e Linux.
 - Consumidores mínimos/recentes por linguagem: Windows e Linux; Rust recente também em macOS.
 - Node mínimo 24.0.0 com npm 11.21.1; Node 24 recente, 26 e versão corrente.
 - Go mínimo 1.26.0 e patch recente 1.26.x; Rust mínimo 1.88 e stable recente.
-- A publicação depende do workflow reutilizável de compatibilidade. Não há `continue-on-error` nas verificações críticas. O defeito SSE mantém o resultado global em falha.
+- `contracts.yml`: **Supported / Required**, 17 jobs obrigatórios; a publicação depende deste workflow reutilizável. Qualquer falha bloqueia a release.
+- `investigating-go-sse.yml`: **Investigating / Future**, dois diagnósticos Windows/Linux. O teste inválido continua vermelho, sem `continue-on-error`, num workflow independente do grafo de release. Não deve ser um check obrigatório de branch protection.
+- Resultados da revisão atual: execução remota ainda pendente nesta etapa; será registada com o commit e links dos runs. Os resultados do run anterior não substituem essa execução.
 
 ## C. Verificações de regressão
 
 | Verificação | Evidência / falha que passa a detetar |
 | --- | --- |
-| `npm test` | 163 testes aprovados; preservação de execução, erros, limites, bridges e metadados |
+| `npm test` | 168 testes aprovados localmente; execução, erros, limites, bridges, metadados, seleção CI e raízes Git |
 | `go test -mod=readonly ./...` | Aprovado no grafo declarado |
 | `cargo +1.88.0 test --all-targets --locked --manifest-path rust/Cargo.toml` | Aprovado; impede voltar a bloquear uma dependência incompatível com MSRV |
 | `npm run test:conformance` | 18 observações idênticas entre linguagens; erros sem structuredContent, mesmo conteúdo funcional |
-| `npm run test:discovery` | Hashes/JCS/CLI/cache/snapshots e negociação aprovados; **comando falha** nos quatro erros SSE Go |
+| `npm run test:discovery` | Hashes/JCS/CLI/cache/snapshots e negociação; stdio/HTTP JSON nas três linguagens e SSE TypeScript/Rust, obrigatórios |
+| `npm run diagnose:go-sse` | **Não conforme / Investigating**: reproduz os quatro erros SSE Go e termina com código 1; não é aprovação de conformidade |
 | `npm run package:check -- --minimum` / `npm run package:check` | Instalação externa, exports, compilação, outputSchema rigoroso, autenticação/domínio e descoberta/cache em HTTP JSON/SSE |
 | `npm run test:native-packages` | Aprovado: crate efetivamente empacotada e consumidores nativos com resolução própria |
 | `npm run benchmark:discovery` | Aprovado: budgets preservados, resultados abaixo |
 | `actionlint` | Workflows validados estaticamente; não equivale a execução remota |
 | `npm run test:consumers -- --language=rust --minimum` | Git/path, sem lock herdado, todas as dependências diretas mínimas, rmcp 3.0 na aplicação, rejeição de 3.2, runtime e transportes |
 | `npm run test:consumers -- --language=rust` | Mesmo ensaio com resolução recente |
-| `npm run test:consumers -- --language=go [--minimum]` | Compilação/execução e erros JSON aprovados; teste SSE devolve falha obrigatória |
+| `npm run test:consumers -- --language=go [--minimum]` | Compilação/execução, stdio/HTTP JSON, negociação moderna e clientes legados, sem anunciar SSE Go |
 
 Para reproduzir o mínimo Rust, selecionar antes a toolchain (`RUSTUP_TOOLCHAIN=1.88.0`); para Go, `GOTOOLCHAIN=go1.26.0`. Estas variáveis aplicam-se ao processo de teste. `npm run test:native-packages` conserva a validação do pacote Cargo real e do módulo separado, agora com resolução independente no consumidor.
+
+No CI, a invocação nativa é `node scripts/check-consumers.mjs` com ambas as variáveis `NOX_CONSUMER_LANGUAGE=rust|go` e `NOX_CONSUMER_PROFILE=minimum|latest`. Para o tarball, `npm run package:check` com `NOX_CONSUMER_PROFILE`. Assim, cada job comprova exclusivamente a seleção definida, independentemente do encaminhamento de argumentos npm no Windows.
 
 Os testes partilhados verificam alterações, remoções e disponibilidade; partições de autorização; catálogo completo antes de aceitar remoções; retenção da cache anterior perante falhas/parciais/tampering; invalidação durante sincronização; metadados desconhecidos e `_meta.cli`. O mesmo verificador de rede corre nos hosts do checkout e nos consumidores. Não se introduziram descritores, algoritmos de hash, contratos CLI ou mecanismos de autorização novos.
 
@@ -172,7 +195,7 @@ O benchmark mantém os budgets: com 100 ferramentas, 175 929 bytes na descoberta
 
 ## D. Problemas ainda abertos
 
-### Bloqueador: SSE inválido no SDK MCP Go 1.8.0
+### Investigating / Future Support: SSE Go
 
 Causa: `mcp/streamable.go`, `extractErrorStatus` / `stream.deliverLocked`. Os erros `-32021`, `-32022`, `-32602` e `-32601` entram numa via que escreve JSON com status 400/404 sem verificar se já foi enviada uma notificação SSE. Depois dos headers/progresso, o status continua 200 e o erro é escrito fora de um evento `data:`. Um cliente SSE correto não recebe a resposta terminal.
 
@@ -180,7 +203,11 @@ Afeta handlers/middleware personalizados que emitem progresso e depois devolvem 
 
 Investigação: a API pública só permite escolher JSON/SSE, não corrigir o caminho interno que escreve a resposta. Não havia versão publicada superior a 1.8.0 na consulta. Forçar JSON globalmente retiraria streaming; reescrever o corpo num ResponseWriter seria um workaround de serialização; vendor/fork excederia uma correção pequena sustentável. Não se fez nenhuma dessas alterações.
 
-Classificação: **bloqueador da release que anuncie conformidade SSE**. O teste fica vermelho, também nos consumidores independentes. Solução preferida: correção upstream e atualização justificada quando existir uma versão publicada corrigida. Publicar com suporte SSE reduzido exigiria uma decisão explícita e documentação do contrato de suporte; não foi assumida essa decisão.
+Classificação aprovada: **Investigating / Future Support**, sem bloquear os requisitos atuais. Nenhuma funcionalidade identificada da NoX Suite depende deste comportamento, segundo a decisão de âmbito do utilizador; não se acederam aos produtos para o voltar a auditar. Stdio e HTTP JSON Go continuam suportados. A API de transporte não foi removida nem substituída, mas a sua utilização em SSE permanece fora da garantia de suporte desta revisão.
+
+Reprodução: `npm run diagnose:go-sse`, com SDK Go 1.8.0, responde HTTP 200 após progresso e encontra JSON fora de `data:` para os quatro códigos. O comando mantém código de saída 1; o workflow separado identifica-o como falha, sem transformá-lo em sucesso nem o misturar nos jobs obrigatórios. Não se criaram transportes próprios, forks, mudanças de arquitetura ou workarounds de serialização.
+
+Reconsiderar quando existir uma correção upstream publicada ou uma solução segura pelas APIs oficiais, acompanhada de uma necessidade concreta do produto. Antes de promover suporte, exigir testes de framing terminal dos quatro códigos, chamadas/resultados/erros, negociação e clientes legados, em Windows/Linux, e aprovação explícita da alteração à matriz de suporte. Um diagnóstico que deixe de falhar não promove suporte automaticamente.
 
 ### Integração Better Auth mínima requer componentes alinhados
 
@@ -192,6 +219,6 @@ Ao importar diretamente as declarações completas do Better Auth 1.7.2, um proj
 
 ### Resultados de outras plataformas e tag já publicada
 
-Linux/macOS e Node 26/corrente dependem da execução do novo CI. Configurar uma matriz não é evidência de aprovação. Até esses jobs passarem não se declara validação multiplataforma concluída.
+Os resultados remotos da revisão atual devem ser consultados na secção B. Configurar uma matriz ou obter aprovação num run antigo não é evidência de aprovação da revisão final.
 
 A tag Git `v0.5.0` já publicada continua a referir o código antigo: esta revisão da árvore de trabalho não repara retroativamente instalações dessa tag. A publicação de uma futura versão e qualquer migração de aplicações permanecem fora desta tarefa.

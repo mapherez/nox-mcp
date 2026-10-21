@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, rm, symlink, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -44,6 +44,31 @@ async function prepareVersion(root, version) {
   git(root, 'add', '.');
   git(root, 'commit', '-m', `Prepare ${version}`);
 }
+
+test('release accepts a filesystem alias of the actual repository root', async t => {
+  const root = await repository(t);
+  const alias = root + '-alias';
+  await symlink(root, alias, process.platform === 'win32' ? 'junction' : 'dir');
+  t.after(() => unlink(alias));
+  assert.equal(await updateVersion(alias, '0.4.0'), 'v0.4.0');
+  assert.equal(git(root, 'rev-parse', 'v0.4.0^{commit}'), git(root, 'rev-parse', 'HEAD'));
+  assert.equal(git(root, 'status', '--porcelain'), '');
+});
+
+test('release still rejects a subdirectory with valid version files inside a parent repository', async t => {
+  const root = await repository(t);
+  const child = resolve(root, 'nested');
+  await mkdir(resolve(child, 'rust'), { recursive: true });
+  for (const path of ['package.json', 'package-lock.json', 'rust/Cargo.toml', 'rust/Cargo.lock', 'go.mod']) {
+    await copyFile(resolve(root, path), resolve(child, path));
+  }
+  git(root, 'add', '.'); git(root, 'commit', '-m', 'Nested fixture');
+  const head = git(root, 'rev-parse', 'HEAD');
+  await assert.rejects(updateVersion(child, '0.4.0'), /repositorio pai/);
+  assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+  assert.equal(git(root, 'status', '--porcelain'), '');
+  assert.equal(git(root, 'tag', '--list'), '');
+});
 
 test('release synchronizes only project versions and tags the updated commit', async t => {
   const root = await repository(t);
