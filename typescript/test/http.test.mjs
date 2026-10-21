@@ -159,13 +159,14 @@ test('auth, scopes, custom errors, tool input/output limits and timeouts in both
   });
   for (const modern of [false, true]) {
     const denied = await result(await post('tools/call', call, { modern }));
-    assert.equal(denied.result.structuredContent.code, 'FORBIDDEN');
-    assert.equal(denied.result.structuredContent.custom, true);
+    assert.equal(denied.result.structuredContent, undefined);
+    assert.equal(JSON.parse(denied.result.content[0].text).code, 'FORBIDDEN');
+    assert.equal(JSON.parse(denied.result.content[0].text).custom, true);
     const allowed = await result(await post('tools/call', call, { modern, headers: { authorization: 'Bearer test' } }));
     assert.deepEqual(allowed.result.structuredContent, { value: 'hello' });
     for (const [name, value, code] of [['slow', 'hello', 'TIMEOUT'], ['large', 'hello', 'INTERNAL'], ['bad_output', 'hello', 'INTERNAL'], ['echo', 'x'.repeat(2000), 'INVALID_INPUT']]) {
       const error = await result(await post('tools/call', { name, arguments: { value } }, { modern, headers: { authorization: 'Bearer test' } }));
-      assert.equal(error.result.isError, true); assert.equal(error.result.structuredContent.code, code);
+      assert.equal(error.result.isError, true); assert.equal(error.result.structuredContent,undefined); assert.equal(JSON.parse(error.result.content[0].text).code, code);
     }
   }
   assert.ok(seen.some(auth => auth?.token === 'Bearer test'));
@@ -231,7 +232,7 @@ test('legacy batch cancellation and in-flight limit preserve structured errors',
   const requests = [1, 2].map(id => ({ jsonrpc: '2.0', id, method: 'tools/call', params: call }));
   const limited = await postBatch(requests);
   assert.deepEqual(limited.find(message => message.id === 1).result.structuredContent, { value: 'hello' });
-  assert.equal(limited.find(message => message.id === 2).result.structuredContent.code, 'OVERLOADED');
+  assert.equal(JSON.parse(limited.find(message => message.id === 2).result.content[0].text).code, 'OVERLOADED');
   const cancelled = await postBatch([requests[0], { jsonrpc: '2.0', method: 'notifications/cancelled', params: { requestId: 1, reason: 'test' } }]);
   assert.equal(cancelled.error.message, 'The request was cancelled');
   assert.equal(executions, 1);

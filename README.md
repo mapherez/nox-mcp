@@ -8,6 +8,8 @@ The project focuses on the infrastructure commonly needed around MCP: tool regis
 
 > **Status:** Alpha — APIs and contracts may evolve as the project matures.
 
+Compatibility requirements, independently tested dependency versions and open release blockers are recorded in [COMPATIBILITY_AUDIT.md](COMPATIBILITY_AUDIT.md). This working tree is **not ready for a release claiming full SSE conformance** while the Go SDK transport regression remains open.
+
 ## Features
 
 Optional compact CLI descriptors and incremental discovery are documented in [DISCOVERY.md](DISCOVERY.md), including server/client integration for TypeScript, Go and Rust, transport compatibility and measured payload sizes. This work does not change the public SDK version.
@@ -18,7 +20,7 @@ Core capabilities include:
 
 - MCP tool registration and discovery
 - Input and output schema validation
-- Structured tool results and errors
+- Structured success results and JSON tool errors in text content
 - MCP tool annotations
 - Custom tool metadata through `_meta`
 - Request timeouts and cancellation
@@ -42,9 +44,11 @@ The implementations follow the same core contracts while remaining idiomatic to 
 | Rust | Rust 1.88+ | [`rust/`](rust/) |
 | Go | Go 1.26+ | [`go/`](go/) |
 
+Rust requires `rmcp >=3.5.0, <4`; the independently tested MSRV is 1.88 with Rust-aware dependency resolution. Consumers own their resolver/lockfile: see the audit for the minimum graph and resolver configuration. Node 24.0.0 is tested with npm 11.21.1; the optional Better Auth integration requires aligned plugin/core versions. `npm run test:consumers -- --language=rust --minimum`, `--language=go --minimum`, and `npm run package:check -- --minimum` exercise actual independent applications; omit `--minimum` to resolve recent compatible dependencies.
+
 Shared schemas and protocol definitions live under [`contracts/`](contracts/).
 
-The shared manifest loaders and execution constructors use the portable schema profile described in [contract management](contracts/README.md). Version `0.5.0` prepares validation and execution corrections; review the [migration notes](MIGRATION_0_5.md) before upgrading an existing application. This checkout does not publish a release or migrate consumers.
+The shared manifest loaders and execution constructors use the portable schema profile described in [contract management](contracts/README.md). Version `0.5.0` is already published; the audit corrections in this working tree are unreleased. Review the [migration notes](MIGRATION_0_5.md), including the approved tool-error envelope correction. This checkout does not publish a release or migrate consumers.
 
 ## Installation
 

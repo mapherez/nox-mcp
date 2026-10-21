@@ -127,8 +127,9 @@ func TestToolMetadata(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				body, ok := response.StructuredContent.(map[string]any)
-				if !response.IsError || !ok || body["code"] != tc.code {
+				var body map[string]any
+				json.Unmarshal([]byte(response.Content[0].(*mcp.TextContent).Text), &body)
+				if !response.IsError || response.StructuredContent != nil || body["code"] != tc.code {
 					t.Fatalf("expected %s, got %#v", tc.code, response)
 				}
 			}

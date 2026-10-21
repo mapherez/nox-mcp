@@ -5,11 +5,17 @@ use nox_mcp::{
 };
 use rmcp::{model::*, service::RequestContext, ErrorData, RoleServer, ServerHandler, ServiceExt};
 use serde_json::{json, Value};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+static EXECUTIONS: AtomicUsize = AtomicUsize::new(0);
 #[derive(Clone)]
 struct Echo;
 impl Executor for Echo {
     async fn execute(&self, _: String, input: Value, _: ExecutionContext) -> CallToolResult {
+        EXECUTIONS.fetch_add(1, Ordering::SeqCst);
+        if input["id"] == "domain-error" {
+            return nox_mcp::error_result("CONFLICT", "Visible domain error", false);
+        }
         tool_result(json!({"name":input["id"]}), false)
     }
 }
@@ -38,6 +44,11 @@ impl ServerHandler for Fixture {
         req: CustomRequest,
         ctx: RequestContext<RoleServer>,
     ) -> Result<CustomResult, ErrorData> {
+        if req.method == "test/executions" {
+            return Ok(CustomResult::new(
+                json!({"count":EXECUTIONS.load(Ordering::SeqCst)}),
+            ));
+        }
         if req.method == "test/stream-capability" {
             // Test-only late failure after committing a progress notification to SSE.
             let params =
@@ -48,6 +59,25 @@ impl ServerHandler for Fixture {
                 ))
                 .await
                 .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+            match req.params.as_ref().and_then(|p| p["code"].as_i64()) {
+                Some(-32022) => {
+                    return Err(ErrorData::unsupported_protocol_version(
+                        serde_json::from_value(json!("2099-01-01")).unwrap(),
+                        &[ProtocolVersion::V_2026_07_28],
+                    ))
+                }
+                Some(-32602) => {
+                    return Err(ErrorData::invalid_params("Test late invalid params", None))
+                }
+                Some(-32601) => {
+                    return Err(ErrorData::new(
+                        ErrorCode::METHOD_NOT_FOUND,
+                        "Test late method not found",
+                        None,
+                    ))
+                }
+                _ => {}
+            }
             return Err(ErrorData::missing_required_client_capability(
                 serde_json::from_value(json!({"extensions":{"nox/discovery":{"version":"1.0"}}}))
                     .unwrap(),

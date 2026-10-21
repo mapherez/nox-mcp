@@ -60,6 +60,8 @@ Nas chamadas comuns, o sucesso contém um objeto `structuredContent` validado pe
 
 Um erro de ferramenta tem `isError: true` e um corpo conforme a `error.schema.json`. Códigos de domínio e propriedades adicionais continuam permitidos, incluindo `details` e `currentVersion`. Na fronteira de execução, `retryable` omitido é materializado como `false`; erros malformados e envelopes demasiado grandes dão origem a um erro `INTERNAL` mínimo. Esse erro mínimo pode exceder um limite configurado demasiado pequeno para conter qualquer erro válido.
 
+Na correção atualmente em revisão, aprovada pelo utilizador, esse corpo de erro é transportado como JSON em `content[].text`, **sem `structuredContent`**. O campo `structuredContent` fica reservado aos resultados de sucesso que respeitam o `outputSchema` anunciado. Os consumidores podem validar o corpo de erro com `error.schema.json`. Ver [auditoria e migração](../COMPATIBILITY_AUDIT.md).
+
 O prazo é calculado uma vez à entrada da execução da biblioteca; inclui validação e execução e é transmitido ao executor. Uma chamada já cancelada não inicia o executor. A biblioteca volta a verificar prazo/cancelamento antes de aceitar um sucesso, impedindo que um resultado tardio seja tratado como confirmado. Não inclui autenticação ou processamento do transporte anterior à entrada no runtime.
 
 Timeout usa `TIMEOUT`; cancelamento usa `CANCELLED`. Para leituras explicitamente marcadas, `retryable: true`; para outras operações, `retryable: false` e `details.outcome: "unknown"`. Cancelamento não garante rollback nem que um efeito externo não aconteceu. Um executor tem de cooperar com o contexto recebido.
@@ -83,7 +85,7 @@ npm run contracts:sync
 npm run contracts:check
 ```
 
-O gerador copia schemas, política, meta-schema e corpus para `go/contracts` e `rust/contracts`, gera os validadores Zod TypeScript, copia a política TypeScript e gera os defaults das três linguagens. Estes resultados são versionados e acompanham as fontes no mesmo commit. Não os editar manualmente. `contracts:check` só lê e falha perante divergências, ficheiros em falta ou cópias obsoletas; ignora apenas LF/CRLF.
+O gerador copia schemas, política, meta-schema e corpus para `go/contracts` e `rust/contracts`, gera os validadores Zod TypeScript, copia a política TypeScript e gera os defaults das três linguagens, incluindo o tipo estrutural `defaults.generated.ts` para declarações compatíveis com NodeNext. Estes resultados são versionados e acompanham as fontes no mesmo commit. Não os editar manualmente. `contracts:check` só lê e falha perante divergências, ficheiros em falta ou cópias obsoletas; ignora apenas LF/CRLF.
 
 Go usa `go:embed`; Rust usa `include_str!`. Os pacotes instalados contêm as cópias necessárias e compilam sem Node, symlinks ou geração durante a build. O tarball TypeScript inclui JavaScript, declarações e os JSON de defaults/política. Não executa hooks de build no consumidor.
 
@@ -106,6 +108,6 @@ npm run package:check
 
 As suites usam os mesmos exemplos e expectativas, sem exceções por linguagem na validação/preparação comum. `test:conformance` executa os três runtimes, recolhe observações normalizadas e compara os JSON efetivamente produzidos: sucesso/erro, corpo, código, `retryable`, `details` e se o executor chegou a ser invocado. Verifica também a descoberta real dos metadados e schemas através dos SDKs. Exclui mensagens humanas, IDs e relógios. Os testes de transporte existentes cobrem HTTP/SDK em separado; o cancelamento controlado evita depender da supressão de respostas pelo transporte.
 
-`test:native-packages` compila um consumidor Go isolado e uma crate Rust empacotada fora do checkout, sem a pasta oficial `contracts/` nem Node na build nativa. `package:check` instala o tarball e testa imports e HTTP JSON/SSE sem TypeScript no consumidor. Os testes nativos de distribuição usam as caches preenchidas pelas suites normais.
+`test:native-packages` compila um consumidor Go isolado e uma crate Rust empacotada fora do checkout, sem a pasta oficial `contracts/` nem Node na build nativa. `package:check` instala o tarball, testa imports e HTTP JSON/SSE antes de instalar TypeScript e, depois, compila e executa uma aplicação consumidora estrita. `test:consumers -- --language=rust` e `--language=go` verificam aplicações com resolução própria; `--minimum` seleciona o perfil mínimo. A matriz de toolchains/dependências e os bloqueadores estão em [COMPATIBILITY_AUDIT.md](../COMPATIBILITY_AUDIT.md). Os testes nativos de distribuição usam as caches preenchidas pelas suites normais.
 
-Os workflows de contratos e release executam estas verificações antes da publicação. `npm test` e `prepack` recusam ficheiros gerados desatualizados. Nenhum destes comandos atualiza Backend, Yard, Bot ou NoteX. Não foram criados contratos de CLI, Gateway ou Portal.
+Os workflows de contratos e release executam estas verificações antes da publicação. `npm test` e `prepack` recusam ficheiros gerados desatualizados. Nenhum destes comandos atualiza Backend, Yard, Bot ou NoteX. Esta revisão não acrescenta novos contratos de CLI, Gateway ou Portal.

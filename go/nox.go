@@ -139,7 +139,12 @@ func newRuntime(options Options, manifestAnnotations map[string]*mcp.ToolAnnotat
 }
 func result(value any, isError bool) *mcp.CallToolResult {
 	data, _ := json.Marshal(value)
-	return &mcp.CallToolResult{IsError: isError, StructuredContent: value, Content: []mcp.Content{&mcp.TextContent{Text: string(data)}}}
+	response := &mcp.CallToolResult{IsError: isError, Content: []mcp.Content{&mcp.TextContent{Text: string(data)}}}
+	// Error data has its own contract; it cannot satisfy the success outputSchema.
+	if !isError {
+		response.StructuredContent = value
+	}
+	return response
 }
 func (r *Runtime) boundedResult(value any, isError bool) *mcp.CallToolResult {
 	if isError {

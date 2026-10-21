@@ -1,5 +1,24 @@
 {
+  "streamingErrorCodes": [
+    -32021,
+    -32022,
+    -32602,
+    -32601
+  ],
   "negotiationCases": [
+    {
+      "id": "missing-protocol-field",
+      "omitProtocol": true,
+      "capabilities": {
+        "extensions": {
+          "nox/discovery": {
+            "version": "1.0"
+          }
+        }
+      },
+      "code": -32602,
+      "httpStatus": 400
+    },
     {
       "id": "missing-extension",
       "capabilities": {},
@@ -63,7 +82,8 @@
       "code": -32602,
       "httpStatus": 400,
       "httpStatusBySDK": {
-        "typescript": 200
+        "typescript": 200,
+        "rust@3.6": 200
       }
     },
     {

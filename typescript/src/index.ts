@@ -80,11 +80,11 @@ function createRuntimeServer(options: Omit<ServerOptions,'tools'> & { tools: rea
         try {
           const formatted = options.formatError?.(normalized) ?? (normalized instanceof McpError ? normalized.toJSON() : new McpError('INTERNAL', 'An internal error occurred').toJSON());
           const body = { ...bridgeErrorSchema.parse(formatted), retryable: formatted.retryable ?? false };
-          const response = { isError: true, content: [{ type: 'text' as const, text: JSON.stringify(body) }], structuredContent: body };
+          const response = { isError: true, content: [{ type: 'text' as const, text: JSON.stringify(body) }] };
           if (Buffer.byteLength(JSON.stringify(response)) <= maxBytes) return response;
         } catch { /* Unserializable or oversized app errors must not escape the boundary. */ }
         const body = new McpError('INTERNAL', 'An internal error occurred').toJSON();
-        return { isError: true, content: [{ type: 'text' as const, text: JSON.stringify(body) }], structuredContent: body };
+        return { isError: true, content: [{ type: 'text' as const, text: JSON.stringify(body) }] };
       } finally { clearTimeout(timer); controller.signal.removeEventListener('abort', onAbort); extra.mcpReq.signal.removeEventListener('abort', cancel); }
     });
   }

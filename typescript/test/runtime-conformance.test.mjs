@@ -83,8 +83,9 @@ test('shared runtime semantics, including authorization and cancellation', { tim
             controller.abort();
         }
         const response = await pending;
-        const body = response.structuredContent;
-        assert.deepEqual(JSON.parse(response.content[0].text), body);
+        const body = JSON.parse(response.content[0].text);
+        if(response.isError)assert.equal(response.structuredContent,undefined);
+        else assert.deepEqual(response.structuredContent,body);
         const actual = { id: example.id, isError: response.isError === true, executed };
         if (actual.isError) {
             Object.assign(actual, { code: body.code, retryable: body.retryable });

@@ -75,6 +75,12 @@ export async function syncContracts(directory = root, { check = false } = {}) {
   const meta = JSON.stringify(JSON.parse(await readFile(resolve(source, 'tool-schema.meta.json'), 'utf8')), null, 2) + '\n';
   for (const target of ['go/contracts','rust/contracts']) outputs.set(`${target}/tool-schema.meta.json`,meta);
   outputs.set('typescript/src/defaults.json', JSON.stringify(defaults, null, 2) + '\n');
+  // TypeScript drops JSON import attributes from declaration imports. Publish
+  // an ordinary structural type so NodeNext consumers need no JSON type import.
+  outputs.set('typescript/src/defaults.generated.ts', banner + 'export interface ContractDefaults {\n' + Object.entries(defaults).map(([key,value])=>{
+    if(!['string','number','boolean'].includes(typeof value))throw new Error(`Unsupported default type: ${key}`);
+    return `  ${JSON.stringify(key)}: ${typeof value};\n`;
+  }).join('')+'}\n');
   outputs.set('go/defaults.go', `${banner}package noxmcp\n\nconst BridgeProtocolVersion = ${JSON.stringify(defaults.bridgeProtocolVersion)}\nconst DefaultTimeoutMS = ${defaults.requestTimeoutMs}\nconst MaxPayloadBytes = ${defaults.maxPayloadBytes}\nconst MaxInFlightRequests = ${defaults.maxInFlightRequests}\n`);
   outputs.set('rust/src/defaults.rs', `${banner}pub const BRIDGE_PROTOCOL_VERSION: &str = ${JSON.stringify(defaults.bridgeProtocolVersion)};\npub const DEFAULT_TIMEOUT_MS: u64 = ${defaults.requestTimeoutMs};\npub const MAX_PAYLOAD_BYTES: usize = ${defaults.maxPayloadBytes};\npub const MAX_IN_FLIGHT_REQUESTS: usize = ${defaults.maxInFlightRequests};\n`);
   const definitions = {

@@ -1,0 +1,4 @@
+# Honor package rust-version when selecting a new graph. A consumer has its own
+# resolver configuration; independent tests set this policy explicitly too.
+[resolver]
+incompatible-rust-versions = "fallback"

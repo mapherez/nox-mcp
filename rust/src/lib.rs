@@ -319,6 +319,9 @@ pub fn tool_result(value: Value, is_error: bool) -> CallToolResult {
         CallToolResult::structured(value.clone())
     };
     result.content = vec![ContentBlock::text(value.to_string())];
+    if is_error {
+        result.structured_content = None;
+    }
     result
 }
 pub fn error_result(code: &str, message: &str, retryable: bool) -> CallToolResult {
@@ -702,7 +705,12 @@ impl<E: Executor> ServerHandler for McpServer<E> {
             return Ok(error_result("INTERNAL", "Invalid tool result", false).into());
         }
         if result.is_error == Some(true) {
-            let Some(mut body) = result.structured_content.clone() else {
+            // Accept existing executor implementations using structured_error,
+            // as well as the text-only public error_result/tool_result helpers.
+            let Some(mut body) = result.structured_content.clone().or_else(|| {
+                let wire = serde_json::to_value(&result).ok()?;
+                serde_json::from_str(wire["content"][0]["text"].as_str()?).ok()
+            }) else {
                 return Ok(error_result("INTERNAL", "Invalid tool error", false).into());
             };
             let schema: Value =

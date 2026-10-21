@@ -1,9 +1,10 @@
 import { z } from 'zod';
-import defaults from './defaults.json' with { type: 'json' };
+import defaultsJson from './defaults.json' with { type: 'json' };
+import type { ContractDefaults } from './defaults.generated.js';
 import { bridgeResponseSchema, bridgeRequestSchema, bridgeErrorSchema } from './contracts.generated.js';
 export { bridgeErrorSchema, bridgeTicketSchema, bridgeAuthenticateSchema, bridgeReadySchema, bridgeRequestSchema, bridgeCancelSchema, bridgeResponseSchema, serverBridgeMessageSchema, desktopBridgeMessageSchema, toolManifestSchema } from './contracts.generated.js';
 
-export { defaults };
+export const defaults: ContractDefaults = defaultsJson;
 export const BRIDGE_PROTOCOL_VERSION = defaults.bridgeProtocolVersion;
 export const LEGACY_BRIDGE_PROTOCOL_VERSION = defaults.legacyBridgeProtocolVersion;
 export const BRIDGE_REQUEST_TIMEOUT_MS = defaults.requestTimeoutMs;

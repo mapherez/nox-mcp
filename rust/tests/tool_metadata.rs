@@ -99,10 +99,22 @@ async fn check_tool_metadata(metadata: Option<Value>) {
                 .await
                 .unwrap();
             assert_eq!(invalid.is_error, Some(true));
-            assert_eq!(invalid.structured_content.unwrap()["code"], "INVALID_INPUT");
+            assert!(invalid.structured_content.is_none());
+            let wire = serde_json::to_value(invalid).unwrap();
+            assert_eq!(
+                serde_json::from_str::<Value>(wire["content"][0]["text"].as_str().unwrap())
+                    .unwrap()["code"],
+                "INVALID_INPUT"
+            );
         } else {
             assert_eq!(result.is_error, Some(true));
-            assert_eq!(result.structured_content.unwrap()["code"], "FORBIDDEN");
+            assert!(result.structured_content.is_none());
+            let wire = serde_json::to_value(result).unwrap();
+            assert_eq!(
+                serde_json::from_str::<Value>(wire["content"][0]["text"].as_str().unwrap())
+                    .unwrap()["code"],
+                "FORBIDDEN"
+            );
         }
         client.cancel().await.unwrap();
         server.cancel().await.unwrap();

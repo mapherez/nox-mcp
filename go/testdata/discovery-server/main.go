@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sync/atomic"
 )
 
 func main() {
@@ -22,26 +23,16 @@ func main() {
 	must(json.Unmarshal(c["tool"], &tool))
 	var cli nox.JSON
 	must(json.Unmarshal(c["cli"], &cli))
-	caps := &mcp.ServerCapabilities{}
-	caps.AddExtension(nox.DiscoveryExtension, nox.DiscoveryCapability())
-	server := mcp.NewServer(&mcp.Implementation{Name: "fixture", Version: "0.5.0"}, &mcp.ServerOptions{Capabilities: caps, SupportedProtocolVersions: []string{"2025-11-25", "2026-07-28"}})
-	// Test-only late failure after committing a progress notification to SSE.
-	must(mcp.AddReceivingCustomMethod(server, "test/stream-capability", func(ctx context.Context, ss *mcp.ServerSession, _ *mcp.ParamsBase) (*mcp.ResultBase, error) {
-		if err := ss.NotifyProgress(ctx, &mcp.ProgressNotificationParams{ProgressToken: "late", Progress: 1}); err != nil {
-			return nil, err
-		}
-		data, _ := json.Marshal(nox.JSON{"requiredCapabilities": nox.JSON{"extensions": nox.JSON{nox.DiscoveryExtension: nox.JSON{"version": nox.DiscoveryVersion}}}})
-		return nil, &jsonrpc.Error{Code: mcp.CodeMissingRequiredClientCapabilities, Message: "Missing required client capability", Data: data}
-	}))
-	server.AddTool(&tool, func(_ context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		var input map[string]any
-		_ = json.Unmarshal(req.Params.Arguments, &input)
-		out := map[string]any{"name": input["id"]}
-		bytes, _ := json.Marshal(out)
-		return &mcp.CallToolResult{StructuredContent: out, Content: []mcp.Content{&mcp.TextContent{Text: string(bytes)}}}, nil
-	})
+	var executions atomic.Int64
 	type policyKey struct{}
-	must(nox.InstallDiscovery(server, nox.DiscoveryOptions{ServerID: "fixture", Descriptors: map[string]nox.JSON{tool.Name: cli}, ResolveView: func(ctx context.Context, _ *mcp.RequestExtra, _ []*mcp.Tool) (string, []string, []string, nox.JSON, error) {
+	manifest, _ := json.Marshal(nox.JSON{"schemaVersion": 1, "protocolVersion": "2.0", "tools": []json.RawMessage{c["tool"]}})
+	runtime, err := nox.NewFromManifestWithDiscovery(nox.Options{AppID: "fixture", Name: "fixture", Version: "0.5.0", Tools: []nox.Tool{{Name: tool.Name, Execute: func(_ nox.ExecutionContext, input map[string]any) (map[string]any, error) {
+		executions.Add(1)
+		if input["id"] == "domain-error" {
+			return nil, &nox.Error{Code: "CONFLICT", Message: "Visible domain error"}
+		}
+		return map[string]any{"name": input["id"]}, nil
+	}}}}, manifest, nox.DiscoveryOptions{ServerID: "fixture", Descriptors: map[string]nox.JSON{tool.Name: cli}, ResolveView: func(ctx context.Context, _ *mcp.RequestExtra, _ []*mcp.Tool) (string, []string, []string, nox.JSON, error) {
 		policy, _ := ctx.Value(policyKey{}).(string)
 		if policy == "revoked" {
 			return policy, []string{}, nil, nil, nil
@@ -50,7 +41,37 @@ func main() {
 			return policy, nil, []string{tool.Name}, nil, nil
 		}
 		return policy, nil, nil, nil, nil
-	}}))
+	}})
+	must(err)
+	server := runtime.Server
+	type counterResult struct {
+		mcp.ResultBase
+		Count int64 `json:"count"`
+	}
+	must(mcp.AddReceivingCustomMethod(server, "test/executions", func(context.Context, *mcp.ServerSession, *mcp.ParamsBase) (*counterResult, error) {
+		return &counterResult{Count: executions.Load()}, nil
+	}))
+	// Test-only late failure after committing a progress notification to SSE.
+	type lateParams struct {
+		mcp.ParamsBase
+		Code int `json:"code"`
+	}
+	must(mcp.AddReceivingCustomMethod(server, "test/stream-capability", func(ctx context.Context, ss *mcp.ServerSession, params *lateParams) (*mcp.ResultBase, error) {
+		if err := ss.NotifyProgress(ctx, &mcp.ProgressNotificationParams{ProgressToken: "late", Progress: 1}); err != nil {
+			return nil, err
+		}
+		data, _ := json.Marshal(nox.JSON{"requiredCapabilities": nox.JSON{"extensions": nox.JSON{nox.DiscoveryExtension: nox.JSON{"version": nox.DiscoveryVersion}}}})
+		code := params.Code
+		if code == 0 {
+			code = mcp.CodeMissingRequiredClientCapabilities
+		}
+		if code == mcp.CodeUnsupportedProtocolVersion {
+			data, _ = json.Marshal(mcp.UnsupportedProtocolVersionData{Requested: "2099-01-01", Supported: []string{nox.DiscoveryProtocol}})
+		} else if code != mcp.CodeMissingRequiredClientCapabilities {
+			data = nil
+		}
+		return nil, &jsonrpc.Error{Code: int64(code), Message: "Test late protocol error", Data: data}
+	}))
 	server.AddReceivingMiddleware(func(next mcp.MethodHandler) mcp.MethodHandler {
 		return func(ctx context.Context, method string, req mcp.Request) (mcp.Result, error) {
 			policy := "allowed"

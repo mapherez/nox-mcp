@@ -138,12 +138,14 @@ async fn shared_runtime_conformance() {
             panic!("unexpected interactive result")
         };
         let wire = serde_json::to_value(response).unwrap();
-        let body = &wire["structuredContent"];
-        assert_eq!(
-            serde_json::from_str::<Value>(wire["content"][0]["text"].as_str().unwrap()).unwrap(),
-            *body
-        );
+        let body: Value =
+            serde_json::from_str(wire["content"][0]["text"].as_str().unwrap()).unwrap();
         let failed = wire["isError"].as_bool().unwrap_or(false);
+        if failed {
+            assert!(wire.get("structuredContent").is_none());
+        } else {
+            assert_eq!(wire["structuredContent"], body);
+        }
         let mut actual =
             json!({"id":example["id"],"isError":failed,"executed":executed.load(Ordering::SeqCst)});
         if failed {

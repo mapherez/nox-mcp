@@ -144,13 +144,21 @@ func TestSharedRuntimeConformance(t *testing.T) {
 			bytes, _ := json.Marshal(response)
 			var wire map[string]any
 			json.Unmarshal(bytes, &wire)
-			body := wire["structuredContent"].(map[string]any)
+			var body map[string]any
+			json.Unmarshal([]byte(wire["content"].([]any)[0].(map[string]any)["text"].(string)), &body)
 			var textBody any
 			json.Unmarshal([]byte(wire["content"].([]any)[0].(map[string]any)["text"].(string)), &textBody)
 			if !reflect.DeepEqual(textBody, body) {
 				t.Fatal("text differs from structured result")
 			}
 			failed, _ := wire["isError"].(bool)
+			if failed {
+				if _, present := wire["structuredContent"]; present {
+					t.Fatal("error must not advertise success structuredContent")
+				}
+			} else if !reflect.DeepEqual(wire["structuredContent"], body) {
+				t.Fatal("success structuredContent changed")
+			}
 			actual := map[string]any{"id": example.ID, "isError": failed, "executed": executed.Load()}
 			if failed {
 				actual["code"] = body["code"]

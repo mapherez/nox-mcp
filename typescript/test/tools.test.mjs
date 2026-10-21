@@ -103,6 +103,7 @@ test('metadata preserves schemas, annotations, execution, auth, timeout and resu
     const denied = await connect(t, [{ ...definition, _meta }]);
     const result = await denied('tools/call', { name: definition.name, arguments: { value: 'hello' } });
     assert.equal(result.isError, true);
-    assert.equal(result.structuredContent.code, 'FORBIDDEN');
+    assert.equal(result.structuredContent,undefined);
+    assert.equal(JSON.parse(result.content[0].text).code, 'FORBIDDEN');
   }
 });
