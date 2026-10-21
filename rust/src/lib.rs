@@ -19,6 +19,8 @@ use tokio_util::sync::CancellationToken;
 
 mod defaults;
 pub use defaults::*;
+mod manifest;
+pub use manifest::{compile_tool_schema, load_manifest, validate_tool_value};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -270,13 +272,6 @@ impl ExecutionRegistry {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Manifest {
-    schema_version: u8,
-    protocol_version: String,
-    tools: Vec<Entry>,
-}
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
 struct Entry {
     name: String,
     title: String,
@@ -288,23 +283,25 @@ struct Entry {
     annotations: ToolAnnotations,
 }
 pub fn load_tools(json: &str) -> Result<Vec<Tool>, BrokerError> {
-    let manifest: Manifest = serde_json::from_str(json).map_err(|_| BrokerError::InvalidRequest)?;
-    if manifest.schema_version != 1 || manifest.protocol_version != BRIDGE_PROTOCOL_VERSION {
+    let manifest = load_manifest(json)?;
+    // This legacy projection cannot carry requirements. Never silently discard them.
+    if manifest["tools"].as_array().unwrap().iter().any(|tool| {
+        tool["requiredScopes"]
+            .as_array()
+            .is_some_and(|scopes| !scopes.is_empty())
+    }) {
         return Err(BrokerError::InvalidRequest);
     }
-    let mut names = HashSet::new();
-    manifest
-        .tools
-        .into_iter()
-        .map(|e| {
-            if e.name.is_empty()
-                || e.name.len() > 64
-                || !names.insert(e.name.clone())
-                || e.input_schema.get("type") != Some(&Value::String("object".into()))
-                || e.output_schema.get("type") != Some(&Value::String("object".into()))
-            {
-                return Err(BrokerError::InvalidRequest);
-            }
+    project_tools(&manifest)
+}
+fn project_tools(manifest: &Value) -> Result<Vec<Tool>, BrokerError> {
+    manifest["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|value| {
+            let e: Entry =
+                serde_json::from_value(value.clone()).map_err(|_| BrokerError::InvalidRequest)?;
             let mut tool = Tool::new(e.name, e.description, e.input_schema)
                 .with_title(e.title)
                 .with_annotations(e.annotations);
@@ -385,8 +382,53 @@ pub struct McpServer<E: Executor> {
     options: ServerOptions,
     in_flight: Arc<AtomicUsize>,
     next_id: Arc<AtomicU64>,
+    portable_validators: Arc<HashMap<String, (jsonschema::Validator, jsonschema::Validator)>>,
 }
 impl<E: Executor> McpServer<E> {
+    /// Explicitly bind a prepared manifest to a trusted executor and authenticated grants.
+    /// Declared requirements are unioned with application policy, never with granted scopes.
+    pub fn from_manifest(
+        name: String,
+        version: String,
+        json: &str,
+        executor: E,
+        mut options: ServerOptions,
+    ) -> Result<Self, BrokerError> {
+        let manifest = load_manifest(json)?;
+        for tool in manifest["tools"].as_array().unwrap() {
+            if let Some(scopes) = tool["requiredScopes"].as_array() {
+                let required = options
+                    .required_scopes
+                    .entry(tool["name"].as_str().unwrap().into())
+                    .or_default();
+                for scope in scopes {
+                    let scope = scope.as_str().unwrap().to_string();
+                    if !required.contains(&scope) {
+                        required.push(scope);
+                    }
+                }
+            }
+        }
+        let mut server = Self::new(
+            name,
+            version,
+            Arc::new(project_tools(&manifest)?),
+            executor,
+            options,
+        )?;
+        let mut validators = HashMap::new();
+        for tool in manifest["tools"].as_array().unwrap() {
+            validators.insert(
+                tool["name"].as_str().unwrap().to_string(),
+                (
+                    compile_tool_schema(&tool["inputSchema"])?,
+                    compile_tool_schema(&tool["outputSchema"])?,
+                ),
+            );
+        }
+        server.portable_validators = Arc::new(validators);
+        Ok(server)
+    }
     pub fn new(
         name: String,
         version: String,
@@ -402,6 +444,30 @@ impl<E: Executor> McpServer<E> {
         {
             return Err(BrokerError::InvalidRequest);
         }
+        let mut names = HashSet::new();
+        for tool in tools.iter() {
+            if tool.name.is_empty()
+                || tool.name.chars().count() > 64
+                || !names.insert(tool.name.as_ref())
+            {
+                return Err(BrokerError::InvalidRequest);
+            }
+            // Native APIs may use the SDK's wider schema dialects; reject invalid schemas early.
+            for schema in std::iter::once(&tool.input_schema).chain(tool.output_schema.iter()) {
+                if jsonschema::options()
+                    .should_validate_formats(true)
+                    .build(&Value::Object(schema.as_ref().clone()))
+                    .is_err()
+                {
+                    return Err(BrokerError::InvalidRequest);
+                }
+            }
+        }
+        if options.required_scopes.iter().any(|(name, scopes)| {
+            !names.contains(name.as_str()) || scopes.iter().any(|scope| scope.is_empty())
+        }) {
+            return Err(BrokerError::InvalidRequest);
+        }
         Ok(Self {
             name,
             version,
@@ -411,6 +477,7 @@ impl<E: Executor> McpServer<E> {
             options,
             in_flight: Arc::new(AtomicUsize::new(0)),
             next_id: Arc::new(AtomicU64::new(1)),
+            portable_validators: Arc::new(HashMap::new()),
         })
     }
 }
@@ -450,6 +517,7 @@ impl<E: Executor> ServerHandler for McpServer<E> {
         let tool = self
             .get_tool(request.name.as_ref())
             .ok_or_else(|| ErrorData::invalid_params("Unknown tool", None))?;
+        let deadline = now_ms() + self.options.timeout.as_millis() as u64;
         if self
             .options
             .required_scopes
@@ -464,15 +532,31 @@ impl<E: Executor> ServerHandler for McpServer<E> {
                 error_result("FORBIDDEN", "The requested operation is not allowed", false).into(),
             );
         }
+        let read_only = tool
+            .annotations
+            .as_ref()
+            .is_some_and(|a| a.read_only_hint == Some(true));
         if context.ct.is_cancelled() {
-            return Ok(error_result("CANCELLED", "The request was cancelled", false).into());
+            return Ok(ended_result("CANCELLED", read_only).into());
+        }
+        if now_ms() >= deadline {
+            return Ok(ended_result("TIMEOUT", read_only).into());
         }
         let input = Value::Object(request.arguments.unwrap_or_default());
         if serde_json::to_vec(&input)
             .map_or(true, |data| data.len() > self.options.max_payload_bytes)
-            || !validate_schema(&Value::Object(tool.input_schema.as_ref().clone()), &input)
+            || !self
+                .portable_validators
+                .get(request.name.as_ref())
+                .map_or_else(
+                    || validate_schema(&Value::Object(tool.input_schema.as_ref().clone()), &input),
+                    |validators| validators.0.is_valid(&input),
+                )
         {
             return Ok(error_result("INVALID_INPUT", "Invalid input", false).into());
+        }
+        if now_ms() >= deadline {
+            return Ok(ended_result("TIMEOUT", read_only).into());
         }
         if self
             .in_flight
@@ -493,17 +577,39 @@ impl<E: Executor> ServerHandler for McpServer<E> {
             app_id: self.options.app_id.clone(),
             user_id: self.options.user_id.clone(),
             scopes: self.options.scopes.clone(),
-            deadline_ms: now_ms() + self.options.timeout.as_millis() as u64,
+            deadline_ms: deadline,
             cancellation: cancellation.clone(),
         };
-        let read_only = tool
-            .annotations
-            .as_ref()
-            .is_some_and(|a| a.read_only_hint == Some(true));
+        let executor = self.executor.clone();
+        let tool_name = request.name.into_owned();
+        let mut work = tokio::spawn(async move {
+            if !execution.is_active() {
+                return ended_result(
+                    if now_ms() >= execution.deadline_ms {
+                        "TIMEOUT"
+                    } else {
+                        "CANCELLED"
+                    },
+                    read_only,
+                );
+            }
+            executor.execute(tool_name, input, execution).await
+        });
         let result = tokio::select! {
             _ = cancellation.cancelled() => ended_result("CANCELLED", read_only),
-            value = tokio::time::timeout(self.options.timeout, self.executor.execute(request.name.into_owned(), input, execution)) => value.unwrap_or_else(|_| ended_result("TIMEOUT", read_only)),
+            value = tokio::time::timeout(Duration::from_millis(deadline.saturating_sub(now_ms())), &mut work) => match value {
+                Ok(Ok(result))=>result,
+                Ok(Err(_))=>error_result("INTERNAL","An internal error occurred",false),
+                Err(_)=>ended_result("TIMEOUT",read_only),
+            },
         };
+        work.abort();
+        if now_ms() >= deadline {
+            return Ok(ended_result("TIMEOUT", read_only).into());
+        }
+        if cancellation.is_cancelled() {
+            return Ok(ended_result("CANCELLED", read_only).into());
+        }
         if serde_json::to_vec(&result)
             .map_or(true, |data| data.len() > self.options.max_payload_bytes)
         {
@@ -512,11 +618,57 @@ impl<E: Executor> ServerHandler for McpServer<E> {
         if result.is_error != Some(true)
             && tool.output_schema.as_ref().is_some_and(|schema| {
                 !result.structured_content.as_ref().is_some_and(|value| {
-                    validate_schema(&Value::Object(schema.as_ref().clone()), value)
+                    self.portable_validators
+                        .get(tool.name.as_ref())
+                        .map_or_else(
+                            || validate_schema(&Value::Object(schema.as_ref().clone()), value),
+                            |validators| validators.1.is_valid(value),
+                        )
                 })
             })
         {
             return Ok(error_result("INTERNAL", "Invalid tool result", false).into());
+        }
+        if result.is_error == Some(true) {
+            let Some(mut body) = result.structured_content.clone() else {
+                return Ok(error_result("INTERNAL", "Invalid tool error", false).into());
+            };
+            let schema: Value =
+                serde_json::from_str(include_str!("../contracts/error.schema.json")).unwrap();
+            if !validate_schema(&schema, &body) {
+                return Ok(error_result("INTERNAL", "Invalid tool error", false).into());
+            }
+            if body.get("retryable").is_none() {
+                body["retryable"] = Value::Bool(false);
+            }
+            let normalized = tool_result(body, true);
+            if serde_json::to_vec(&normalized)
+                .map_or(true, |data| data.len() > self.options.max_payload_bytes)
+            {
+                return Ok(
+                    error_result("INTERNAL", "Result exceeds the payload limit", false).into(),
+                );
+            }
+            return Ok(normalized.into());
+        }
+        if now_ms() >= deadline {
+            return Ok(ended_result("TIMEOUT", read_only).into());
+        }
+        if cancellation.is_cancelled() {
+            return Ok(ended_result("CANCELLED", read_only).into());
+        }
+        if self.portable_validators.contains_key(tool.name.as_ref()) {
+            if let Some(value) = result.structured_content {
+                let normalized = tool_result(value, false);
+                if serde_json::to_vec(&normalized)
+                    .map_or(true, |data| data.len() > self.options.max_payload_bytes)
+                {
+                    return Ok(
+                        error_result("INTERNAL", "Result exceeds the payload limit", false).into(),
+                    );
+                }
+                return Ok(normalized.into());
+            }
         }
         Ok(result.into())
     }

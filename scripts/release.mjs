@@ -12,6 +12,7 @@ export async function release(root, input, { check = () => {
   npm('test');
   execFileSync('go', ['test', '-mod=readonly', './...'], { cwd: root, stdio: 'inherit' });
   execFileSync('cargo', ['test', '--locked', '--manifest-path', 'rust/Cargo.toml'], { cwd: root, stdio: 'inherit' });
+  npm('run', 'test:conformance');
   npm('run', 'test:native-packages');
   npm('run', 'package:check');
 } } = {}) {

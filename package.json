@@ -1,6 +1,6 @@
 {
   "name": "@nox/mcp",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "Native MCP tools, authorization adapters and cancellable desktop bridges for NoX apps",
   "type": "module",
   "license": "MIT",
@@ -10,6 +10,7 @@
   "scripts": {
     "contracts:sync": "node scripts/sync-contracts.mjs",
     "contracts:check": "node scripts/sync-contracts.mjs --check",
+    "test:conformance": "npm run contracts:check && npm run build && node scripts/check-conformance.mjs",
     "test:native-packages": "node scripts/check-native-packages.mjs",
     "build": "tsc -p typescript/tsconfig.json",
     "test": "npm run contracts:check && npm run build && node --test typescript/test/*.test.mjs scripts/*.test.mjs",
@@ -21,7 +22,9 @@
   "files": [
     "typescript/dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "MIGRATION_0_5.md",
+    "contracts/README.md"
   ],
   "exports": {
     ".": {
@@ -54,7 +57,8 @@
     }
   },
   "dependencies": {
-    "@modelcontextprotocol/server": "^2.3.1"
+    "@modelcontextprotocol/server": "^2.3.1",
+    "ajv": "^8.20.0"
   },
   "peerDependencies": {
     "@better-auth/mcp": "^1.7.2",

@@ -44,7 +44,8 @@
           }
         ]
       },
-      "loadTools": true
+      "loadTools": true,
+      "executable": true
     },
     {
       "id": "manifest-metadata",
@@ -100,7 +101,8 @@
           }
         ]
       },
-      "loadTools": true
+      "loadTools": true,
+      "executable": true
     },
     {
       "id": "manifest-optional-absent",
@@ -140,7 +142,8 @@
           }
         ]
       },
-      "loadTools": true
+      "loadTools": true,
+      "executable": true
     },
     {
       "id": "manifest-extensions",
@@ -197,7 +200,8 @@
           "enabled": false
         }
       },
-      "loadTools": true
+      "loadTools": false,
+      "executable": true
     },
     {
       "id": "manifest-schema-keywords",
@@ -253,7 +257,8 @@
           }
         ]
       },
-      "loadTools": true
+      "loadTools": true,
+      "executable": true
     },
     {
       "id": "manifest-empty",
@@ -264,7 +269,8 @@
         "protocolVersion": "2.0",
         "tools": []
       },
-      "loadTools": true
+      "loadTools": true,
+      "executable": true
     },
     {
       "id": "manifest-other-protocol",
@@ -310,7 +316,7 @@
         ]
       },
       "loadTools": false,
-      "loaderReason": "Runtime loader only supports bridge protocol 2.0."
+      "executable": false
     },
     {
       "id": "manifest-duplicate-tools",
@@ -389,7 +395,7 @@
         ]
       },
       "loadTools": false,
-      "loaderReason": "Executable tools must have unique names."
+      "executable": false
     },
     {
       "id": "manifest-non-object-tool-schema",
@@ -427,12 +433,12 @@
         ]
       },
       "loadTools": false,
-      "loaderReason": "MCP loader requires object input/output schemas."
+      "executable": false
     },
     {
       "id": "manifest-opaque-metadata",
       "schema": "manifest",
-      "valid": true,
+      "valid": false,
       "data": {
         "schemaVersion": 1,
         "protocolVersion": "2.0",
@@ -474,12 +480,12 @@
         ]
       },
       "loadTools": false,
-      "loaderReason": "rmcp Tool metadata is an object; structural legacy manifest metadata remains opaque."
+      "executable": false
     },
     {
       "id": "manifest-null-metadata",
       "schema": "manifest",
-      "valid": true,
+      "valid": false,
       "data": {
         "schemaVersion": 1,
         "protocolVersion": "2.0",
@@ -520,7 +526,8 @@
           }
         ]
       },
-      "loadTools": true
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-missing-annotations",
@@ -559,7 +566,8 @@
           }
         ]
       },
-      "loadTools": false
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-invalid-version",
@@ -604,7 +612,8 @@
           }
         ]
       },
-      "loadTools": false
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-empty-name",
@@ -649,7 +658,8 @@
           }
         ]
       },
-      "loadTools": false
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-long-name",
@@ -694,7 +704,8 @@
           }
         ]
       },
-      "loadTools": false
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-invalid-annotation",
@@ -739,7 +750,8 @@
           }
         ]
       },
-      "loadTools": false
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-invalid-scopes",
@@ -787,8 +799,8 @@
           }
         ]
       },
-      "loadTools": true,
-      "loaderReason": "Legacy Rust loader ignores scope fields; execution scopes are configured separately."
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-missing-input-schema",
@@ -822,7 +834,8 @@
           }
         ]
       },
-      "loadTools": false
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-array-output-schema",
@@ -857,7 +870,8 @@
           }
         ]
       },
-      "loadTools": false
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "manifest-invalid-tools",
@@ -868,7 +882,8 @@
         "protocolVersion": "2.0",
         "tools": {}
       },
-      "loadTools": false
+      "loadTools": false,
+      "executable": false
     },
     {
       "id": "request-existing",
@@ -1197,6 +1212,415 @@
         "input": {},
         "deadlineAt": "2026-10-20T10:00Z"
       }
+    },
+    {
+      "id": "manifest-invalid-schema-type",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "bogus"
+                }
+              }
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "valid": true,
+      "executable": false,
+      "loadTools": false
+    },
+    {
+      "id": "manifest-remote-reference",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "$ref": "https://example.invalid/schema.json"
+                }
+              }
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "valid": true,
+      "executable": false,
+      "loadTools": false
+    },
+    {
+      "id": "manifest-unknown-assertion",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "minLenght": 2
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "valid": true,
+      "executable": false,
+      "loadTools": false
+    },
+    {
+      "id": "manifest-empty-requirement",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            },
+            "requiredScopes": [
+              ""
+            ]
+          }
+        ]
+      },
+      "valid": false,
+      "executable": false,
+      "loadTools": false
+    },
+    {
+      "id": "manifest-declared-requirements",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            },
+            "requiredScopes": [
+              "resource:read"
+            ]
+          }
+        ]
+      },
+      "valid": true,
+      "executable": true,
+      "loadTools": false
+    },
+    {
+      "id": "manifest-unicode-name",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "valid": true,
+      "executable": true,
+      "loadTools": true
+    },
+    {
+      "id": "manifest-unicode-name-too-long",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "executable": false,
+      "loadTools": false
+    },
+    {
+      "id": "manifest-metadata-empty",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            },
+            "_meta": {}
+          }
+        ]
+      },
+      "valid": true,
+      "executable": true,
+      "loadTools": true
+    },
+    {
+      "id": "manifest-scope-is-descriptive",
+      "schema": "manifest",
+      "data": {
+        "schemaVersion": 1,
+        "protocolVersion": "2.0",
+        "tools": [
+          {
+            "name": "read_resource",
+            "title": "Read resource",
+            "description": "Read a resource",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "outputSchema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            },
+            "scope": "resource:read"
+          }
+        ]
+      },
+      "valid": true,
+      "executable": true,
+      "loadTools": true
     }
   ],
   "schemaCases": [
@@ -1234,7 +1658,8 @@
         "enabled": false,
         "labels": []
       },
-      "valid": true
+      "valid": true,
+      "schemaValid": true
     },
     {
       "id": "tool-input-missing",
@@ -1265,7 +1690,8 @@
         "additionalProperties": false
       },
       "data": {},
-      "valid": false
+      "valid": false,
+      "schemaValid": true
     },
     {
       "id": "tool-input-unknown",
@@ -1299,7 +1725,8 @@
         "id": "one",
         "extra": 1
       },
-      "valid": false
+      "valid": false,
+      "schemaValid": true
     },
     {
       "id": "tool-input-wrong-type",
@@ -1332,7 +1759,8 @@
       "data": {
         "id": 1
       },
-      "valid": false
+      "valid": false,
+      "schemaValid": true
     },
     {
       "id": "tool-input-invalid-number",
@@ -1366,7 +1794,8 @@
         "id": "one",
         "count": 1.5
       },
-      "valid": false
+      "valid": false,
+      "schemaValid": true
     },
     {
       "id": "tool-output-nullable",
@@ -1391,7 +1820,8 @@
       "data": {
         "value": null
       },
-      "valid": true
+      "valid": true,
+      "schemaValid": true
     },
     {
       "id": "tool-output-ref",
@@ -1414,7 +1844,753 @@
       "data": {
         "value": "ok"
       },
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "format-invalid-uuid",
+      "schema": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "data": "bad",
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "format-valid-uuid",
+      "schema": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "data": "123e4567-e89b-42d3-a456-426614174000",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "format-invalid-datetime",
+      "schema": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "data": "2026-02-30T10:00:00Z",
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "format-valid-offset",
+      "schema": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "data": "2026-10-20T10:00:00+01:00",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "unicode-length-valid",
+      "schema": {
+        "type": "string",
+        "maxLength": 1
+      },
+      "data": "😀",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "unicode-length-invalid",
+      "schema": {
+        "type": "string",
+        "maxLength": 1
+      },
+      "data": "😀😀",
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "default-does-not-insert",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "default": "x"
+          }
+        }
+      },
+      "data": {},
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "oneof-overlap",
+      "schema": {
+        "oneOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "integer"
+          }
+        ]
+      },
+      "data": 1,
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "reference-sibling-rejected",
+      "schema": {
+        "definitions": {
+          "x": {
+            "type": "string"
+          }
+        },
+        "$ref": "#/definitions/x",
+        "minLength": 2
+      },
+      "data": "x",
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "remote-ref-rejected",
+      "schema": {
+        "$ref": "https://example.invalid/schema"
+      },
+      "data": "x",
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "unsupported-dialect",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string"
+      },
+      "data": "x",
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "unknown-keyword-rejected",
+      "schema": {
+        "type": "string",
+        "minLenght": 3
+      },
+      "data": "x",
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "extension-keyword-ignored",
+      "schema": {
+        "type": "string",
+        "x-domain": {
+          "anything": false
+        }
+      },
+      "data": "x",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "recursive-reference-rejected",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "$ref": "#/properties/next"
+          }
+        }
+      },
+      "data": {},
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "portable-digit-ascii",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\d+$"
+      },
+      "data": "123",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "portable-digit-unicode-rejected",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\d+$"
+      },
+      "data": "١٢٣",
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "lookahead-rejected",
+      "schema": {
+        "type": "string",
+        "pattern": "^(?=a)a$"
+      },
+      "data": "a",
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "boolean-schema-true",
+      "schema": true,
+      "data": null,
+      "schemaValid": true,
       "valid": true
+    },
+    {
+      "id": "boolean-schema-false",
+      "schema": false,
+      "data": {},
+      "schemaValid": true,
+      "valid": false
+    },
+    {
+      "id": "no-coercion",
+      "schema": {
+        "type": "number"
+      },
+      "data": "1",
+      "schemaValid": true,
+      "valid": false
+    },
+    {
+      "id": "invalid-schema-type",
+      "schema": {
+        "type": "bogus"
+      },
+      "data": {},
+      "schemaValid": false,
+      "valid": false
+    },
+    {
+      "id": "ref-array-subschema",
+      "schema": {
+        "definitions": {
+          "a": {
+            "allOf": [
+              {
+                "type": "string",
+                "pattern": "^\\D+$"
+              }
+            ]
+          }
+        },
+        "$ref": "#/definitions/a/allOf/0"
+      },
+      "data": "abc",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "ref-escaped-key",
+      "schema": {
+        "definitions": {
+          "a/b~c": {
+            "type": "number"
+          }
+        },
+        "$ref": "#/definitions/a~1b~0c"
+      },
+      "data": 3,
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "ref-malformed-pointer",
+      "schema": {
+        "definitions": {
+          "bad~2": {}
+        },
+        "$ref": "#/definitions/bad~2"
+      },
+      "data": null,
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "ref-normalized-pattern-key",
+      "schema": {
+        "definitions": {
+          "a": {
+            "patternProperties": {
+              "\\d": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "$ref": "#/definitions/a/patternProperties/\\d"
+      },
+      "data": 3,
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "pattern-collision",
+      "schema": {
+        "patternProperties": {
+          "\\d": {
+            "type": "string"
+          },
+          "[0-9]": {
+            "type": "number"
+          }
+        }
+      },
+      "data": {},
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "pattern-literal-backslash",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\\\d$"
+      },
+      "data": "\\d",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "pattern-strict-end",
+      "schema": {
+        "type": "string",
+        "pattern": "^abc$"
+      },
+      "data": "abc\n",
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "pattern-dot-line-separator",
+      "schema": {
+        "type": "string",
+        "pattern": "^.$"
+      },
+      "data": " ",
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "pattern-dot-carriage-return",
+      "schema": {
+        "type": "string",
+        "pattern": "^.$"
+      },
+      "data": "\r",
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "pattern-ascii-whitespace",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\s+$"
+      },
+      "data": "\t\u000b ",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "pattern-hex",
+      "schema": {
+        "type": "string",
+        "pattern": "^\\x61+$"
+      },
+      "data": "aaa",
+      "valid": true,
+      "schemaValid": true
+    },
+    {
+      "id": "pattern-nested-class",
+      "schema": {
+        "pattern": "[a[b]]"
+      },
+      "data": "a",
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "format-strict-end",
+      "schema": {
+        "format": "uuid"
+      },
+      "data": "123e4567-e89b-42d3-a456-426614174000\n",
+      "valid": false,
+      "schemaValid": true
+    },
+    {
+      "id": "decimal-multiple",
+      "schema": {
+        "type": "number",
+        "multipleOf": 0.1
+      },
+      "data": 0.3,
+      "valid": false,
+      "schemaValid": false
+    },
+    {
+      "id": "integer-multiple",
+      "schema": {
+        "type": "number",
+        "multipleOf": 3
+      },
+      "data": 9,
+      "valid": true,
+      "schemaValid": true
+    }
+  ],
+  "runtimeManifest": {
+    "schemaVersion": 1,
+    "protocolVersion": "2.0",
+    "tools": [
+      {
+        "name": "echo",
+        "title": "Echo",
+        "description": "Conformance",
+        "_meta": {
+          "cli": "echo",
+          "custom": {
+            "enabled": false
+          }
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "annotations": {
+          "readOnlyHint": true
+        }
+      }
+    ]
+  },
+  "runtimeCases": [
+    {
+      "id": "success-preserves-custom",
+      "input": {
+        "id": "x",
+        "custom": false
+      },
+      "result": {
+        "value": "ok",
+        "custom": 0
+      },
+      "expect": {
+        "isError": false,
+        "body": {
+          "value": "ok",
+          "custom": 0
+        },
+        "executed": true
+      }
+    },
+    {
+      "id": "input-invalid",
+      "input": {
+        "id": 1
+      },
+      "result": {
+        "value": "ok"
+      },
+      "expect": {
+        "isError": true,
+        "code": "INVALID_INPUT",
+        "retryable": false,
+        "executed": false
+      }
+    },
+    {
+      "id": "output-invalid",
+      "input": {
+        "id": "x"
+      },
+      "result": {
+        "value": 1
+      },
+      "expect": {
+        "isError": true,
+        "code": "INTERNAL",
+        "retryable": false,
+        "executed": true
+      }
+    },
+    {
+      "id": "requires-grant",
+      "input": {
+        "id": "x"
+      },
+      "requiredScopes": [
+        "resource:read"
+      ],
+      "grants": [],
+      "result": {
+        "value": "ok"
+      },
+      "expect": {
+        "isError": true,
+        "code": "FORBIDDEN",
+        "retryable": false,
+        "executed": false
+      }
+    },
+    {
+      "id": "declared-scope-does-not-grant",
+      "input": {
+        "id": "x"
+      },
+      "scope": "resource:read",
+      "requiredScopes": [
+        "resource:read"
+      ],
+      "grants": [],
+      "result": {
+        "value": "ok"
+      },
+      "expect": {
+        "isError": true,
+        "code": "FORBIDDEN",
+        "retryable": false,
+        "executed": false
+      }
+    },
+    {
+      "id": "explicit-grant",
+      "input": {
+        "id": "x"
+      },
+      "requiredScopes": [
+        "resource:read"
+      ],
+      "grants": [
+        "resource:read"
+      ],
+      "result": {
+        "value": "ok"
+      },
+      "expect": {
+        "isError": false,
+        "body": {
+          "value": "ok"
+        },
+        "executed": true
+      }
+    },
+    {
+      "id": "application-policy-cannot-be-removed",
+      "input": {
+        "id": "x"
+      },
+      "requiredScopes": [],
+      "appRequiredScopes": [
+        "app:read"
+      ],
+      "grants": [
+        "resource:read"
+      ],
+      "result": {
+        "value": "ok"
+      },
+      "expect": {
+        "isError": true,
+        "code": "FORBIDDEN",
+        "retryable": false,
+        "executed": false
+      }
+    },
+    {
+      "id": "scope-label-not-requirement",
+      "input": {
+        "id": "x"
+      },
+      "scope": "resource:read",
+      "grants": [],
+      "result": {
+        "value": "ok"
+      },
+      "expect": {
+        "isError": false,
+        "body": {
+          "value": "ok"
+        },
+        "executed": true
+      }
+    },
+    {
+      "id": "unexpected-error-sanitized",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "panic",
+      "expect": {
+        "isError": true,
+        "code": "INTERNAL",
+        "retryable": false,
+        "executed": true
+      }
+    },
+    {
+      "id": "read-timeout",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "timeout",
+      "readOnly": true,
+      "expect": {
+        "isError": true,
+        "code": "TIMEOUT",
+        "retryable": true,
+        "executed": true
+      }
+    },
+    {
+      "id": "write-timeout",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "timeout",
+      "readOnly": false,
+      "expect": {
+        "isError": true,
+        "code": "TIMEOUT",
+        "retryable": false,
+        "details": {
+          "outcome": "unknown"
+        },
+        "executed": true
+      }
+    },
+    {
+      "id": "read-cancel",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "cancel",
+      "readOnly": true,
+      "expect": {
+        "isError": true,
+        "code": "CANCELLED",
+        "retryable": true,
+        "executed": true
+      }
+    },
+    {
+      "id": "write-cancel",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "cancel",
+      "readOnly": false,
+      "expect": {
+        "isError": true,
+        "code": "CANCELLED",
+        "retryable": false,
+        "details": {
+          "outcome": "unknown"
+        },
+        "executed": true
+      }
+    },
+    {
+      "id": "pre-cancel-read",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "pre-cancel",
+      "readOnly": true,
+      "expect": {
+        "isError": true,
+        "code": "CANCELLED",
+        "retryable": true,
+        "executed": false
+      }
+    },
+    {
+      "id": "pre-cancel-write",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "pre-cancel",
+      "readOnly": false,
+      "expect": {
+        "isError": true,
+        "code": "CANCELLED",
+        "retryable": false,
+        "details": {
+          "outcome": "unknown"
+        },
+        "executed": false
+      }
+    },
+    {
+      "id": "oversized-envelope",
+      "input": {
+        "id": "x"
+      },
+      "result": {
+        "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "maxPayloadBytes": 1024,
+      "expect": {
+        "isError": true,
+        "code": "INTERNAL",
+        "retryable": false,
+        "executed": true
+      }
+    },
+    {
+      "id": "invalid-error-envelope",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "invalid-error",
+      "expect": {
+        "isError": true,
+        "code": "INTERNAL",
+        "retryable": false,
+        "executed": true
+      }
+    },
+    {
+      "id": "custom-error-details",
+      "input": {
+        "id": "x"
+      },
+      "behavior": "custom-error",
+      "expect": {
+        "isError": true,
+        "code": "CONFLICT",
+        "retryable": false,
+        "details": {
+          "version": 2
+        },
+        "executed": true
+      }
     }
   ]
 }

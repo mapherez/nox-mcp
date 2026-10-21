@@ -1,76 +1,109 @@
-# Gestão dos contratos existentes
+# Contratos partilhados
 
-`contracts/` é a única fonte oficial dos seis schemas partilhados e dos valores de `defaults.json`. O corpus `conformance.json` contém exemplos usados nas três linguagens. Esta consolidação não cria contratos para CLI, Gateway ou Portal, nem altera autenticação ou versões dos protocolos.
+`contracts/` é a fonte oficial dos seis schemas de protocolo, dos defaults, do perfil de schemas de ferramentas e do corpus de conformidade. Esta normalização prepara a versão **0.5.0**, com alterações incompatíveis descritas em [MIGRATION_0_5.md](../MIGRATION_0_5.md). A [baseline histórica](../COMPATIBILITY_BASELINE.md) mantém o estado auditado antes destas correções.
 
-## Ficheiros gerados
+## Responsabilidades
 
-Executar na raiz do repositório:
+Um manifesto estruturalmente válido não constitui uma autorização nem garante que pode ser executado.
+
+| Operação | TypeScript | Go | Rust | Garantia |
+| --- | --- | --- | --- | --- |
+| Validação estrutural | `toolManifestSchema` | `ValidateFrame("manifest", ...)` | `validate_schema` com o schema oficial | Documento conforme a `manifest.schema.json`; não compila schemas de ferramentas. |
+| Preparação para execução | `loadToolManifest` | `LoadToolManifest` | `load_manifest` | Validação estrutural, protocolo `2.0`, nomes únicos, entrada/saída de tipo objeto e compilação no perfil comum. Devolve o documento completo. |
+| Associação e execução | `createServerFromManifest` | `NewFromManifest` | `McpServer::from_manifest` | Associa implementações fornecidas pela aplicação, valida entrada/saída e aplica requisitos de autorização. |
+
+Na validação estrutural, `schemaVersion` continua a ser `1`, `protocolVersion` é uma string não vazia até 32 caracteres e os schemas de ferramentas são objetos JSON opacos. Ferramentas repetidas ou schemas não executáveis podem ser válidos nesta operação. As anotações são um objeto obrigatório, com booleanos opcionais. Os testes separam estes resultados dos requisitos de execução.
+
+Na descoberta a partir de manifesto, a ausência de uma indicação mantém o significado MCP: `readOnlyHint` e `idempotentHint` têm valor efetivo `false`; `destructiveHint` e `openWorldHint` têm valor efetivo `true`. Alguns SDKs materializam os booleanos com valor efetivo `false`. O documento completo conserva a presença original dos campos.
+
+Os carregadores de documentos conservam `_meta.cli`, metadados personalizados, extensões, propriedades desconhecidas e a distinção entre ausência e valor presente. `_meta` é opcional e, quando presente, tem de ser um objeto; `{}` é válido, `null`, arrays e escalares são inválidos. Não interpretamos `_meta.cli` como uma nova convenção de comandos.
+
+Validar não transforma dados: não insere defaults, não converte tipos e não remove propriedades. `default` é uma anotação. Um campo omitido continua omitido, incluindo `retryable` num documento de erro. Propriedades desconhecidas são aceites nos objetos abertos dos contratos; nas ferramentas, vale o `additionalProperties` do respetivo schema.
+
+## Scopes e confiança
+
+- `scope` é uma descrição legada. Não concede acesso nem equivale a `requiredScopes`.
+- `requiredScopes` declara requisitos de execução; cada elemento tem de ser uma string não vazia. Ausência ou lista vazia significa que o manifesto não acrescenta requisitos.
+- O carregamento não atribui identidade nem permissões. A aplicação tem de aprovar o manifesto e associar executores de confiança.
+- Os construtores a partir de manifesto unem os requisitos declarados aos requisitos configurados pela aplicação. O manifesto não pode remover uma restrição local.
+- Os scopes concedidos vêm exclusivamente da identidade/autenticação: `auth.scopes` em TypeScript, `auth.TokenInfo` em Go e `ServerOptions.scopes` em Rust. Todos os requisitos têm de estar presentes; caso contrário a biblioteca devolve `FORBIDDEN` antes de executar.
+
+TypeScript exige uma implementação em `bindings` para cada nome; Go exige-a em `Options.Tools`. Rust recebe um `Executor` de confiança, responsável pelo despacho dos nomes aprovados. Esta diferença de arquitetura não altera a política. Os mecanismos de autenticação de cada produto continuam sob responsabilidade desse produto.
+
+O antigo `load_tools` Rust devolve apenas `Vec<rmcp::Tool>`, que não transporta a política de scopes. Passa a rejeitar manifestos com requisitos não vazios, em vez de os descartar silenciosamente. Usar `load_manifest` para inspeção ou `McpServer::from_manifest` para executar esses manifestos.
+
+## Schemas de ferramentas
+
+`compileToolSchema` / `CompileToolSchema` / `compile_tool_schema` compilam o mesmo perfil explícito, offline, de JSON Schema draft-07. As funções `validateToolValue` / `ValidateToolValue` / `validate_tool_value` devolvem falso para schemas inválidos ou valores inválidos. Os construtores a partir de manifesto utilizam este perfil para validar realmente as chamadas.
+
+O perfil é definido em `tool-schema-policy.json`. Inclui tipos e uniões, objetos e propriedades, arrays homogéneos, limites, `enum`, `const`, `allOf`, `anyOf`, `oneOf`, `not`, referências locais e anotações. Subsquemas booleanos são suportados; as raízes de entrada e saída executáveis declaram `type: "object"` por serem ferramentas MCP.
+
+Regras de portabilidade:
+
+- Apenas o dialeto draft-07 indicado na política; keywords desconhecidas são recusadas. Extensões `x-*` são conservadas no documento e não introduzem validação.
+- Apenas `$ref` local em JSON Pointer `#/...`, com escapes `~0`/`~1` e índices de arrays válidos. Referências remotas, ciclos e profundidade superior a 64 são recusados. Não há acesso à rede durante a compilação.
+- Uma referência não pode ter assertions irmãs: draft-07 ignora-as e outros dialetos podem aplicá-las. Permitem-se anotações, definições e extensões sem significado de validação.
+- `uuid` e `date-time` são os únicos formatos assertivos, usando os padrões dos envelopes oficiais: UUID com variante/versão reconhecida e data/hora com segundos e fuso explícito. Outros formatos são recusados. A semântica é a dos padrões versionados, não a totalidade das variantes das RFC.
+- Regex usam grupos simples ou `(?:...)`, classes, quantificadores e escapes comuns. `\d`, `\w` e `\s` usam classes ASCII; as variantes maiúsculas negadas são permitidas fora de classes. `.` exclui LF, CR, U+2028 e U+2029; `$` exige o fim efetivo da string. Escapes hexadecimais de dois dígitos são suportados. Lookaround, backreferences, escapes Unicode/propriedades, classes aninhadas/interseções e construções específicas de um motor são recusados. Padrões de propriedades que colidam após normalização são recusados, para não perder assertions.
+- `multipleOf` exige um inteiro positivo até `2^53−1`. Foi confirmada uma divergência dos motores com `0.3 / 0.1`; o perfil comum recusa divisores fracionários explicitamente. As APIs nativas continuam disponíveis para schemas mais abrangentes, sem promessa de equivalência nesses casos.
+- Para números interoperáveis, utilizar valores finitos e inteiros dentro do intervalo exato do JavaScript (`±(2^53−1)`). Os tipos nativos Go/Rust podem representar mais precisão; este perfil não acrescenta aritmética decimal arbitrária ao JavaScript.
+
+`tool-schema.meta.json` é a cópia versionada do meta-schema draft-07 distribuído pelo Ajv; permite verificar também em Go a validade do schema antes de o resolver. Ajv é a única nova dependência de execução TypeScript: fornece compilação draft-07 sem usar a conversão experimental JSON Schema → Zod. Não foram atualizadas as dependências existentes. Os três motores mantêm implementações próprias; as regras comuns são verificadas pelo corpus.
+
+As APIs nativas `createServer` com Zod, `New` com schemas Go e `McpServer::new` com ferramentas do SDK Rust permanecem disponíveis. Refinamentos/transformações Zod, dialetos nativos e conteúdos ricos do SDK são funcionalidades próprias destas superfícies. Um manifesto partilhado usa os construtores e o perfil acima.
+
+## Resultados, erros e execução
+
+Nas chamadas comuns, o sucesso contém um objeto `structuredContent` validado pelo schema de saída e o mesmo JSON no bloco de texto. Entrada inválida produz `INVALID_INPUT`; saída inválida produz `INTERNAL`. Exceções/panics inesperados são convertidos em `INTERNAL` sem expor o erro interno ao cliente.
+
+Um erro de ferramenta tem `isError: true` e um corpo conforme a `error.schema.json`. Códigos de domínio e propriedades adicionais continuam permitidos, incluindo `details` e `currentVersion`. Na fronteira de execução, `retryable` omitido é materializado como `false`; erros malformados e envelopes demasiado grandes dão origem a um erro `INTERNAL` mínimo. Esse erro mínimo pode exceder um limite configurado demasiado pequeno para conter qualquer erro válido.
+
+O prazo é calculado uma vez à entrada da execução da biblioteca; inclui validação e execução e é transmitido ao executor. Uma chamada já cancelada não inicia o executor. A biblioteca volta a verificar prazo/cancelamento antes de aceitar um sucesso, impedindo que um resultado tardio seja tratado como confirmado. Não inclui autenticação ou processamento do transporte anterior à entrada no runtime.
+
+Timeout usa `TIMEOUT`; cancelamento usa `CANCELLED`. Para leituras explicitamente marcadas, `retryable: true`; para outras operações, `retryable: false` e `details.outcome: "unknown"`. Cancelamento não garante rollback nem que um efeito externo não aconteceu. Um executor tem de cooperar com o contexto recebido.
+
+Continuam legítimas estas diferenças:
+
+| Superfície | Diferença e limite |
+| --- | --- |
+| Projeções SDK | `load_tools`, `parse_server_frame` Rust e tipos de descoberta Go/Rust só representam os campos do SDK. Usar o carregador completo para conservar todas as extensões; não fazer round-trip do manifesto através de tipos de descoberta. Metadados `_meta` de objetos continuam anunciados. |
+| Erros Go | `Runtime.Execute` usa o retorno idiomático `error`; a normalização do envelope MCP ocorre no handler. Os testes comparam essa fronteira. |
+| Cancelamento físico | Go/TypeScript retêm capacidade enquanto trabalho não cooperante continua; Rust pode abortar o futuro. Não existe preempção universal nem reversão de efeitos. |
+| Transporte | O SDK pode suprimir a resposta quando a ligação/pedido é cancelado. O contrato define o resultado interno quando pode ser entregue; não exige resposta numa ligação encerrada. |
+| Detalhes locais | Mensagens humanas, IDs gerados, representação do prazo e diagnósticos variam. Código, possibilidade de repetição, detalhes de resultado desconhecido e dados JSON são comparáveis. |
+
+Os protocolos MCP, frames de bridge `1.0`/`2.0`, tickets, heartbeats e brokers locais não foram redesenhados. IDs com prefixo e prazos numéricos do broker Rust local continuam distintos dos envelopes WebSocket UUID/RFC3339.
+
+## Geração e manutenção
 
 ```sh
 npm run contracts:sync
 npm run contracts:check
 ```
 
-O primeiro comando sincroniza:
+O gerador copia schemas, política, meta-schema e corpus para `go/contracts` e `rust/contracts`, gera os validadores Zod TypeScript, copia a política TypeScript e gera os defaults das três linguagens. Estes resultados são versionados e acompanham as fontes no mesmo commit. Não os editar manualmente. `contracts:check` só lê e falha perante divergências, ficheiros em falta ou cópias obsoletas; ignora apenas LF/CRLF.
 
-- `go/contracts/*.schema.json` e `rust/contracts/*.schema.json`;
-- `go/contracts/conformance.json` e `rust/contracts/conformance.json`;
-- `typescript/src/contracts.generated.ts`, com os validadores Zod;
-- `typescript/src/defaults.json`, `go/defaults.go` e `rust/src/defaults.rs`.
+Go usa `go:embed`; Rust usa `include_str!`. Os pacotes instalados contêm as cópias necessárias e compilam sem Node, symlinks ou geração durante a build. O tarball TypeScript inclui JavaScript, declarações e os JSON de defaults/política. Não executa hooks de build no consumidor.
 
-Estes ficheiros são versionados e devem acompanhar a alteração da fonte no mesmo commit. Não devem ser editados manualmente. `contracts:check` apenas lê: falha se faltar um ficheiro, existir uma cópia obsoleta ou houver divergência. A comparação ignora apenas a diferença entre finais de linha LF e CRLF.
+Para alterar um contrato:
 
-A geração é uma operação de manutenção, não uma dependência da compilação nativa. Go continua a usar `go:embed`; Rust continua a usar `include_str!` dentro da própria crate. Nem `go build` nem `cargo build` executam Node ou precisam de procurar schemas fora do pacote instalado. Não se usam symlinks, `build.rs` ou hooks de instalação para gerar contratos.
-
-O tarball TypeScript contém o JavaScript/declarações compilados e o JSON de defaults, como antes. Os consumidores não precisam do gerador nem da pasta oficial de fontes. O mapa de exports mantém-se.
-
-## Interpretação e compatibilidade
-
-Os schemas existentes continuam em JSON Schema draft-07. Não se fecharam objetos, não se tornaram campos opcionais obrigatórios e não se apertaram os requisitos dos manifestos. `_meta` foi explicitado no manifesto como campo opcional opaco: os objetos com `_meta.cli` e metadados personalizados são preservados, sem rejeitar valores que o schema anterior já aceitava como propriedades adicionais.
-
-Os validadores TypeScript são gerados a partir dos schemas. Os objetos abertos preservam propriedades desconhecidas, incluindo extensões do manifesto, anotações e erros de domínio. Os schemas de entrada/saída das ferramentas são transportados como objetos JSON opacos, sem reescrever keywords, referências ou extensões do produto. A fábrica pública `createResponseSchema` mantém o suporte a erros definidos pelo consumidor.
-
-O gerador suporta deliberadamente o subconjunto de JSON Schema usado nestes contratos; não é um conversor geral. Uma assertion não suportada causa erro de geração, em vez de ser ignorada. Não usa `z.fromJSONSchema` no runtime distribuído: essa API da dependência existente é utilizada apenas nos testes. Os validadores gerados conservam os tipos públicos usados pelos consumidores, incluindo o enum de versões com entrada TypeScript `string` e o schema ISO de datas.
-
-Continuam a existir diferenças intencionais de responsabilidade que não podem ser eliminadas apertando a validação sem comprometer a compatibilidade:
-
-| Superfície | Comportamento preservado e motivo |
-| --- | --- |
-| Validação estrutural de manifesto | TypeScript/Go e `validate_schema` Rust aceitam um `protocolVersion` não vazio até 32 caracteres, ferramentas repetidas e schemas representados por objetos JSON. Não significam que o manifesto seja executável por qualquer runtime. |
-| `load_tools` Rust | Mantém protocolo `2.0`, nomes únicos e schemas MCP de tipo objeto. Os requisitos são anteriores a esta consolidação. Não foram impostos aos validadores TypeScript/Go. |
-| Scopes no carregador Rust | `scope`/`requiredScopes` não são carregados automaticamente para `ServerOptions.required_scopes`. Campos ignorados pelo carregador continuam ignorados, incluindo valores que o validador estrutural rejeita. Alterar este comportamento poderia mudar a autorização de uma aplicação. |
-| Metadados no carregador Rust | Objetos `_meta` são conservados em `rmcp::Tool`. Um valor escalar aceite pelo schema estrutural opaco continua a ser recusado pelo carregador; `null` representa ausência. |
-| Projeções Rust | `load_tools` devolve tipos do SDK e `parse_server_frame` devolve o enum existente. Conservam os campos representáveis nesses tipos, mas não são APIs de round-trip de todas as propriedades JSON desconhecidas. Alargar os tipos/variantes públicos exigiria avaliar compatibilidade de código consumidor. |
-| Defaults de erro | O parse TypeScript continua a materializar `retryable: false` quando omitido. Go/Rust validam o documento sem inserir defaults. O campo mantém-se opcional no contrato JSON. |
-| Interface `ToolManifestEntry` | Os quatro booleanos de anotações continuam obrigatórios na interface TypeScript existente; o parser e o JSON Schema continuam a permitir anotações parciais. Tornar os membros da interface opcionais quebraria código que os lê como `boolean`. |
-| Schemas de ferramentas | Zod, `jsonschema-go` e `jsonschema` Rust não são o mesmo motor. O corpus cobre assertions comuns; não promete equivalência para todos os dialetos, formatos e schemas arbitrários. |
-
-As exceções do carregador constam dos exemplos com `loadTools` e, quando divergem de `valid`, `loaderReason`. São expectativas verificadas, não testes ignorados. Não se devem introduzir novas exceções para fazer um teste passar sem analisar a baseline e explicar o impacto.
-
-`_meta.cli` mantém o significado atribuído pelo produto. Não existe aqui uma nova interpretação de comandos ou navegação. Os protocolos de ponte `1.0`/`2.0`, os envelopes, os prazos, os limites e os mecanismos de autenticação não foram alterados. O broker Rust local mantém os seus IDs com prefixo e prazos numéricos; não foi confundido com os frames WebSocket UUID/RFC3339.
-
-## Alterar ou acrescentar um contrato
-
-1. Consultar a [baseline histórica](../COMPATIBILITY_BASELINE.md) e identificar consumidores e entradas já aceites. A baseline descreve o estado auditado antes desta consolidação; não deve ser reescrita como se tivesse auditado código novo.
-2. Editar apenas as fontes em `contracts/`. Preservar os campos e mensagens existentes; não acrescentar requisitos nem restringir valores sem uma decisão de compatibilidade. Quando um schema contém uma definição repetida dentro de um envelope, manter essas definições coerentes; o gerador verifica também esta consistência interna.
-3. Acrescentar casos válidos, inválidos e de regressão a `conformance.json`. Cada caso tem `id` único, `schema`, `data` e `valid`. Os casos de manifesto incluem também `loadTools`. `schemaCases` contém schemas/valores de entrada e saída usados pelos três motores.
-4. Se for um schema novo, registar o respetivo validador TypeScript no gerador e nos testes, e a leitura Rust no teste de conformidade. Acrescentar suporte explícito ao gerador quando uma nova assertion for necessária. O teste verifica que todos os schemas oficiais têm exemplos.
-5. Executar a sincronização, rever o diff das fontes e dos ficheiros gerados e executar as verificações abaixo. Incluir todos os ficheiros gerados no commit.
+1. Consultar a baseline e a migração; identificar operações, consumidores e impacto de compatibilidade.
+2. Alterar as fontes oficiais. Se introduzir uma assertion nova, acrescentar suporte explícito ao gerador ou ao perfil, sem a ignorar num motor.
+3. Acrescentar casos válidos, inválidos e regressões ao corpus. `cases` testa documentos, `executable` testa preparação e `loadTools` testa a limitação da projeção legada Rust. `schemaCases` separa validade do schema e do valor. `runtimeCases` descreve chamadas, autorização, erros e término.
+4. Sincronizar, rever o diff e executar as verificações seguintes. Incluir os ficheiros gerados e documentar qualquer migração necessária.
 
 ```sh
 npm run contracts:sync
-npm run contracts:check
 npm test
 go test -mod=readonly ./...
 cargo test --locked --manifest-path rust/Cargo.toml
+npm run test:conformance
 npm run test:native-packages
 npm run package:check
 ```
 
-`test:native-packages` usa diretórios temporários: compila um consumidor Go com apenas os ficheiros do módulo, empacota/extrai a crate Rust, executa os testes da crate extraída e compila um consumidor dessa crate. Não altera repositórios de produtos. Este teste corre offline depois de as suites normais terem preenchido as caches das dependências.
+As suites usam os mesmos exemplos e expectativas, sem exceções por linguagem na validação/preparação comum. `test:conformance` executa os três runtimes, recolhe observações normalizadas e compara os JSON efetivamente produzidos: sucesso/erro, corpo, código, `retryable`, `details` e se o executor chegou a ser invocado. Verifica também a descoberta real dos metadados e schemas através dos SDKs. Exclui mensagens humanas, IDs e relógios. Os testes de transporte existentes cobrem HTTP/SDK em separado; o cancelamento controlado evita depender da supressão de respostas pelo transporte.
 
-O workflow `contracts.yml` executa estas verificações em pushes de branches e pull requests. A release volta a verificar sincronização, suites, pacote TypeScript e dependências nativas antes de publicar. `npm test` e `prepack` recusam ficheiros gerados desatualizados; não os corrigem silenciosamente.
+`test:native-packages` compila um consumidor Go isolado e uma crate Rust empacotada fora do checkout, sem a pasta oficial `contracts/` nem Node na build nativa. `package:check` instala o tarball e testa imports e HTTP JSON/SSE sem TypeScript no consumidor. Os testes nativos de distribuição usam as caches preenchidas pelas suites normais.
 
-## Limites desta fase
-
-Não foram atualizadas dependências, versões de pacotes ou referências dos consumidores. Backend, Yard, Bot e NoteX não são modificados por estes comandos. As versões antigas instaladas, incluindo as do NoteX, continuam a usar os seus próprios artefactos; não são migradas nem regeneradas. O suporte a uma atualização futura de cada produto exige os respetivos testes de integração.
+Os workflows de contratos e release executam estas verificações antes da publicação. `npm test` e `prepack` recusam ficheiros gerados desatualizados. Nenhum destes comandos atualiza Backend, Yard, Bot ou NoteX. Não foram criados contratos de CLI, Gateway ou Portal.

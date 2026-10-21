@@ -24,8 +24,9 @@ try {
   assert.equal(packed.version, pkg.version);
   for (const path of paths) {
     // npm also includes license files in ancestors of a files entry.
-    assert.ok(['package.json', 'README.md', 'LICENSE', 'typescript/LICENSE'].includes(path) || path.startsWith('typescript/dist/'), `Unexpected packed file: ${path}`);
+    assert.ok(['package.json', 'README.md', 'MIGRATION_0_5.md', 'contracts/README.md', 'LICENSE', 'typescript/LICENSE'].includes(path) || path.startsWith('typescript/dist/'), `Unexpected packed file: ${path}`);
   }
+  for (const file of ['MIGRATION_0_5.md', 'contracts/README.md']) assert.ok(paths.has(file), `Missing migration documentation: ${file}`);
   for (const entry of Object.values(pkg.exports)) {
     for (const path of Object.values(entry)) assert.ok(paths.has(path.replace(/^\.\//, '')), `Missing export: ${path}`);
   }
@@ -46,8 +47,13 @@ try {
   assert.equal(installed.version, pkg.version);
   execFileSync(process.execPath, ['--input-type=module', '-e', `
     import assert from 'node:assert/strict';
-    import { createServer } from '@nox/mcp';
+    import { createServer, createServerFromManifest } from '@nox/mcp';
+    import { compileToolSchema, loadToolManifest } from '@nox/mcp/contract';
     assert.equal(typeof createServer, 'function');
+    const manifest = {schemaVersion:1,protocolVersion:'2.0',tools:[]};
+    assert.deepEqual(loadToolManifest(manifest), manifest);
+    assert.equal(compileToolSchema({type:'string'})('installed schema policy'), true);
+    await createServerFromManifest({appId:'consumer',name:'consumer',version:'1',manifest,bindings:{}}).close();
     await import('@nox/mcp/contract');
     await import('@nox/mcp/bridge');
     await import('@nox/mcp/bridge/client');

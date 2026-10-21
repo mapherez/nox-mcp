@@ -34,8 +34,9 @@ export function parseFrame<T>(schema: z.ZodType<T>, frame: BridgeFrame, maxBytes
 }
 export interface ToolManifestEntry {
   name: string; title: string; description: string; scope?: string; requiredScopes?: readonly string[];
-  _meta?: unknown;
+  _meta?: Record<string, unknown>;
   inputSchema: Record<string, unknown>; outputSchema: Record<string, unknown>;
-  annotations: { readOnlyHint: boolean; destructiveHint: boolean; idempotentHint: boolean; openWorldHint: boolean };
+  annotations: { readOnlyHint?: boolean; destructiveHint?: boolean; idempotentHint?: boolean; openWorldHint?: boolean };
 }
 export interface ToolManifest { schemaVersion: 1; protocolVersion: string; tools: ToolManifestEntry[] }
+export { compileToolSchema, validateToolValue, loadToolManifest } from './manifest.js';

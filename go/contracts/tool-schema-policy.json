@@ -1,0 +1,77 @@
+{
+  "dialect": "http://json-schema.org/draft-07/schema#",
+  "keywords": [
+    "$schema",
+    "$ref",
+    "definitions",
+    "type",
+    "properties",
+    "patternProperties",
+    "propertyNames",
+    "required",
+    "additionalProperties",
+    "items",
+    "minItems",
+    "maxItems",
+    "uniqueItems",
+    "minLength",
+    "maxLength",
+    "pattern",
+    "format",
+    "minimum",
+    "maximum",
+    "exclusiveMinimum",
+    "exclusiveMaximum",
+    "multipleOf",
+    "minProperties",
+    "maxProperties",
+    "enum",
+    "const",
+    "allOf",
+    "anyOf",
+    "oneOf",
+    "not",
+    "title",
+    "description",
+    "default",
+    "examples",
+    "readOnly",
+    "writeOnly",
+    "$comment"
+  ],
+  "maps": [
+    "properties",
+    "patternProperties",
+    "definitions"
+  ],
+  "single": [
+    "additionalProperties",
+    "items",
+    "not",
+    "propertyNames"
+  ],
+  "arrays": [
+    "allOf",
+    "anyOf",
+    "oneOf"
+  ],
+  "annotations": [
+    "title",
+    "description",
+    "default",
+    "examples",
+    "readOnly",
+    "writeOnly",
+    "$comment"
+  ],
+  "formats": {
+    "uuid": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+    "date-time": "^(?:(?:[0-9][0-9][2468][048]|[0-9][0-9][13579][26]|[0-9][0-9]0[48]|[02468][048]00|[13579][26]00)-02-29|[0-9]{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12][0-9]|3[01])|(?:0[469]|11)-(?:0[1-9]|[12][0-9]|30)|(?:02)-(?:0[1-9]|1[0-9]|2[0-8])))T(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?(?:Z|([+-](?:[01][0-9]|2[0-3]):[0-5][0-9])))$"
+  },
+  "maxDepth": 64,
+  "asciiClasses": {
+    "d": "0-9",
+    "w": "A-Za-z0-9_",
+    "s": " \\t\\n\\v\\f\\r"
+  }
+}

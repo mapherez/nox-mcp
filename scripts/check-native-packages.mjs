@@ -26,6 +26,8 @@ try {
 import noxmcp "github.com/mapherez/nox-mcp/go"
 func main() {
   if err := noxmcp.ValidateFrame("manifest", []byte(\x60{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}\x60)); err != nil { panic(err) }
+  if _, err := noxmcp.LoadToolManifest([]byte(\x60{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}\x60)); err != nil { panic(err) }
+  if !noxmcp.ValidateToolValue(map[string]any{"type":"string"}, "installed policy and meta-schema") { panic("schema validation failed") }
   if _, err := noxmcp.New(noxmcp.Options{AppID:"consumer",Name:"consumer",Version:"1"}); err != nil { panic(err) }
 }
 `);
@@ -49,6 +51,7 @@ func main() {
   await cp(resolve(crate, 'Cargo.lock'), resolve(rustConsumer, 'Cargo.lock'));
   await writeFile(resolve(rustConsumer, 'src/main.rs'), `fn main() {
     assert!(nox_mcp::load_tools(r#"{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}"#).is_ok());
+    assert!(nox_mcp::load_manifest(r#"{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}"#).is_ok());
     assert!(nox_mcp::parse_server_frame(br#"{"type":"authenticated"}"#, nox_mcp::MAX_PAYLOAD_BYTES).is_ok());
 }
 `);

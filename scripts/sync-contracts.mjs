@@ -27,7 +27,7 @@ function zod(schema) {
     if (schema.propertyNames && JSON.stringify(schema.propertyNames) !== '{"type":"string"}') throw new Error('Unsupported propertyNames assertion.');
     if (!schema.properties) expression = `z.record(z.string(), ${zod(schema.additionalProperties ?? {})})`;
     else {
-      const fields = Object.entries(schema.properties).map(([key, value]) => `${JSON.stringify(key)}: ${zod(value)}${(schema.required ?? []).includes(key) || Object.hasOwn(value, 'default') ? '' : '.optional()'}`);
+      const fields = Object.entries(schema.properties).map(([key, value]) => `${JSON.stringify(key)}: ${zod(value)}${(schema.required ?? []).includes(key) ? '' : '.optional()'}`);
       expression = `z.object({ ${fields.join(', ')} })`;
       if (schema.additionalProperties === false) expression += '.strict()';
       else if (schema.additionalProperties && Object.keys(schema.additionalProperties).length) expression += `.catchall(${zod(schema.additionalProperties)})`;
@@ -36,8 +36,8 @@ function zod(schema) {
   } else if (schema.type === 'array') expression = `z.array(${zod(schema.items)})`;
   else if (schema.type === 'string') {
     expression = schema.format === 'date-time' ? 'z.iso.datetime({ offset: true })' : 'z.string()';
-    if (schema.minLength !== undefined) expression += `.min(${schema.minLength})`;
-    if (schema.maxLength !== undefined) expression += `.max(${schema.maxLength})`;
+    if (schema.minLength !== undefined) expression += `.refine(value => [...value].length >= ${schema.minLength})`;
+    if (schema.maxLength !== undefined) expression += `.refine(value => [...value].length <= ${schema.maxLength})`;
     if (schema.format === 'uuid') expression += '.uuid()';
     else if (schema.format === 'date-time') { /* Keep the public ZodISODateTime type. */ }
     else if (schema.format) throw new Error(`Unsupported format: ${schema.format}`);
@@ -45,7 +45,7 @@ function zod(schema) {
   } else if (schema.type === 'boolean') expression = 'z.boolean()';
   else if (Object.keys(schema).every(key => key === 'description')) expression = 'z.unknown()';
   else throw new Error(`Unsupported contract schema: ${JSON.stringify(schema)}`);
-  if (Object.hasOwn(schema, 'default')) expression += `.default(${JSON.stringify(schema.default)})`;
+  // JSON Schema defaults are annotations, not instructions to mutate parsed documents.
   return expression;
 }
 
@@ -70,6 +70,10 @@ export async function syncContracts(directory = root, { check = false } = {}) {
   for (const target of ['go/contracts', 'rust/contracts']) for (const name of names) outputs.set(`${target}/${name}`, JSON.stringify(schemas[name.replace('.schema.json', '')], null, 2) + '\n');
   const corpus = JSON.parse(await readFile(resolve(source, 'conformance.json'), 'utf8'));
   for (const target of ['go/contracts', 'rust/contracts']) outputs.set(`${target}/conformance.json`, JSON.stringify(corpus, null, 2) + '\n');
+  const policy = JSON.stringify(JSON.parse(await readFile(resolve(source, 'tool-schema-policy.json'), 'utf8')), null, 2) + '\n';
+  for (const target of ['go/contracts', 'rust/contracts', 'typescript/src']) outputs.set(`${target}/tool-schema-policy.json`, policy);
+  const meta = JSON.stringify(JSON.parse(await readFile(resolve(source, 'tool-schema.meta.json'), 'utf8')), null, 2) + '\n';
+  for (const target of ['go/contracts','rust/contracts']) outputs.set(`${target}/tool-schema.meta.json`,meta);
   outputs.set('typescript/src/defaults.json', JSON.stringify(defaults, null, 2) + '\n');
   outputs.set('go/defaults.go', `${banner}package noxmcp\n\nconst BridgeProtocolVersion = ${JSON.stringify(defaults.bridgeProtocolVersion)}\nconst DefaultTimeoutMS = ${defaults.requestTimeoutMs}\nconst MaxPayloadBytes = ${defaults.maxPayloadBytes}\nconst MaxInFlightRequests = ${defaults.maxInFlightRequests}\n`);
   outputs.set('rust/src/defaults.rs', `${banner}pub const BRIDGE_PROTOCOL_VERSION: &str = ${JSON.stringify(defaults.bridgeProtocolVersion)};\npub const DEFAULT_TIMEOUT_MS: u64 = ${defaults.requestTimeoutMs};\npub const MAX_PAYLOAD_BYTES: usize = ${defaults.maxPayloadBytes};\npub const MAX_IN_FLIGHT_REQUESTS: usize = ${defaults.maxInFlightRequests};\n`);

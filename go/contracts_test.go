@@ -2,9 +2,8 @@ package noxmcp
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
-
-	"github.com/google/jsonschema-go/jsonschema"
 )
 
 func TestSharedContractConformance(t *testing.T) {
@@ -17,13 +16,15 @@ func TestSharedContractConformance(t *testing.T) {
 		Cases   []struct {
 			ID, Schema string
 			Valid      bool
+			Executable bool
 			Data       json.RawMessage
 		} `json:"cases"`
 		SchemaCases []struct {
-			ID     string
-			Schema jsonschema.Schema
-			Data   any
-			Valid  bool
+			ID          string
+			Schema      any
+			Data        any
+			Valid       bool
+			SchemaValid bool
 		} `json:"schemaCases"`
 	}
 	if err := json.Unmarshal(data, &corpus); err != nil {
@@ -44,6 +45,21 @@ func TestSharedContractConformance(t *testing.T) {
 			if string(example.Data) != before {
 				t.Fatal("validator mutated the input")
 			}
+			if example.Schema == "manifest" {
+				loaded, err := LoadToolManifest(example.Data)
+				if (err == nil) != example.Executable {
+					t.Fatalf("executable=%v, want %v: %v", err == nil, example.Executable, err)
+				}
+				if err == nil {
+					var expected, actual any
+					json.Unmarshal(example.Data, &expected)
+					data, _ := json.Marshal(loaded)
+					json.Unmarshal(data, &actual)
+					if !reflect.DeepEqual(expected, actual) {
+						t.Fatal("manifest changed during loading")
+					}
+				}
+			}
 		})
 	}
 	files, err := Contracts.ReadDir("contracts")
@@ -59,12 +75,17 @@ func TestSharedContractConformance(t *testing.T) {
 	}
 	for _, example := range corpus.SchemaCases {
 		t.Run(example.ID, func(t *testing.T) {
-			resolved, err := example.Schema.Resolve(nil)
-			if err != nil {
-				t.Fatal(err)
+			before, _ := json.Marshal([]any{example.Schema, example.Data})
+			_, err := CompileToolSchema(example.Schema)
+			if (err == nil) != example.SchemaValid {
+				t.Fatalf("schemaValid=%v, want %v: %v", err == nil, example.SchemaValid, err)
 			}
-			if got := resolved.Validate(example.Data) == nil; got != example.Valid {
+			if got := ValidateToolValue(example.Schema, example.Data); got != example.Valid {
 				t.Fatalf("valid=%v, want %v", got, example.Valid)
+			}
+			after, _ := json.Marshal([]any{example.Schema, example.Data})
+			if string(before) != string(after) {
+				t.Fatal("schema or input mutated")
 			}
 		})
 	}

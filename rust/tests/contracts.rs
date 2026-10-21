@@ -1,4 +1,7 @@
-use nox_mcp::{load_tools, parse_server_frame, validate_schema};
+use nox_mcp::{
+    compile_tool_schema, load_manifest, load_tools, parse_server_frame, validate_schema,
+    validate_tool_value,
+};
 use serde_json::Value;
 
 fn schema(name: &str) -> Value {
@@ -39,6 +42,16 @@ fn shared_contract_conformance() {
             );
         }
         if name == "manifest" {
+            let loaded = load_manifest(std::str::from_utf8(&bytes).unwrap());
+            assert_eq!(
+                loaded.is_ok(),
+                example["executable"].as_bool().unwrap(),
+                "preparation: {}",
+                example["id"]
+            );
+            if let Ok(document) = loaded {
+                assert_eq!(document, example["data"]);
+            }
             // A loader is intentionally stricter than a structural contract validator.
             let result = load_tools(std::str::from_utf8(&bytes).unwrap());
             assert_eq!(
@@ -63,9 +76,15 @@ fn shared_contract_conformance() {
     assert_eq!(covered.len(), 6);
     for example in corpus["schemaCases"].as_array().unwrap() {
         assert_eq!(
-            validate_schema(&example["schema"], &example["data"]),
+            validate_tool_value(&example["schema"], &example["data"]),
             example["valid"].as_bool().unwrap(),
             "tool schema: {}",
+            example["id"]
+        );
+        assert_eq!(
+            compile_tool_schema(&example["schema"]).is_ok(),
+            example["schemaValid"].as_bool().unwrap(),
+            "schema compilation: {}",
             example["id"]
         );
     }

@@ -28,7 +28,9 @@
             "type": "string"
           },
           "_meta": {
-            "description": "Opaque application metadata, including optional cli aliases. Existing values remain accepted."
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Application metadata, preserved without interpretation."
           },
           "scope": {
             "type": "string"
@@ -36,7 +38,8 @@
           "requiredScopes": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           },
           "inputSchema": {

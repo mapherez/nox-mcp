@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"slices"
 	"time"
+	"unicode/utf8"
 )
 
 type Error struct {
@@ -34,7 +35,7 @@ type ExecutionContext struct {
 }
 
 // CheckActive must be called immediately before any mutation after asynchronous work.
-func (c ExecutionContext) CheckActive() error { return c.Err() }
+func (c ExecutionContext) CheckActive() error { return executionEnded(c.Context) }
 
 type Tool struct {
 	Name, Title, Description          string
@@ -42,6 +43,7 @@ type Tool struct {
 	InputSchema, OutputSchema         *jsonschema.Schema
 	RequiredScopes                    []string
 	ReadOnly, Destructive, Idempotent bool
+	OpenWorld                         *bool
 	Execute                           func(ExecutionContext, map[string]any) (map[string]any, error)
 }
 type Options struct {
@@ -62,6 +64,10 @@ type Runtime struct {
 }
 
 func New(options Options) (*Runtime, error) {
+	return newRuntime(options, nil)
+}
+
+func newRuntime(options Options, manifestAnnotations map[string]*mcp.ToolAnnotations) (*Runtime, error) {
 	if options.AppID == "" || options.Name == "" {
 		return nil, errors.New("app and server identity required")
 	}
@@ -80,7 +86,7 @@ func New(options Options) (*Runtime, error) {
 	r := &Runtime{options: options, tools: map[string]compiledTool{}, slots: make(chan struct{}, options.MaxInFlight)}
 	r.Server = mcp.NewServer(&mcp.Implementation{Name: options.Name, Version: options.Version}, &mcp.ServerOptions{SupportedProtocolVersions: []string{"2025-11-25", "2026-07-28"}})
 	for _, t := range options.Tools {
-		if t.Name == "" || len(t.Name) > 64 || t.Execute == nil || t.InputSchema == nil || t.OutputSchema == nil {
+		if t.Name == "" || utf8.RuneCountInString(t.Name) > 64 || t.Execute == nil || t.InputSchema == nil || t.OutputSchema == nil || slices.Contains(t.RequiredScopes, "") {
 			return nil, errors.New("invalid tool")
 		}
 		if _, exists := r.tools[t.Name]; exists {
@@ -95,7 +101,11 @@ func New(options Options) (*Runtime, error) {
 			return nil, fmt.Errorf("output schema: %w", err)
 		}
 		r.tools[t.Name] = compiledTool{t, input, output}
-		r.Server.AddTool(&mcp.Tool{Name: t.Name, Title: t.Title, Description: t.Description, Meta: t.Meta, InputSchema: t.InputSchema, OutputSchema: t.OutputSchema, Annotations: &mcp.ToolAnnotations{ReadOnlyHint: t.ReadOnly, DestructiveHint: &t.Destructive, IdempotentHint: t.Idempotent}}, func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		annotations := &mcp.ToolAnnotations{ReadOnlyHint: t.ReadOnly, DestructiveHint: &t.Destructive, IdempotentHint: t.Idempotent, OpenWorldHint: t.OpenWorld}
+		if declared, exists := manifestAnnotations[t.Name]; exists {
+			annotations = declared
+		}
+		r.Server.AddTool(&mcp.Tool{Name: t.Name, Title: t.Title, Description: t.Description, Meta: t.Meta, InputSchema: t.InputSchema, OutputSchema: t.OutputSchema, Annotations: annotations}, func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			var input map[string]any
 			if len(req.Params.Arguments) > r.options.MaxPayloadBytes || json.Unmarshal(req.Params.Arguments, &input) != nil {
 				return result(failure("INVALID_INPUT", "Invalid input"), true), nil
@@ -122,6 +132,12 @@ func result(value any, isError bool) *mcp.CallToolResult {
 	return &mcp.CallToolResult{IsError: isError, StructuredContent: value, Content: []mcp.Content{&mcp.TextContent{Text: string(data)}}}
 }
 func (r *Runtime) boundedResult(value any, isError bool) *mcp.CallToolResult {
+	if isError {
+		data, err := json.Marshal(value)
+		if err != nil || ValidateFrame("error", data) != nil {
+			value = failure("INTERNAL", "Invalid tool error")
+		}
+	}
 	response := result(value, isError)
 	data, err := json.Marshal(response)
 	if err != nil || len(data) > r.options.MaxPayloadBytes {
@@ -134,6 +150,8 @@ func (r *Runtime) Execute(parent context.Context, name string, input map[string]
 	if !exists {
 		return nil, failure("INVALID_INPUT", "Unknown tool")
 	}
+	ctx, cancel := context.WithTimeout(parent, r.options.Timeout)
+	defer cancel()
 	scopes := []string{}
 	user := ""
 	if identity != nil {
@@ -149,10 +167,8 @@ func (r *Runtime) Execute(parent context.Context, name string, input map[string]
 	if err != nil || len(data) > r.options.MaxPayloadBytes || t.input.Validate(input) != nil {
 		return nil, failure("INVALID_INPUT", "Invalid input")
 	}
-	ctx, cancel := context.WithTimeout(parent, r.options.Timeout)
-	defer cancel()
-	if ctx.Err() != nil {
-		return nil, failure("CANCELLED", "The request was cancelled")
+	if cause := executionEnded(ctx); cause != nil {
+		return nil, endedError(cause, t.definition.ReadOnly)
 	}
 	select {
 	case r.slots <- struct{}{}:
@@ -178,23 +194,19 @@ func (r *Runtime) Execute(parent context.Context, name string, input map[string]
 				completed <- outcome{err: failure("INTERNAL", "An internal error occurred")}
 			}
 		}()
+		if cause := executionEnded(ctx); cause != nil {
+			completed <- outcome{err: endedError(cause, t.definition.ReadOnly)}
+			return
+		}
 		value, err := t.definition.Execute(execution, input)
 		completed <- outcome{value, err}
 	}()
 	select {
 	case <-ctx.Done():
-		code := "CANCELLED"
-		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			code = "TIMEOUT"
-		}
-		e := &Error{Code: code, Message: "The request ended before a confirmed result", Retryable: t.definition.ReadOnly}
-		if !t.definition.ReadOnly {
-			e.Details = map[string]any{"outcome": "unknown"}
-		}
-		return nil, e
+		return nil, endedError(ctx.Err(), t.definition.ReadOnly)
 	case out := <-completed:
-		if ctx.Err() != nil {
-			return nil, failure("CANCELLED", "The request was cancelled")
+		if cause := executionEnded(ctx); cause != nil {
+			return nil, endedError(cause, t.definition.ReadOnly)
 		}
 		if out.err != nil {
 			return nil, out.err
@@ -203,8 +215,31 @@ func (r *Runtime) Execute(parent context.Context, name string, input map[string]
 		if err != nil || len(data) > r.options.MaxPayloadBytes || t.output.Validate(out.value) != nil {
 			return nil, failure("INTERNAL", "Invalid tool result")
 		}
+		if cause := executionEnded(ctx); cause != nil {
+			return nil, endedError(cause, t.definition.ReadOnly)
+		}
 		return out.value, nil
 	}
+}
+func executionEnded(ctx context.Context) error {
+	if cause := ctx.Err(); cause != nil {
+		return cause
+	}
+	if deadline, exists := ctx.Deadline(); exists && !time.Now().Before(deadline) {
+		return context.DeadlineExceeded
+	}
+	return nil
+}
+func endedError(cause error, readOnly bool) *Error {
+	code := "CANCELLED"
+	if errors.Is(cause, context.DeadlineExceeded) {
+		code = "TIMEOUT"
+	}
+	e := &Error{Code: code, Message: "The request ended before a confirmed result", Retryable: readOnly}
+	if !readOnly {
+		e.Details = map[string]any{"outcome": "unknown"}
+	}
+	return e
 }
 func (r *Runtime) HTTPHandler() http.Handler {
 	handler := mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server { return r.Server }, &mcp.StreamableHTTPOptions{Stateless: true, JSONResponse: true})

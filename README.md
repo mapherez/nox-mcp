@@ -42,6 +42,8 @@ The implementations follow the same core contracts while remaining idiomatic to 
 
 Shared schemas and protocol definitions live under [`contracts/`](contracts/).
 
+The shared manifest loaders and execution constructors use the portable schema profile described in [contract management](contracts/README.md). Version `0.5.0` prepares validation and execution corrections; review the [migration notes](MIGRATION_0_5.md) before upgrading an existing application. This checkout does not publish a release or migrate consumers.
+
 ## Installation
 
 NoX MCP releases use Git tags in the form:
