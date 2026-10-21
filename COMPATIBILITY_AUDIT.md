@@ -1,8 +1,8 @@
 # Auditoria de compatibilidade, robustez e qualidade
 
-Data: 21 de outubro de 2026. Âmbito: apenas `nox-mcp`, versão pública **0.5.0**. Nenhuma release publicada, tag substituída ou aplicação consumidora alterada. Os consumidores referidos abaixo são aplicações temporárias criadas pelos testes, fora do checkout.
+Data: 21 de outubro de 2026. Âmbito: apenas `nox-mcp`, versão publicada atual **0.6.0**. Nenhuma release publicada, tag substituída ou aplicação consumidora alterada. Os consumidores referidos abaixo são aplicações temporárias criadas pelos testes, fora do checkout.
 
-**Estado: 17/17 jobs Supported / Required aprovados no CI; sem bloqueadores identificados nos requisitos suportados testados.** Âmbito: stdio e HTTP JSON nas três linguagens; SSE em TypeScript/Rust. SSE Go fica em **Investigating / Future Support**, por decisão explícita do utilizador, sem bloquear funcionalidades suportadas. Os dois diagnósticos remotos continuam a falhar: o defeito não foi corrigido nem convertido numa aprovação. Não se anuncia conformidade total de todos os transportes/protocolos. A publicação continua dependente da decisão do utilizador.
+**Registo histórico:** os 17/17 jobs indicados na secção B pertencem à revisão anterior `9b45842`. Não são resultados da revisão atual. A atualização após v0.6.0 simplifica a publicação, retira a integração de identidade não pretendida e torna o diagnóstico SSE Go exclusivamente manual. Os resultados desta revisão são registados no final do documento.
 
 ## A. Problemas identificados e corrigidos
 
@@ -78,16 +78,14 @@ Foi retirada a exceção que transformava o defeito SSE Go num teste aprovado. C
 
 O `tsc` interno tinha `skipLibCheck` e os testes de instalação só importavam JavaScript. A compilação externa estrita encontrou `TS1543`: a declaração pública de `defaults` importava JSON sem atributo de importação NodeNext. `scripts/sync-contracts.mjs` gera agora `defaults.generated.ts` com o tipo estrutural a partir dos defaults oficiais. `contract.ts` usa esse tipo, preservando o mesmo objeto e valores; o `.d.ts` publicado já não importa JSON.
 
-A entrada opcional `better-auth` arrastava declarações estrangeiras de Bun/Cloudflare/base de dados com erros de tipos. `typescript/src/better-auth.ts` publica agora projeções estruturais dos mesmos tipos de claims/opções, sem modificar o corpo da autenticação, callbacks ou requisitos. A igualdade com o upstream é verificada na compilação interna e nos perfis mínimo/recente do consumidor. Nenhum export foi renomeado. A aplicação que importa os sete exports NoX compila com `strict` **sem `skipLibCheck`**.
-
-O ensaio separado de igualdade importa o plugin upstream e usa `skipLibCheck` apenas para as suas declarações estrangeiras; as asserções da aplicação continuam a ser verificadas. Isto não é uma alegação de que as declarações completas do Better Auth foram corrigidas; a limitação de importação direta dessa biblioteca permanece na secção D.
+A integração de identidade específica foi retirada por decisão explícita posterior. O consumidor estrito valida agora os seis exports atuais, sem dependências nem projeções de tipos desse fornecedor. A build limpa as saídas anteriores, impedindo que módulos/declarations removidos continuem a acompanhar o pacote. Os callbacks de credenciais, contexto, scopes e erros mantêm-se.
 
 ### 8. Falhas reais do CI no Windows
 
 O [run 39652399162](https://github.com/mapherez/nox-mcp/actions/runs/39652399162), no commit `64b580d`, teve 17 jobs: 10 aprovados e 7 falhados. Foram consultados os logs de todos os jobs falhados. Não revelaram outra categoria de erro além das duas falhas Windows abaixo e do SSE Go agora adiado.
 
 - **Argumentos npm/PowerShell:** no perfil mínimo, `--language` e `--minimum` foram interpretados pelo npm como configuração, deixando o script sem argumentos. O job Rust executou Go (predefinição `all`) com uma toolchain Go não selecionada. A matriz chama agora diretamente `node scripts/check-consumers.mjs` com `NOX_CONSUMER_LANGUAGE` e `NOX_CONSUMER_PROFILE`. O parser exige seleção completa, válida e sem conflitos; imprime a linguagem/perfil efetivos. O pacote TypeScript usa o mesmo perfil explícito, sem encaminhar flags pelo npm. Testes cobrem as quatro combinações nativas e rejeitam configuração incompleta/inválida/conflituosa.
-- **Raiz Git:** a comparação lexical de `resolve(...)` rejeitava caminhos Windows equivalentes, incluindo nomes curtos dos diretórios temporários. `update-version.mjs` usa agora `realpath` nos dois caminhos e compara as raízes canonizadas. Não usa prefixos nem elimina verificações de árvore limpa, branch, tags, identidade, ficheiros alterados, rollback ou push atómico. Uma integração por junction/symlink comprova a aceitação do mesmo repositório; outra confirma que um subdiretório com ficheiros de versão válidos continua rejeitado. Os testes de release só alteram repositórios temporários.
+- **Raiz Git:** a comparação lexical de `resolve(...)` rejeitava caminhos Windows equivalentes, incluindo nomes curtos dos diretórios temporários. `update-version.mjs` usa agora `realpath` nos dois caminhos e compara as raízes canonizadas. Não usa prefixos nem elimina verificações de árvore limpa, branch, tags, identidade, ficheiros alterados, rollback; o novo fluxo faz push apenas do SHA de preparação, sem tags. Uma integração por junction/symlink comprova a aceitação do mesmo repositório; outra confirma que um subdiretório com ficheiros de versão válidos continua rejeitado. Os testes de release só alteram repositórios temporários.
 
 ## B. Matriz real de compatibilidade
 
@@ -102,7 +100,6 @@ Plataforma local: **Windows x64**. Toolchains: Node **24.0.0 / 24.22.0**, npm **
 | @modelcontextprotocol/node (opcional) | 2.0.0 | 2.1.1 |
 | zod | 4.6.0 | 4.6.7 |
 | ws (opcional) | 8.19.0 | 8.22.0 |
-| better-auth / @better-auth/mcp (opcionais) | 1.7.2, componentes alinhados | 1.7.12 |
 
 A compilação do consumidor usa TypeScript 5.9.3, `@types/node` 24.10.13 e `@types/ws` 8.18.1. A instalação do SDK é primeiro verificada sem TypeScript e sem hooks de compilação. O lockfile interno continua com os peers que já utilizava; a tabela recente corresponde à instalação externa, não a uma atualização do checkout.
 
@@ -159,10 +156,10 @@ O mapeamento de erros de handler difere do erro obrigatório de envelope. O corp
 
 - Contratos, regressões e transportes: Windows e Linux.
 - Consumidores mínimos/recentes por linguagem: Windows e Linux; Rust recente também em macOS.
-- Node mínimo 24.0.0 com npm 11.21.1; Node 24 recente, 26 e versão corrente.
+- Node mínimo 24.0.0 com o npm distribuído com Node; Node 24 recente, 26 e versão corrente.
 - Go mínimo 1.26.0 e patch recente 1.26.x; Rust mínimo 1.88 e stable recente.
-- `contracts.yml`: **Supported / Required**, 17 jobs obrigatórios; a publicação depende deste workflow reutilizável. Qualquer falha bloqueia a release.
-- `investigating-go-sse.yml`: **Investigating / Future**, dois diagnósticos Windows/Linux. O teste inválido continua vermelho, sem `continue-on-error`, num workflow independente do grafo de release. Não deve ser um check obrigatório de branch protection.
+- `contracts.yml`: **Supported / Required**, 17 jobs obrigatórios; a publicação consulta as aprovações deste SHA por `workflow_run`, sem repetir o workflow. Qualquer falha bloqueia a release.
+- `investigating-go-sse.yml`: **Investigating / Future**, dois diagnósticos Windows/Linux. O teste inválido continua vermelho, sem `continue-on-error`, num workflow independente do grafo de release. Tem exclusivamente `workflow_dispatch`, sem push/PR, e não deve ser um check obrigatório de branch protection.
 - Execução remota concluída no commit [`9b45842`](https://github.com/mapherez/nox-mcp/commit/9b4584291c866ab7e988809942d3e44dc0aebdbf), branch [`codex/compatibility-finalization`](https://github.com/mapherez/nox-mcp/tree/codex/compatibility-finalization). O [run obrigatório 39662771266](https://github.com/mapherez/nox-mcp/actions/runs/39662771266) terminou com **success, 17/17 jobs**. O [run Investigating 39662771414](https://github.com/mapherez/nox-mcp/actions/runs/39662771414) terminou com **failure, 2/2 reproduções do defeito conhecido**. Este registo de resultados foi acrescentado ao relatório local depois da execução, sem alterar o código validado.
 
 | Ambiente remoto efetivamente testado | Toolchains observadas |
@@ -171,7 +168,7 @@ O mapeamento de erros de handler difere do erro obrigatório de envelope. O corp
 | Windows x64 | Node 24.0.0 / 24.22.0; Go 1.26.0 / 1.26.9; Rust 1.88.0 / 1.99.1 |
 | macOS arm64 | Rust 1.99.1, consumidor Git/path recente; Node 24.21.0 no verificador |
 
-Os dois seletores Node `26` e `node` resolveram ambos **26.12.1** neste run; não constituem evidência de outro major. O perfil mínimo instala npm 11.21.1 antes dos testes. As dependências diretas efetivas coincidem com as tabelas mínimo/recente acima. O job Rust mínimo Windows confirma explicitamente `language=rust, profile=minimum`, seguido de rmcp 3.5.0, sem executar Go.
+Os dois seletores Node `26` e `node` resolveram ambos **26.12.1** neste run; não constituem evidência de outro major. Esse run histórico instalava npm 11.21.1; a revisão atual retirou esse override e validou Node 24.0.0/npm 11.3.0. As dependências diretas efetivas coincidem com as tabelas mínimo/recente acima. O job Rust mínimo Windows confirma explicitamente `language=rust, profile=minimum`, seguido de rmcp 3.5.0, sem executar Go.
 
 | Job obrigatório | Resultado remoto |
 | --- | --- |
@@ -239,16 +236,59 @@ Reprodução: `npm run diagnose:go-sse`, com SDK Go 1.8.0, responde HTTP 200 ap�
 
 Reconsiderar quando existir uma correção upstream publicada ou uma solução segura pelas APIs oficiais, acompanhada de uma necessidade concreta do produto. Antes de promover suporte, exigir testes de framing terminal dos quatro códigos, chamadas/resultados/erros, negociação e clientes legados, em Windows/Linux, e aprovação explícita da alteração à matriz de suporte. Um diagnóstico que deixe de falhar não promove suporte automaticamente.
 
-### Integração Better Auth mínima requer componentes alinhados
-
-`@better-auth/mcp 1.7.2` admite oauth-provider/core recentes por intervalos, mas estes podem exigir outro `better-call` e exports inexistentes no core antigo. A instalação mínima sem alinhamento falhou realmente na importação de `encodeDeterministicId`. O perfil mínimo instala `better-auth`, `@better-auth/mcp`, `@better-auth/core` e `@better-auth/oauth-provider` em 1.7.2 e valida peers com `--strict-peer-deps`; não usa `--force` ou `--legacy-peer-deps`. O perfil recente resolve a família atual normalmente.
-
-Não bloqueia o SDK base; a integração opcional requer uma família coerente. Não se alteraram mecanismos de autenticação dos produtos. O npm 11.3.0 apresentou ainda um erro interno Arborist (`edgesOut`) nesta árvore; o mesmo ensaio passou com Node 24.0.0 / npm 11.21.1, usado agora na matriz mínima.
-
-Ao importar diretamente as declarações completas do Better Auth 1.7.2, um projeto Node estrito encontra referências a `bun:sqlite`, tipos Cloudflare, `Timer` e um erro genérico do plugin organization. A declaração do adaptador NoX foi isolada desse grafo mantendo igualdade dos seus tipos; a importação direta da biblioteca estrangeira continua sujeita aos seus próprios requisitos/correções. Não se instalaram tipos de outros runtimes nem se modificaram os ficheiros de uma dependência para mascarar esse problema.
-
 ### Resultados de outras plataformas e tag já publicada
 
-Os resultados remotos completos da revisão atual constam da secção B: os 17 jobs obrigatórios passaram, incluindo Windows/Linux, macOS Rust recente e Node corrente. Não ficaram bloqueadores identificados nos requisitos suportados testados; SSE Go mantém a classificação separada e a integração opcional Better Auth mantém as condições documentadas.
+Os resultados remotos completos da revisão atual constam da secção B: os 17 jobs obrigatórios passaram, incluindo Windows/Linux, macOS Rust recente e Node corrente. Não ficaram bloqueadores identificados nos requisitos suportados testados; SSE Go mantém a classificação separada.
 
 A tag Git `v0.5.0` já publicada continua a referir o código antigo: esta revisão da árvore de trabalho não repara retroativamente instalações dessa tag. A publicação de uma futura versão e qualquer migração de aplicações permanecem fora desta tarefa.
+
+## E. Revisão após v0.6.0: release única e remoção da integração de identidade
+
+### Alterações e ficheiros
+
+| Área | Ficheiros |
+| --- | --- |
+| Triggers e publicação | `.github/workflows/contracts.yml`, `.github/workflows/release.yml`, `.github/workflows/investigating-go-sse.yml` |
+| Preparação e gate da release | `scripts/release.mjs`, `scripts/update-version.mjs`, `scripts/release-policy.mjs`, `scripts/publish-release.mjs` |
+| Build e instalação | `scripts/build.mjs`, `scripts/check-package.mjs`, `package.json`, `package-lock.json` |
+| Regressões | `scripts/build.test.mjs`, `scripts/update-version.test.mjs`, `scripts/publish-release.test.mjs` |
+| Integração retirada | Fonte do adaptador de identidade eliminada; export, peers, dependências de desenvolvimento, tipos projetados, teste de paridade e pins de componentes removidos |
+| Documentação | `README.md`, `COMPATIBILITY_AUDIT.md`, `COMPATIBILITY_BASELINE.md`, `DISCOVERY.md`, `MIGRATION_0_5.md`, `contracts/README.md` |
+
+O lockfile não ganhou dependências e perdeu 23 entradas. O pacote tem seis pontos de entrada: raiz, contract, bridge, bridge/client, bridge/server e node. A build limpa `typescript/dist` antes de compilar; um teste isolado sem modificar o checkout demonstra a eliminação de JS e declarações obsoletos. A instalação/compilação estrita verifica os seis exports reais no tarball. O npm mínimo deixou de ser atualizado globalmente: o ensaio Node 24.0.0/npm 11.3.0 passou sem esse workaround.
+
+Não se substituiu o fornecedor removido. Credenciais, contexto, scopes, permissões, rejeições antes do executor e contratos de erros continuam nos mecanismos existentes. As API Keys pertencem ao NoX Backend; Google Account e o futuro NoX Account continuam responsabilidades dos produtos. Não foram implementados fluxos de identidade. Go/Rust, schemas e protocolos não tiveram alterações nesta revisão.
+
+### Fluxo final
+
+1. `npm run release` exige master limpo, verifica versões/major Go/tags e prepara um commit com `NoX-Release: X.Y.Z`. Só esse SHA é enviado para master, com `--no-follow-tags`.
+2. O push executa a matriz obrigatória de 17 jobs uma vez. Não há `workflow_call` nem testes locais duplicados; PRs para master também usam a matriz, sem outro CI de push na branch de origem.
+3. `workflow_run` aceita apenas conclusão aprovada de um push master deste repositório e intenção explícita. O publicador confirma identidade/path do workflow, run, SHA, branch atual e as 17 aprovações; tentativas posteriores substituem apenas os jobs repetidos do mesmo SHA.
+4. O pacote é reconstruído com o lockfile do commit aprovado: instalação sem hooks, build e `npm pack --ignore-scripts`. Não se repetem suites nem `contracts:check`/prepack. A versão do pacote e a integridade da árvore são verificadas antes de qualquer escrita remota.
+5. A tag anotada aponta para o SHA aprovado. A release fica draft até o upload terminar e o tamanho do asset ser confirmado. Torná-la pública é a última operação API. A concorrência global serializa os publicadores; objetos existentes não são substituídos.
+
+Uma versão já preparada mas sem intenção exige um commit de autorização, eventualmente vazio. Repetir a mesma intenção reutiliza o SHA. Uma falha depois de criar a tag pode deixar tag/draft não publicados; a recuperação exige revisão explícita, sem apagar ou substituir versões automaticamente. Antes da primeira utilização, instalar estes workflows em master num commit normal, sem intenção de release. O listener `workflow_run` tem de existir no branch predefinido, conforme a [documentação GitHub](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run).
+
+O diagnóstico SSE Go conserva os scripts e testes, mas tem exclusivamente `workflow_dispatch`. Não foi executado nem investigado nesta tarefa. A falha intermitente Rust não foi investigada e não motivou alterações.
+
+### Testes efetivamente executados nesta revisão
+
+Plataforma: Windows x64. A nova publicação foi exercitada contra uma API HTTP local e repositórios Git temporários, sem qualquer escrita no GitHub real.
+
+| Verificação | Resultado |
+| --- | --- |
+| `npm ci --ignore-scripts` e `npm test` | Aprovados; 198 testes, zero falhas/skips/cancelamentos |
+| Gate/publicador | HTTP real simulado; 17 jobs, SHA, versão, forks/PRs, jobs em falta/duplicados/falhados/ignorados, tentativas, master concorrente, tags/releases existentes, falhas de build/upload; nenhuma publicação antecipada |
+| Preparação Git | Master, árvore limpa, aliases Windows, versão/major Go, rollback, cancelamento, push sem tags mesmo com followTags, rejeição non-fast-forward e retry do mesmo SHA |
+| `go test -mod=readonly ./...` e `cargo test --locked --manifest-path rust/Cargo.toml` | Aprovados, sem modificar as suites nativas |
+| `npm run test:conformance` | 18 observações idênticas nas três linguagens, incluindo autorização e erros |
+| `npm run test:discovery` | Aprovado no âmbito suportado, stdio/HTTP JSON nas três linguagens e SSE TypeScript/Rust |
+| `npm run package:check`, perfis mínimo/recente | Aprovados; consumidores reais, HTTP legado/moderno JSON/SSE, seis exports e TypeScript estrito |
+| Consumidor mínimo Node | Node 24.0.0/npm 11.3.0; instalação e compilação aprovadas sem override npm |
+| Consumidores Go mínimo/recente | Go 1.26.0/1.26.3; resolução própria, execução e transportes aprovados |
+| Consumidores Rust mínimo/recente | Rust 1.88/1.95, rmcp 3.5/3.6; Git/path, produção sem feature client, integração e transportes aprovados |
+| `npm run test:native-packages` | Pacotes nativos instalados e executados fora do checkout |
+| `npm run benchmark:discovery` | Budgets preservados; 93,3% de redução para uma alteração em 100 ferramentas |
+| `actionlint`, `git diff --check` | Aprovados |
+
+Os 17 jobs remotos da secção B são evidência histórica, não uma execução da nova revisão. Não se lançou uma release real nem se alteraram aplicações consumidoras. A tag `v0.6.0` continua no commit `726c53f77608d33bf59849d7b851b7ed36a5900b`; a versão pública dos manifests permanece 0.6.0. Não foram observadas regressões nos testes executados; a integração do listener/publisher no GitHub real continua dependente da instalação normal dos workflows em master, sem publicar nesta tarefa.

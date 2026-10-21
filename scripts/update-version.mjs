@@ -5,7 +5,7 @@ import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const versionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?$/;
+export const versionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?$/;
 
 function git(root, ...args) {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -64,7 +64,7 @@ export async function validateVersion(root, input) {
   return { version, files };
 }
 
-export async function updateVersion(root, input, { beforeCommit = async () => {}, allowCurrentVersion = false } = {}) {
+export async function updateVersion(root, input, { beforeCommit = async () => {}, allowCurrentVersion = false, releaseIntent = false } = {}) {
   const { version, files } = await validateVersion(root, input);
   // Git and Windows may spell the same directory with short names (RUNNER~1),
   // junctions or different casing. Resolve both through the filesystem, without
@@ -94,11 +94,12 @@ export async function updateVersion(root, input, { beforeCommit = async () => {}
         git(root, 'ls-files', '--others', '--exclude-standard')) {
       throw new Error('A validacao alterou ficheiros fora da atualizacao de versao. Revê as alteracoes antes de publicar.');
     }
-    // A version prepared in an earlier commit still needs checks and a tag,
-    // but must not create an empty release commit.
-    if (updates.length) {
-      git(root, 'add', '--', ...updates.map(file => file.path));
-      git(root, 'commit', '-m', `chore: release ${tag}`);
+    // A release intent is an explicit authorization on the exact SHA to test.
+    // An already marked commit can be retried without creating another commit.
+    const message = `chore: release ${tag}\n\nNoX-Release: ${version}`;
+    if (updates.length || (releaseIntent && git(root, 'log', '-1', '--format=%B') !== message)) {
+      if (updates.length) git(root, 'add', '--', ...updates.map(file => file.path));
+      git(root, 'commit', '--allow-empty', '-m', releaseIntent ? message : `chore: prepare ${tag}`);
     }
   } catch (error) {
     // Restore only our version edits when the release commit was not created.
@@ -108,12 +109,7 @@ export async function updateVersion(root, input, { beforeCommit = async () => {}
     }
     throw error;
   }
-  // A tag failure leaves the release commit intact for inspection and retry.
-  try {
-    git(root, 'tag', '-a', tag, '-m', `Release ${tag}`);
-  } catch (error) {
-    throw new Error(`${updates.length ? 'Commit de versao criado' : 'Versao preparada validada'}, mas a tag ${tag} falhou. Corrige o erro e cria a tag nesse commit.`, { cause: error });
-  }
+  // Tags belong exclusively to the publisher after the compatibility gate.
   return tag;
 }
 
@@ -126,7 +122,7 @@ async function main() {
   if (files.some(file => file.versions.some(version => version !== current))) {
     console.log('Existem versoes inconsistentes; todas serao sincronizadas com a versao escolhida.');
   }
-  console.log('A atualizacao cria um commit e uma tag Git local. Nao faz push.');
+  console.log('A atualizacao prepara um commit local, sem tag nem push.');
   let version = process.argv[2];
   if (!version) {
     const reader = createInterface({ input: process.stdin, output: process.stdout });
@@ -137,8 +133,8 @@ async function main() {
   }
   if (!version?.trim()) { console.log('Cancelado.'); return; }
   const tag = await updateVersion(repoRoot, version);
-  console.log(`Versoes sincronizadas; commit e tag ${tag} criados.`);
-  console.log(`Para publicar: git push --follow-tags`);
+  console.log(`Versoes sincronizadas num commit local para ${tag}, sem tag.`);
+  console.log(`Para pedir a publicacao apos o CI: npm run release -- ${tag.slice(1)}`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -2,6 +2,8 @@
 
 Data: 20 de outubro de 2026. Âmbito: análise do código local, sem alterações às implementações, dependências, schemas ou configurações.
 
+Atualização posterior autorizada: a integração específica de identidade foi retirada do SDK. As referências abaixo a essa superfície foram removidas; as restantes observações e versões são históricas, não requisitos atuais. Consultar README.md e COMPATIBILITY_AUDIT.md para o estado atual.
+
 ## 1. Conclusão e âmbito da auditoria
 
 O NoX MCP já fornece infraestrutura utilizada no código de quatro produtos: registo e descoberta de ferramentas, validação, resultados estruturados, controlo de execução e integração com transportes. O NoteX depende também das pontes desktop e dos brokers Rust. **A compatibilidade a preservar inclui estes comportamentos, os pontos de importação e as integrações específicas dos produtos; não se limita aos schemas JSON.**
@@ -27,7 +29,7 @@ Não foram consultadas instalações em produção nem confirmadas as versões e
 O repositório é uma biblioteca multilinguagem, sem serviço central de encaminhamento entre produtos:
 
 - `contracts/`: seis schemas JSON Schema draft-07 e um ficheiro de valores por omissão.
-- `typescript/`: pacote ESM `@nox/mcp`, com ferramentas baseadas em Zod, servidor MCP, HTTP, integração Node, autorização Better Auth e ponte WebSocket cliente/servidor.
+- `typescript/`: pacote ESM `@nox/mcp`, com ferramentas baseadas em Zod, servidor MCP, HTTP, integração Node, contexto de autorização fornecido pela aplicação e ponte WebSocket cliente/servidor.
 - `go/`: pacote `github.com/mapherez/nox-mcp/go`, com runtime de ferramentas, HTTP/stdio, autorização Bearer/JWT, validação de frames e cliente de ponte WebSocket.
 - `rust/`: crate `nox-mcp`, com servidor baseado em `rmcp`, carregamento de ferramentas, resultados, validação, broker para renderer e registo de execuções por geração. O transporte HTTP e a ligação WebSocket concretos do NoteX são montados pelo próprio produto.
 - `scripts/` e `.github/workflows/release.yml`: sincronização de versões, testes, validação do pacote e publicação por tag.
@@ -50,7 +52,6 @@ O mapa `exports` de [package.json](package.json) é parte do contrato de instala
 | `@nox/mcp/bridge/client` | `connectBridge`, `BridgeClientOptions`; devolve um objeto com `close()` assíncrono |
 | `@nox/mcp/bridge/server` | `installBridgeServer`, `closeSocket`, `GatewayOptions`, `GatewayLogger`; instalação devolve uma função de encerramento assíncrona |
 | `@nox/mcp/node` | Reexportações SDK `toNodeHandler` e `serveStdio` |
-| `@nox/mcp/better-auth` | `protectWithBetterAuth`, interface `Auth` |
 
 Em `contract`, são públicos `bridgeErrorSchema`, `bridgeTicketSchema`, `bridgeAuthenticateSchema`, `bridgeReadySchema`, `bridgeRequestSchema`, `bridgeCancelSchema`, `bridgeResponseSchema`, `serverBridgeMessageSchema`, `desktopBridgeMessageSchema`, `toolManifestSchema`, `createResponseSchema`, `parseFrame` e os tipos `BridgeRequest`, `BridgeResponse`, `BridgeFrame`, `ToolManifestEntry`, `ToolManifest`.
 
@@ -58,7 +59,7 @@ Em `contract`, são públicos `bridgeErrorSchema`, `bridgeTicketSchema`, `bridge
 
 `BridgeRegistry` é extensível: o NoteX herda desta classe. São públicos `issueTicket`, `consumeTicket`, `attach`, `markReady`, `markPong`, `getPresence`, `dispatch`, `acceptResponse`, `detach`, `revokeUserConnection`, `closeStaleConnections` e `close`. Também fazem parte da integração os callbacks de sessões, validação de entrada/saída, classificação de leituras, schema de resposta e fábrica de erros. Os campos públicos de `BridgeConnection` incluem identidade, socket, estado, versão, geração, heartbeat e pedidos pendentes.
 
-Fontes: [index.ts](typescript/src/index.ts), [contract.ts](typescript/src/contract.ts), [http.ts](typescript/src/http.ts), [bridge.ts](typescript/src/bridge.ts), [bridge-client.ts](typescript/src/bridge-client.ts), [bridge-server.ts](typescript/src/bridge-server.ts), [better-auth.ts](typescript/src/better-auth.ts).
+Fontes: [index.ts](typescript/src/index.ts), [contract.ts](typescript/src/contract.ts), [http.ts](typescript/src/http.ts), [bridge.ts](typescript/src/bridge.ts), [bridge-client.ts](typescript/src/bridge-client.ts), [bridge-server.ts](typescript/src/bridge-server.ts).
 
 ### Go
 
@@ -131,7 +132,7 @@ O HTTP TypeScript `0.4.3` é stateless, com JSON por omissão e SSE por opção.
 
 O corpo HTTP TypeScript está limitado separadamente a 4 MiB; `maxPayloadBytes` limita entrada e resposta das ferramentas. O envelope duplica o resultado em texto e estrutura, pelo que o tamanho do objeto de domínio não corresponde diretamente ao tamanho final. Go usa HTTP stateless com `JSONResponse: true`, limita o corpo pelo valor configurado e anuncia os protocolos MCP `2025-11-25` e `2026-07-28`. O NoteX configura o HTTP Rust no próprio produto.
 
-`protectWithBetterAuth` e `Protect` exigem verificação da autorização ativa por pedido, além da validade do token. `JWTVerifier` exige issuer, audience, expiração e subject, com algoritmos RS256/ES256/EdDSA e resolução de chaves confiada à aplicação. Estes adaptadores não são um mecanismo universal de API Key: Backend, Yard, NoteX e Bot têm fronteiras diferentes, descritas abaixo.
+`Protect` exige verificação da autorização ativa por pedido, além da validade do token. `JWTVerifier` exige issuer, audience, expiração e subject, com algoritmos RS256/ES256/EdDSA e resolução de chaves confiada à aplicação. Estes adaptadores não são um mecanismo universal de API Key: Backend, Yard, NoteX e Bot têm fronteiras diferentes, descritas abaixo. A integração específica de identidade TypeScript identificada originalmente foi entretanto retirada do SDK.
 
 Os limites pertencem às instâncias de runtime/servidor. Em particular, a fábrica HTTP TypeScript cria servidores para os pedidos; não se deve interpretar `maxInFlightRequests` como quota global automática de um serviço. O Yard acrescenta o seu próprio limite global HTTP.
 
@@ -165,7 +166,7 @@ Preservar erros e resultados parciais da fachada, identificadores de alvos, conf
 
 ### NoteX
 
-O [backend MCP](../notex/backend/src/mcp.ts) usa `createHttpHandler`, `resolveAuth`, `requiredScopes` e `formatError`. `protectWithBetterAuth` protege tanto MCP como a API desktop, com verificação ativa de autorização. Os scopes são `notex:read`, `notex:create`, `notex:edit`, `notex:delete`; a identidade é passada em `authInfo.extra.userId`.
+O [backend MCP](../notex/backend/src/mcp.ts) usa `createHttpHandler`, `resolveAuth`, `requiredScopes` e `formatError`. Na auditoria histórica, uma integração específica de identidade protegia MCP e a API desktop com verificação ativa de autorização; essa integração deixou de fazer parte do SDK. Os scopes são `notex:read`, `notex:create`, `notex:edit`, `notex:delete`; a identidade é passada em `authInfo.extra.userId`. Esta revisão não alterou nem voltou a inspecionar esse produto.
 
 O [registo de ponte](../notex/backend/src/bridge/registry.ts) herda de `BridgeRegistry`, fornece schemas e erros próprios e adapta presença offline em `notex_status`. A [instalação WebSocket](../notex/backend/src/bridge/server.ts) fornece `parseDesktopFrame` próprio. Sessões, tickets, revogação e substituição de ligações são parte da integração efetiva.
 
@@ -187,11 +188,11 @@ Apesar de já depender de `0.4.3`, [mcpHttp.ts](../nox-bot/src/services/mcpHttp.
 
 | Componente | Requisitos / versões resolvidas relevantes |
 | --- | --- |
-| Biblioteca TypeScript | Node `>=24`; TypeScript `5.9.3`; SDK servidor/cliente `2.3.1`, adaptador Node `2.1.1`, Zod `4.6.5`, Better Auth/MCP `1.7.7`, `ws 8.22.0` no lockfile |
-| Peers TypeScript | Zod `^4.6.0` obrigatório; Node SDK `^2.0.0`, Better Auth/MCP `^1.7.2` e `ws ^8.19.0` opcionais no pacote, mas necessários para os respetivos adaptadores |
+| Biblioteca TypeScript | Node `>=24`; TypeScript `5.9.3`; SDK servidor/cliente `2.3.1`, adaptador Node `2.1.1`, Zod `4.6.5`, `ws 8.22.0` no lockfile |
+| Peers TypeScript | Zod `^4.6.0` obrigatório; Node SDK `^2.0.0`, `ws ^8.19.0` opcionais no pacote, mas necessários para os respetivos adaptadores |
 | Go | Biblioteca/Backend pedem Go `1.26.0`; Yard pede `1.26.9`. Os três declaram SDK Go `1.8.0` e `jsonschema-go 0.4.3`; a biblioteca usa também `coder/websocket 1.8.15` e JWT `5.3.1` |
 | Rust | Rust mínimo `1.88`, edition 2021; `rmcp = "3.0"` resolve `3.5.0` no lockfile da biblioteca e `3.2.0` no NoteX; `jsonschema` da biblioteca resolve `0.58.5` |
-| NoteX TypeScript | Lockfile contém SDK servidor `2.0.0` no backend e `2.3.1` na raiz; adaptador Node `2.0.0`, Better Auth/MCP `1.7.2`, Zod `4.6.5`, `ws 8.21.3` |
+| NoteX TypeScript | Lockfile contém SDK servidor `2.0.0` no backend e `2.3.1` na raiz; adaptador Node `2.0.0`, Zod `4.6.5`, `ws 8.21.3` |
 | Bot TypeScript | Node `>=24 <25`; SDK servidor/cliente `2.3.1`, adaptador Node `2.0.0`, Zod `4.6.0` no lockfile |
 
 Fontes das versões: manifests e lockfiles dos cinco repositórios. Os SDKs e validadores atravessam as APIs públicas; a sua atualização pode afetar tipos, serialização e transportes mesmo sem mudar os nomes das funções NoX.
@@ -230,7 +231,7 @@ Não se executou `npm test` diretamente porque inclui emissão de ficheiros; usa
 | Área | Evidência existente | Lacunas relevantes |
 | --- | --- | --- |
 | TypeScript: ferramentas/HTTP | `typescript/test/tools.test.mjs` e `http.test.mjs`: metadados, schemas, scopes, resultados, JSON/SSE, duas gerações MCP, negociação, limites, timeout, cancelamento, subscrições e encerramento | Não há percentagem de cobertura configurada; instabilidade de desconexão por esclarecer; limites entre instâncias e cenários prolongados não estão demonstrados |
-| TypeScript: ponte/autorização | Sem testes dedicados destes módulos no repositório da biblioteca | Ticket expirado/reutilizado, revogação, heartbeat, gerações, clientes de ponte e Better Auth dependem sobretudo da validação feita pelos produtos |
+| TypeScript: ponte/autorização | Sem testes dedicados destes módulos no repositório da biblioteca | Ticket expirado/reutilizado, revogação, heartbeat, gerações, clientes de ponte e integração de identidade entretanto retirada dependem sobretudo da validação feita pelos produtos |
 | Go | `go/nox_test.go`: metadados, descoberta e chamadas em memória, contexto, schemas, scopes e contexto previamente cancelado | Cobertura de 30,0%; faltam testes próprios de HTTP/stdio, `RunBridge`, schemas de frames, `Protect`/JWT, timeout durante execução, saturação e saída inválida/oversized |
 | Rust | Dois testes de registo/broker e três testes de metadados/chamadas com transporte em memória | Faltam testes sistemáticos de parser de frames, manifestos inválidos, prazos, limites, timeout/cancelamento do servidor, gerações e sobrecarga; os testes atuais não demonstram HTTP real nem paridade entre SDKs |
 | Contratos entre linguagens | Schemas duplicados atualmente iguais | Não há corpus comum executado nas três linguagens nem verificação automática das cópias/defaults, campos desconhecidos, scopes ou manifesto com `_meta` |

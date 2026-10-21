@@ -1,10 +1,10 @@
 name: Supported / Required compatibility
 
 on:
-  workflow_call:
   pull_request:
+    branches: [master]
   push:
-    branches: ['**']
+    branches: [master]
 
 permissions:
   contents: read
@@ -78,9 +78,6 @@ jobs:
         if: matrix.language == 'rust'
         with:
           toolchain: ${{ matrix.profile == 'minimum' && '1.88.0' || 'stable' }}
-      - name: Use tested npm 11 on the minimum Node runtime
-        if: matrix.profile == 'minimum'
-        run: npm install --global npm@11.21.1 --ignore-scripts --no-audit --no-fund
       - run: npm ci --ignore-scripts
       - run: npm run build
       - name: Compile and execute independent native application

@@ -1,79 +1,42 @@
-name: Release
+﻿name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_run:
+    workflows: ['Supported / Required compatibility']
+    types: [completed]
+    branches: [master]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: nox-release-publication
   cancel-in-progress: false
 
 jobs:
-  compatibility:
-    uses: ./.github/workflows/contracts.yml
   release:
-    needs: compatibility
+    # Successful PR/fork/manual runs and ordinary master commits never publish.
+    if: >-
+      github.repository == 'mapherez/nox-mcp' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'master' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      startsWith(github.event.workflow_run.head_commit.message, 'chore: release v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.sha }}
-          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
-          cache: npm
-      - uses: actions/setup-go@v7
-        with:
-          go-version-file: go.mod
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Validate release version
-        run: node scripts/check-release-version.mjs "$RELEASE_TAG"
+          package-manager-cache: false
+      - name: Verify approved SHA and 17 jobs, package and publish last
+        run: node scripts/publish-release.mjs
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
-      - name: Refuse an existing release
-        run: |
-          # A 404 is expected; auth, network and other API errors must fail.
-          if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > /dev/null 2> release-error.txt; then
-            echo "Release $RELEASE_TAG already exists; refusing to replace it."
-            exit 1
-          elif ! grep -q 'HTTP 404' release-error.txt; then
-            cat release-error.txt
-            exit 1
-          fi
-          rm release-error.txt
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
-      - run: npm ci --ignore-scripts
-      - name: Reject generated contract drift
-        run: npm run contracts:check
-      - name: Test TypeScript and build package
-        run: npm test
-      - name: Test Go
-        run: go test -mod=readonly ./...
-      - name: Test Rust
-        run: cargo test --locked --manifest-path rust/Cargo.toml
-      - name: Compare actual runtime observations across languages
-        run: npm run test:conformance
-      - name: Validate supported discovery transports (Go SSE remains Investigating)
-        run: npm run test:discovery
-      - name: Check discovery payload budgets
-        run: npm run benchmark:discovery
-      - name: Pack and verify consumer installation
-        run: npm run package:check -- "$RUNNER_TEMP/nox-mcp.tgz"
-      - name: Verify standalone native dependencies
-        run: npm run test:native-packages
-      - name: Create GitHub Release
-        run: |
-          args=()
-          if [[ "$RELEASE_TAG" == *-* ]]; then args+=(--prerelease); fi
-          gh release create "$RELEASE_TAG" "$RUNNER_TEMP/nox-mcp.tgz" \
-            --verify-tag --title "$RELEASE_TAG" --generate-notes "${args[@]}"
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}

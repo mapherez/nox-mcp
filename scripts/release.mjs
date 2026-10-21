@@ -6,34 +6,24 @@ import { readVersionFiles, updateVersion, validateVersion } from './update-versi
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-export async function release(root, input, { check = () => {
-  if (!process.env.npm_execpath) throw new Error('Executa com npm run release -- X.Y.Z.');
-  const npm = (...args) => execFileSync(process.execPath, [process.env.npm_execpath, ...args], { cwd: root, stdio: 'inherit' });
-  npm('ci', '--ignore-scripts');
-  npm('test');
-  execFileSync('go', ['test', '-mod=readonly', './...'], { cwd: root, stdio: 'inherit' });
-  execFileSync('cargo', ['test', '--locked', '--manifest-path', 'rust/Cargo.toml'], { cwd: root, stdio: 'inherit' });
-  npm('run', 'test:conformance');
-  npm('run', 'test:discovery');
-  npm('run', 'benchmark:discovery');
-  npm('run', 'test:native-packages');
-  npm('run', 'package:check');
-} } = {}) {
+export async function release(root, input, { check = () => {} } = {}) {
   const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   const { version } = await validateVersion(root, input);
   const tag = `v${version}`;
   if (git('status', '--porcelain')) throw new Error('A arvore Git tem alteracoes. Faz commit ou stash antes da release.');
   const branch = git('symbolic-ref', '--quiet', '--short', 'HEAD');
+  if (branch !== 'master') throw new Error('A preparacao de release exige a branch master.');
   // Check origin before touching manifests. Never replace a local or remote tag.
   if (git('ls-remote', '--tags', 'origin', `refs/tags/${tag}`)) {
     throw new Error(`A tag ${tag} ja existe em origin; escolhe uma nova versao.`);
   }
-  await updateVersion(root, version, { beforeCommit: check, allowCurrentVersion: true });
+  await updateVersion(root, version, { beforeCommit: check, allowCurrentVersion: true, releaseIntent: true });
+  const sha = git('rev-parse', 'HEAD');
   try {
-    // Both refs succeed together, with no force and no unrelated tags.
-    git('push', '--atomic', 'origin', `HEAD:refs/heads/${branch}`, `refs/tags/${tag}:refs/tags/${tag}`);
+    // Explicit SHA and --no-follow-tags prevent implicit pushes of local tags.
+    git('push', '--no-follow-tags', 'origin', `${sha}:refs/heads/master`);
   } catch (error) {
-    throw new Error(`Push falhou. O commit e a tag ${tag} ficaram locais. Corrige a causa e repete: git push --atomic origin HEAD:refs/heads/${branch} refs/tags/${tag}:refs/tags/${tag}`, { cause: error });
+    throw new Error(`Push falhou. O commit ${sha} ficou local, sem criar tags. Corrige a causa e repete npm run release -- ${version}.`, { cause: error });
   }
   return `https://github.com/mapherez/nox-mcp/releases/download/${tag}/nox-mcp.tgz`;
 }
@@ -50,7 +40,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       if (files.some(file => file.versions.some(value => value !== current))) {
         console.log('Existem versoes inconsistentes; todas serao sincronizadas com a versao escolhida.');
       }
-      console.log('A release executa as validacoes, cria a tag e faz push para origin.');
+      console.log('A release prepara um commit em master. O CI valida o SHA antes de criar a tag e publicar.');
       const reader = createInterface({ input: process.stdin, output: process.stdout });
       process.stdout.write('Versao a publicar (Enter para cancelar): ');
       try {
@@ -59,7 +49,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       if (!version?.trim()) { console.log('Cancelado.'); return; }
     }
     const url = await release(repoRoot, version);
-    console.log('Commit e tag publicados. O GitHub Actions esta a testar e a gerar a release.');
+    console.log('Commit enviado para master, sem tag. O GitHub Actions publica apenas se os 17 jobs desse SHA forem aprovados.');
     console.log(`Quando o workflow terminar: npm install ${url}`);
   })().catch(error => {
     console.error(error.stderr?.toString().trim() || error.message);

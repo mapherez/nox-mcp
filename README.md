@@ -44,11 +44,11 @@ The implementations follow the same core contracts while remaining idiomatic to 
 | Rust | Rust 1.88+ | [`rust/`](rust/) |
 | Go | Go 1.26+ | [`go/`](go/) |
 
-Rust requires `rmcp >=3.5.0, <4`; the independently tested MSRV is 1.88 with Rust-aware dependency resolution. Consumers own their resolver/lockfile: see the audit for the minimum graph and resolver configuration. Node 24.0.0 is tested with npm 11.21.1; the optional Better Auth integration requires aligned plugin/core versions. `npm run test:consumers -- --language=rust --minimum`, `--language=go --minimum`, and `npm run package:check -- --minimum` exercise actual independent applications; omit `--minimum` to resolve recent compatible dependencies.
+Rust requires `rmcp >=3.5.0, <4`; the independently tested MSRV is 1.88 with Rust-aware dependency resolution. Consumers own their resolver/lockfile: see the audit for the minimum graph and resolver configuration. Node 24.0.0 uses its bundled npm; no global npm override is required. `npm run test:consumers -- --language=rust --minimum`, `--language=go --minimum`, and `npm run package:check -- --minimum` exercise actual independent applications; omit `--minimum` to resolve recent compatible dependencies.
 
 Shared schemas and protocol definitions live under [`contracts/`](contracts/).
 
-The shared manifest loaders and execution constructors use the portable schema profile described in [contract management](contracts/README.md). Version `0.5.0` is already published; the audit corrections in this working tree are unreleased. Review the [migration notes](MIGRATION_0_5.md), including the approved tool-error envelope correction. This checkout does not publish a release or migrate consumers.
+The shared manifest loaders and execution constructors use the portable schema profile described in [contract management](contracts/README.md). Published releases through `v0.6.0` remain unchanged; the release-tooling changes and removal of the retired identity adapter in this working tree are unreleased. Review the [migration notes](MIGRATION_0_5.md), including the approved tool-error envelope correction. This checkout does not publish a release or migrate consumers.
 
 ## Installation
 
@@ -76,7 +76,7 @@ Example import:
 import { createServer } from '@nox/mcp';
 ```
 
-Additional package entry points are available for contracts, bridges, Node integration, and authorization helpers.
+Additional package entry points are available for contracts, bridges, and Node integration.
 
 To update, install the desired release tag again:
 
@@ -281,7 +281,7 @@ NoX MCP provides reusable authorization primitives for applications that need pr
 
 Tool definitions can declare required scopes, while execution contexts expose the authenticated identity and granted scopes to application code.
 
-Authorization remains independent from the tool implementation itself, allowing the same tool infrastructure to be used in local, trusted-network, and authenticated remote environments.
+Authorization remains independent from tool execution. The host supplies credential validation and the authorized context through the existing callbacks. NoX Backend exclusively generates and manages NoX API Keys; Google Account and the future NoX Account belong to the product identity layer. This SDK does not implement those identity flows or issue API Keys.
 
 ## Shared contracts
 
@@ -302,55 +302,59 @@ These contracts exist to keep behavior consistent between TypeScript, Rust, and 
 
 ## Releases
 
-Releases are created from a clean working tree with:
+Version `v0.6.0` is already published and is not modified by this revision.
+Commit reviewed changes first. On a clean `master` branch, run:
 
 ```sh
 npm run release
+# or: npm run release -- X.Y.Z
 ```
 
-The interactive command shows the current versions in the project files and asks
-which version to publish. Enter a version such as `0.5.0` or `0.6.0-rc.1`; press
-Enter without a version to cancel. A prepared version can be selected again if
-its release tag does not exist yet. Inconsistent file versions are shown before
-you choose the version.
+The interactive command shows current versions and asks which version to prepare;
+Enter cancels. The command validates the version, Go major, clean repository and
+absence of local/remote tags, synchronizes the four version files and creates a
+commit with an explicit `NoX-Release: X.Y.Z` trailer. It pushes only that SHA to
+`origin/master`, without tags or local test suites.
 
-For non-interactive use, the explicit version remains supported:
+1. `contracts.yml` runs the 17 required jobs once for the master push. Pull
+   requests targeting master use the same matrix; feature pushes do not launch
+   another duplicate matrix.
+2. After success, `release.yml` receives `workflow_run`. It accepts only a
+   successful master push from this repository with explicit release intent.
+3. The publisher checks workflow identity, all 17 latest job approvals across
+   attempts, SHA, current master head, all SDK versions and absence of a tag or
+   release. PRs, forks, manual runs, unmarked commits and superseded SHAs cannot
+   publish. The checkout is the approved SHA, not the publisher's default SHA.
+4. With the committed npm lockfile, it builds and packs the distribution, without
+   rerunning tests, contract checks or the normal prepack validation hook. It
+   checks source integrity and tag/release absence again before remote writes.
+5. It creates an annotated tag at the approved SHA, creates a draft, uploads
+   `nox-mcp.tgz`, then publishes as the final API operation. Publication is
+   serialized by a repository-wide concurrency group; existing objects are never
+   overwritten.
 
-```sh
-npm run release -- X.Y.Z
-```
+A version prepared earlier still needs an explicit release-intent commit. This
+can be empty when the version files already match; it authorizes a new SHA for
+CI. Retrying an unchanged intent commit reuses that SHA. `npm run version:update`
+prepares only a local version commit, without tag, push or publication intent.
 
-The release process:
+If CI fails, use GitHub's **Re-run failed jobs**: successful jobs from earlier
+attempts of the same SHA remain usable. Repeating the local push of an unchanged
+SHA does not create a new CI event. If packaging fails, no tag is created. If an
+API/upload fails after tag creation, an unpublished draft/tag may remain; inspect
+and resolve that incomplete attempt manually. Retries refuse existing tags or
+releases, including published versions. No automatic rollback deletes them.
 
-1. validates the requested semantic version;
-2. synchronizes versioned project files;
-3. runs the TypeScript, Go, and Rust test suites;
-4. verifies the distributable TypeScript package;
-5. creates a release commit if version files changed, otherwise uses the existing prepared commit;
-6. creates an annotated `vX.Y.Z` Git tag;
-7. pushes the commit and tag;
-8. lets GitHub Actions validate the tagged source again;
-9. creates the GitHub Release;
-10. attaches the packaged TypeScript distribution.
+Install these workflow changes on master with an ordinary reviewed commit before
+using the new release command. GitHub requires the `workflow_run` listener to be
+on the default branch. Publishing uses the native `GITHUB_TOKEN` with
+`actions: read` and `contents: write`; repository rules must permit the publisher
+to create release tags. No registry credentials or replacement identity system
+are introduced. See [GitHub workflow_run documentation](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run).
 
-Prerelease versions such as:
-
-```text
-X.Y.Z-rc.1
-X.Y.Z-beta.1
-```
-
-are supported.
-
-Existing release tags and GitHub Releases are never silently replaced.
-
-If the version files already contain the intended version (for example `0.5.0`),
-commit all prepared changes and run `npm run release -- 0.5.0`. The same checks
-still run before the existing commit is tagged and pushed. No additional version
-bump or empty commit is required. `version:update` only prepares a changed version;
-use `release` to publish an already prepared version.
-
-No package registry is currently required: TypeScript uses the GitHub Release asset, Go resolves the repository tag directly, and Rust can use the corresponding tagged Git dependency.
+Prereleases such as `X.Y.Z-rc.1` are supported. Go and Rust consume the approved
+Git tag; TypeScript uses the release asset. The Go SSE investigation is manual
+only (`workflow_dispatch`) and never participates in the release gate.
 
 ## Repository structure
 

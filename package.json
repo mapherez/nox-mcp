@@ -16,7 +16,7 @@
     "benchmark:discovery": "npm run build && node scripts/benchmark-discovery.mjs",
     "test:native-packages": "node scripts/check-native-packages.mjs",
     "test:consumers": "node scripts/check-consumers.mjs",
-    "build": "tsc -p typescript/tsconfig.json",
+    "build": "node scripts/build.mjs",
     "test": "npm run contracts:check && npm run build && node --test typescript/test/*.test.mjs scripts/*.test.mjs",
     "version:update": "node scripts/update-version.mjs",
     "release": "node scripts/release.mjs",
@@ -49,10 +49,6 @@
       "types": "./typescript/dist/node.d.ts",
       "import": "./typescript/dist/node.js"
     },
-    "./better-auth": {
-      "types": "./typescript/dist/better-auth.d.ts",
-      "import": "./typescript/dist/better-auth.js"
-    },
     "./bridge/client": {
       "types": "./typescript/dist/bridge-client.d.ts",
       "import": "./typescript/dist/bridge-client.js"
@@ -67,9 +63,7 @@
     "ajv": "^8.20.0"
   },
   "peerDependencies": {
-    "@better-auth/mcp": "^1.7.2",
     "@modelcontextprotocol/node": "^2.0.0",
-    "better-auth": "^1.7.2",
     "ws": "^8.19.0",
     "zod": "^4.6.0"
   },
@@ -77,23 +71,15 @@
     "@modelcontextprotocol/node": {
       "optional": true
     },
-    "@better-auth/mcp": {
-      "optional": true
-    },
-    "better-auth": {
-      "optional": true
-    },
     "ws": {
       "optional": true
     }
   },
   "devDependencies": {
-    "@better-auth/mcp": "^1.7.2",
     "@modelcontextprotocol/client": "^2.3.1",
     "@modelcontextprotocol/node": "^2.0.0",
     "@types/node": "^24.10.13",
     "@types/ws": "^8.18.1",
-    "better-auth": "^1.7.2",
     "typescript": "^5.9.3",
     "ws": "^8.19.0",
     "zod": "^4.6.0"
