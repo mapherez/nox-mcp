@@ -1,0 +1,557 @@
+{
+  "schemaCases": [
+    {
+      "schema": "cli",
+      "data": {
+        "version": "1.0"
+      },
+      "valid": true
+    },
+    {
+      "schema": "cli",
+      "data": {
+        "version": "2.0"
+      },
+      "valid": false
+    },
+    {
+      "schema": "discovery-catalog-request",
+      "data": {
+        "ifCatalog": "old"
+      },
+      "valid": true
+    },
+    {
+      "schema": "discovery-catalog-request",
+      "data": {
+        "cursor": -1
+      },
+      "valid": false
+    },
+    {
+      "schema": "discovery-catalog-request",
+      "data": {
+        "unknown": 1
+      },
+      "valid": false
+    },
+    {
+      "schema": "discovery-definitions-request",
+      "data": {
+        "catalog": "snapshot",
+        "tools": [
+          {
+            "name": "tool",
+            "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "schema": "discovery-definitions-request",
+      "data": {
+        "catalog": "snapshot",
+        "tools": []
+      },
+      "valid": false
+    },
+    {
+      "schema": "discovery-definitions-request",
+      "data": {
+        "catalog": "snapshot",
+        "tools": [
+          {
+            "name": "tool",
+            "fingerprint": "invalid"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "schema": "discovery-catalog",
+      "data": {
+        "resultType": "complete",
+        "serverId": "server",
+        "viewId": "view",
+        "catalog": "snapshot",
+        "ttlMs": 0,
+        "cacheScope": "private",
+        "tools": []
+      },
+      "valid": true
+    },
+    {
+      "schema": "discovery-catalog",
+      "data": {
+        "resultType": "complete",
+        "serverId": "server",
+        "viewId": "view",
+        "catalog": "snapshot",
+        "ttlMs": 0,
+        "cacheScope": "private",
+        "notModified": true
+      },
+      "valid": true
+    },
+    {
+      "schema": "discovery-catalog",
+      "data": {
+        "resultType": "complete",
+        "serverId": "server",
+        "viewId": "view",
+        "catalog": "snapshot",
+        "ttlMs": 0,
+        "cacheScope": "private",
+        "notModified": true,
+        "tools": []
+      },
+      "valid": false
+    },
+    {
+      "schema": "discovery-catalog",
+      "data": {
+        "resultType": "complete",
+        "serverId": "server",
+        "viewId": "view",
+        "catalog": "snapshot",
+        "ttlMs": 0,
+        "cacheScope": "private"
+      },
+      "valid": false
+    },
+    {
+      "schema": "discovery-definitions",
+      "data": {
+        "resultType": "complete",
+        "catalog": "snapshot",
+        "definitions": [
+          {
+            "tool": {
+              "name": "example_item_get",
+              "title": "Consultar item",
+              "description": "Obtém um item.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Identificador"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              "annotations": {
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "_meta": {
+                "cli": "item show",
+                "custom": {
+                  "preserve": [
+                    1,
+                    null,
+                    "á"
+                  ]
+                }
+              }
+            },
+            "cli": {
+              "version": "1.0",
+              "parameters": {
+                "/id": {
+                  "options": {
+                    "tool": "example_item_list"
+                  }
+                }
+              }
+            },
+            "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "schema": "discovery-definitions",
+      "data": {
+        "resultType": "complete",
+        "catalog": "snapshot",
+        "definitions": [
+          {
+            "tool": {
+              "name": "tool"
+            },
+            "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      },
+      "valid": false
+    }
+  ],
+  "tool": {
+    "name": "example_item_get",
+    "title": "Consultar item",
+    "description": "Obtém um item.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Identificador"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    },
+    "_meta": {
+      "cli": "item show",
+      "custom": {
+        "preserve": [
+          1,
+          null,
+          "á"
+        ]
+      }
+    }
+  },
+  "cli": {
+    "version": "1.0",
+    "parameters": {
+      "/id": {
+        "options": {
+          "tool": "example_item_list"
+        }
+      }
+    }
+  },
+  "jcs": [
+    {
+      "input": [
+        0,
+        0,
+        5e-324,
+        -5e-324,
+        1.7976931348623157e+308,
+        -1.7976931348623157e+308,
+        9007199254740992,
+        -9007199254740992,
+        295147905179352830000,
+        9.999999999999997e+22,
+        1e+23,
+        1.0000000000000001e+23,
+        999999999999999700000,
+        999999999999999900000,
+        1e+21,
+        9.999999999999997e-7,
+        0.000001,
+        333333333.3333332,
+        333333333.33333325,
+        333333333.3333333,
+        333333333.3333334,
+        333333333.33333343
+      ],
+      "canonical": "[0,0,5e-324,-5e-324,1.7976931348623157e+308,-1.7976931348623157e+308,9007199254740992,-9007199254740992,295147905179352830000,9.999999999999997e+22,1e+23,1.0000000000000001e+23,999999999999999700000,999999999999999900000,1e+21,9.999999999999997e-7,0.000001,333333333.3333332,333333333.33333325,333333333.3333333,333333333.3333334,333333333.33333343]"
+    },
+    {
+      "input": [
+        "\\u2028",
+        " ",
+        " ",
+        "<>&"
+      ],
+      "canonical": "[\"\\\\u2028\",\" \",\" \",\"<>&\"]"
+    },
+    {
+      "input": {
+        "b": 1,
+        "a": [
+          null,
+          true,
+          "€\u000f\nA'B\"\\/",
+          333333333.3333333,
+          1e+30,
+          4.5,
+          0.002,
+          1e-27
+        ]
+      },
+      "canonical": "{\"a\":[null,true,\"€\\u000f\\nA'B\\\"\\\\/\",333333333.3333333,1e+30,4.5,0.002,1e-27],\"b\":1}"
+    },
+    {
+      "input": {
+        "1": "one",
+        "": "private",
+        "😀": "astral",
+        "\r": "control",
+        "ö": "umlaut"
+      },
+      "canonical": "{\"\\r\":\"control\",\"1\":\"one\",\"ö\":\"umlaut\",\"😀\":\"astral\",\"\":\"private\"}"
+    },
+    {
+      "input": [
+        0,
+        1e-7,
+        0.000001,
+        100000000000000000000,
+        1e+21,
+        1e+23,
+        9007199254740992
+      ],
+      "canonical": "[0,1e-7,0.000001,100000000000000000000,1e+21,1e+23,9007199254740992]"
+    }
+  ],
+  "cliCases": [
+    {
+      "name": "minimum",
+      "value": {
+        "version": "1.0"
+      },
+      "valid": true
+    },
+    {
+      "name": "dynamic",
+      "value": {
+        "version": "1.0",
+        "parameters": {
+          "/id": {
+            "options": {
+              "tool": "example_item_list"
+            }
+          }
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "custom",
+      "value": {
+        "version": "1.0",
+        "custom": {
+          "x": [
+            null,
+            1
+          ]
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "preview-confirm",
+      "value": {
+        "version": "1.0",
+        "preview": {
+          "tool": "preview",
+          "input": [
+            "/id"
+          ],
+          "bind": {
+            "/fingerprint": "/fingerprint"
+          },
+          "reviewPointer": "/summary"
+        },
+        "confirmation": {
+          "mode": "typed",
+          "matchPointer": "/id",
+          "bindPointer": "/confirm"
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "workflow",
+      "value": {
+        "version": "1.0",
+        "workflow": [
+          {
+            "id": "input",
+            "type": "input",
+            "parameters": [
+              "/id"
+            ]
+          },
+          {
+            "id": "preview",
+            "type": "call",
+            "tool": "preview",
+            "arguments": {
+              "id": {
+                "from": "input",
+                "pointer": "/id"
+              }
+            }
+          },
+          {
+            "id": "approve",
+            "type": "confirm",
+            "confirmation": {
+              "mode": "boolean"
+            }
+          },
+          {
+            "id": "execute",
+            "type": "call",
+            "tool": "delete",
+            "arguments": {
+              "fingerprint": {
+                "from": "step",
+                "step": "preview",
+                "pointer": "/fingerprint"
+              },
+              "confirm": {
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "name": "version",
+      "value": {
+        "version": "2.0"
+      },
+      "valid": false
+    },
+    {
+      "name": "requires",
+      "value": {
+        "version": "1.0",
+        "requires": [
+          "unknown-execution"
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "pointer",
+      "value": {
+        "version": "1.0",
+        "parameters": {
+          "invalid": {}
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "typed",
+      "value": {
+        "version": "1.0",
+        "confirmation": {
+          "mode": "typed"
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "duplicate-step",
+      "value": {
+        "version": "1.0",
+        "workflow": [
+          {
+            "id": "one",
+            "type": "input",
+            "parameters": []
+          },
+          {
+            "id": "one",
+            "type": "input",
+            "parameters": []
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "future-step",
+      "value": {
+        "version": "1.0",
+        "workflow": [
+          {
+            "id": "one",
+            "type": "call",
+            "tool": "get",
+            "arguments": {
+              "id": {
+                "from": "step",
+                "step": "future",
+                "pointer": "/id"
+              }
+            }
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "ambiguous",
+      "value": {
+        "version": "1.0",
+        "workflow": [
+          {
+            "id": "one",
+            "type": "input",
+            "parameters": []
+          }
+        ],
+        "confirmation": {
+          "mode": "boolean"
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "ambiguous-source",
+      "value": {
+        "version": "1.0",
+        "parameters": {
+          "/id": {
+            "options": {
+              "tool": "list",
+              "input": [],
+              "arguments": {}
+            }
+          }
+        }
+      },
+      "valid": false
+    }
+  ]
+}

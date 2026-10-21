@@ -62,6 +62,26 @@ func TestSharedContractConformance(t *testing.T) {
 			}
 		})
 	}
+	additionalData, err := Contracts.ReadFile("contracts/discovery-conformance.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var additional struct {
+		SchemaCases []struct {
+			Schema string
+			Data   json.RawMessage
+			Valid  bool
+		}
+	}
+	if err = json.Unmarshal(additionalData, &additional); err != nil {
+		t.Fatal(err)
+	}
+	for _, example := range additional.SchemaCases {
+		covered[example.Schema] = true
+		if (ValidateFrame(example.Schema, example.Data) == nil) != example.Valid {
+			t.Fatalf("discovery schema: %s", example.Schema)
+		}
+	}
 	files, err := Contracts.ReadDir("contracts")
 	if err != nil {
 		t.Fatal(err)

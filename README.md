@@ -10,6 +10,8 @@ The project focuses on the infrastructure commonly needed around MCP: tool regis
 
 ## Features
 
+Optional compact CLI descriptors and incremental discovery are documented in [DISCOVERY.md](DISCOVERY.md), including server/client integration for TypeScript, Go and Rust, transport compatibility and measured payload sizes. This work does not change the public SDK version.
+
 NoX MCP provides reusable primitives for building MCP servers without requiring each application to implement the same infrastructure independently.
 
 Core capabilities include:

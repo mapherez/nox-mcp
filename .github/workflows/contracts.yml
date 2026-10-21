@@ -36,6 +36,10 @@ jobs:
         run: cargo test --locked --manifest-path rust/Cargo.toml
       - name: Compare actual runtime observations across languages
         run: npm run test:conformance
+      - name: Compare discovery contracts and exercise real stdio and HTTP in all SDKs
+        run: npm run test:discovery
+      - name: Measure conventional and incremental discovery payloads
+        run: npm run benchmark:discovery
       - name: Verify standalone native dependencies
         run: npm run test:native-packages
       - name: Verify installed TypeScript package

@@ -4,6 +4,7 @@ import {
   type AuthInfo, type McpHttpHandler, type McpHandlerRequestOptions, type McpServerFactory,
 } from '@modelcontextprotocol/server';
 import { createServer, type ServerOptions } from './index.js';
+import { DiscoveryService } from './discovery.js';
 
 export interface HttpHandlerOptions extends Omit<ServerOptions, 'auth'> {
   /** Normal exchanges use JSON by default. SSE preserves intermediate notifications. */
@@ -43,7 +44,8 @@ export function createHttpHandler(options: HttpHandlerOptions): McpHttpHandler {
   const responseMode = options.responseMode ?? 'json';
   if (responseMode !== 'json' && responseMode !== 'sse') throw new TypeError('Invalid HTTP response mode.');
   const report = (error: unknown) => { try { options.onerror?.(error instanceof Error ? error : new Error(String(error))); } catch { /* Reporting cannot change the response. */ } };
-  const factory: McpServerFactory = ({ authInfo }) => createServer({ ...options, auth: options.resolveAuth?.(authInfo) });
+  const discovery=options.discovery && {...options.discovery,service:options.discovery.service??new DiscoveryService(options.discovery.serverId,options.discovery.ttlMs,options.discovery.maxBytes)};
+  const factory: McpServerFactory = ({ authInfo }) => createServer({ ...options, discovery, auth: options.resolveAuth?.(authInfo) });
   const modern = createMcpHandler(factory, { legacy: 'reject', responseMode, onerror: report, maxRequestBodySize });
   const shutdown = new AbortController();
   const active = new Set<Promise<void>>();

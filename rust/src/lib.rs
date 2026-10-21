@@ -19,6 +19,7 @@ use tokio_util::sync::CancellationToken;
 
 mod defaults;
 pub use defaults::*;
+pub mod discovery;
 mod manifest;
 pub use manifest::{compile_tool_schema, load_manifest, validate_tool_value};
 
@@ -383,8 +384,13 @@ pub struct McpServer<E: Executor> {
     in_flight: Arc<AtomicUsize>,
     next_id: Arc<AtomicU64>,
     portable_validators: Arc<HashMap<String, (jsonschema::Validator, jsonschema::Validator)>>,
+    discovery: Option<discovery::ServerDiscovery>,
 }
 impl<E: Executor> McpServer<E> {
+    pub fn with_discovery(mut self, discovery: discovery::ServerDiscovery) -> Self {
+        self.discovery = Some(discovery);
+        self
+    }
     /// Explicitly bind a prepared manifest to a trusted executor and authenticated grants.
     /// Declared requirements are unioned with application policy, never with granted scopes.
     pub fn from_manifest(
@@ -478,6 +484,7 @@ impl<E: Executor> McpServer<E> {
             in_flight: Arc::new(AtomicUsize::new(0)),
             next_id: Arc::new(AtomicU64::new(1)),
             portable_validators: Arc::new(HashMap::new()),
+            discovery: None,
         })
     }
 }
@@ -493,18 +500,71 @@ impl Drop for ExecutionGuard {
 }
 impl<E: Executor> ServerHandler for McpServer<E> {
     fn get_info(&self) -> ServerConfig {
-        ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
+        let mut capabilities = ServerCapabilities::builder().enable_tools().build();
+        if self.discovery.is_some() {
+            capabilities.extensions = Some(
+                serde_json::from_value(
+                    serde_json::json!({discovery::EXTENSION:discovery::capability()}),
+                )
+                .unwrap(),
+            );
+        }
+        ServerConfig::new(capabilities)
             .with_server_info(Implementation::new(self.name.clone(), self.version.clone()))
             .with_instructions(self.instructions.clone())
     }
     fn list_tools(
         &self,
         _: Option<PaginatedRequestParams>,
-        _: RequestContext<RoleServer>,
+        context: RequestContext<RoleServer>,
     ) -> impl Future<Output = Result<ListToolsResult, ErrorData>> + Send + '_ {
-        std::future::ready(Ok(ListToolsResult::with_all_items(
-            self.tools.as_ref().clone(),
-        )))
+        std::future::ready((|| {
+            let tools = if let Some(d) = &self.discovery {
+                d.view(&context, &self.tools)
+                    .map_err(discovery::protocol_error)?
+                    .definitions
+                    .into_iter()
+                    .map(|v| {
+                        serde_json::from_value(v["tool"].clone())
+                            .map_err(|_| ErrorData::invalid_params("Invalid tool", None))
+                    })
+                    .collect::<Result<Vec<Tool>, _>>()?
+            } else {
+                self.tools.as_ref().clone()
+            };
+            Ok(ListToolsResult::with_all_items(tools))
+        })())
+    }
+    async fn on_custom_request(
+        &self,
+        request: CustomRequest,
+        context: RequestContext<RoleServer>,
+    ) -> Result<CustomResult, ErrorData> {
+        let Some(d) = &self.discovery else {
+            return Err(ErrorData::new(
+                ErrorCode::METHOD_NOT_FOUND,
+                request.method,
+                None,
+            ));
+        };
+        let mut params = request.params.unwrap_or_else(|| serde_json::json!({}));
+        // rmcp lifts request metadata into the context for custom methods.
+        let meta = serde_json::to_value(&context.meta).unwrap();
+        discovery::negotiated(&meta).map_err(discovery::protocol_error)?;
+        if let Some(p) = params.as_object_mut() {
+            p.remove("_meta");
+        }
+        let view = d
+            .view(&context, &self.tools)
+            .map_err(discovery::protocol_error)?;
+        let result = match request.method.as_str() {
+            "nox/tools/catalog" => d.service.catalog(&view, &params),
+            "nox/tools/definitions" => d.service.definitions(&view, &params),
+            _ => return Err(ErrorData::invalid_params("Unknown extension method", None)),
+        };
+        result
+            .map(CustomResult::new)
+            .map_err(discovery::protocol_error)
     }
     fn get_tool(&self, name: &str) -> Option<Tool> {
         self.tools.iter().find(|tool| tool.name == name).cloned()
@@ -517,6 +577,18 @@ impl<E: Executor> ServerHandler for McpServer<E> {
         let tool = self
             .get_tool(request.name.as_ref())
             .ok_or_else(|| ErrorData::invalid_params("Unknown tool", None))?;
+        if let Some(d) = &self.discovery {
+            let view = d
+                .view(&context, &self.tools)
+                .map_err(discovery::protocol_error)?;
+            d.service
+                .guard(
+                    &view,
+                    request.name.as_ref(),
+                    &serde_json::to_value(&context.meta).unwrap(),
+                )
+                .map_err(discovery::protocol_error)?;
+        }
         let deadline = now_ms() + self.options.timeout.as_millis() as u64;
         if self
             .options

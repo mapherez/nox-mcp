@@ -11,6 +11,14 @@ import (
 // NewFromManifest binds an application-approved manifest to trusted Options.Tools.
 // Manifest requirements restrict execution; they never supply identity or grants.
 func NewFromManifest(options Options, data []byte) (*Runtime, error) {
+	return newFromManifest(options, data)
+}
+
+// NewFromManifestWithDiscovery preserves the portable manifest boundary and adds the optional extension.
+func NewFromManifestWithDiscovery(options Options, data []byte, discovery DiscoveryOptions) (*Runtime, error) {
+	return newFromManifest(options, data, &discovery)
+}
+func newFromManifest(options Options, data []byte, discovery ...*DiscoveryOptions) (*Runtime, error) {
 	document, err := LoadToolManifest(data)
 	if err != nil {
 		return nil, err
@@ -75,7 +83,7 @@ func NewFromManifest(options Options, data []byte) (*Runtime, error) {
 		tools = append(tools, tool)
 	}
 	options.Tools = tools
-	runtime, err := newRuntime(options, annotationsByName)
+	runtime, err := newRuntime(options, annotationsByName, discovery...)
 	if err != nil {
 		return nil, err
 	}

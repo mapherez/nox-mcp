@@ -4,6 +4,8 @@
 
 ## Responsabilidades
 
+O Passo 2B acrescenta contratos opcionais separados para descritores CLI e discovery incremental, sem alterar os contratos anteriores. Consultar [DISCOVERY.md](../DISCOVERY.md) para negociação, exemplos nas três linguagens, fingerprints, snapshots e cache. `cli.schema.json` e `discovery-*.schema.json` são validados pelos validadores JSON Schema nativos; o corpus adicional é `discovery-conformance.json`. `npm run contracts:sync` gera as cópias e os schemas TypeScript, e `npm run test:discovery` compara as implementações e os transportes reais.
+
 Um manifesto estruturalmente válido não constitui uma autorização nem garante que pode ser executado.
 
 | Operação | TypeScript | Go | Rust | Garantia |

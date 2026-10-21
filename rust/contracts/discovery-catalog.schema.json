@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "resultType",
+    "serverId",
+    "viewId",
+    "catalog",
+    "ttlMs",
+    "cacheScope"
+  ],
+  "properties": {
+    "_meta": {
+      "type": "object"
+    },
+    "resultType": {
+      "const": "complete"
+    },
+    "serverId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "viewId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "catalog": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ttlMs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cacheScope": {
+      "const": "private"
+    },
+    "notModified": {
+      "const": true
+    },
+    "presentation": {
+      "type": "object"
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "fingerprint"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "availability": {
+            "enum": [
+              "available",
+              "unavailable"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "nextCursor": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "notModified"
+      ],
+      "not": {
+        "required": [
+          "tools"
+        ]
+      }
+    },
+    {
+      "required": [
+        "tools"
+      ],
+      "not": {
+        "required": [
+          "notModified"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false
+}

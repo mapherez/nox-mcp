@@ -88,6 +88,12 @@ export async function syncContracts(directory = root, { check = false } = {}) {
     desktopBridgeMessageSchema: schemas.desktop,
     toolManifestSchema: schemas.manifest,
   };
+  const discoverySchemas = Object.fromEntries(Object.entries(schemas).filter(([name]) => name === 'cli' || name.startsWith('discovery-')));
+  if (Object.keys(discoverySchemas).length) {
+    const discoveryCorpus = await readFile(resolve(source, 'discovery-conformance.json'), 'utf8');
+    for (const target of ['go/contracts','rust/contracts']) outputs.set(`${target}/discovery-conformance.json`, JSON.stringify(JSON.parse(discoveryCorpus),null,2)+'\n');
+  }
+  outputs.set('typescript/src/discovery-contracts.generated.ts', banner + 'export const discoverySchemas = ' + JSON.stringify(discoverySchemas) + ' as const;\n');
   outputs.set('typescript/src/contracts.generated.ts', banner + "import { z } from 'zod';\n\n" + Object.entries(definitions).map(([name, schema]) => `export const ${name} = ${zod(schema)};\n`).join('') + '\nexport const bridgeTicketSchema = bridgeAuthenticateSchema.shape.ticket;\n');
   const stale = [];
   for (const [path, content] of outputs) {

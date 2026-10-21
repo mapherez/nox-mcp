@@ -6,13 +6,16 @@ import { Ajv } from 'ajv';
 import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
 import * as contract from '../dist/contract.js';
+import { validateDiscovery } from '../dist/discovery.js';
 const corpus = JSON.parse(await readFile(new URL('../../contracts/conformance.json', import.meta.url), 'utf8'));
 const schemas = { manifest: contract.toolManifestSchema, error: contract.bridgeErrorSchema, request: contract.bridgeRequestSchema, response: contract.bridgeResponseSchema, desktop: contract.desktopBridgeMessageSchema, server: contract.serverBridgeMessageSchema };
 const canonical = Object.fromEntries(await Promise.all(Object.keys(schemas).map(async (name) => [name, new Ajv({ strict: false, validateFormats: false }).compile(JSON.parse(await readFile(new URL(`../../contracts/${name}.schema.json`, import.meta.url), 'utf8')))])));
 test('shared corpus exercises every official contract', async () => {
     assert.equal(corpus.version, 1);
+    const additional=JSON.parse(await readFile(new URL('../../contracts/discovery-conformance.json',import.meta.url),'utf8'));
+    for(const example of additional.schemaCases){let valid=true;try{validateDiscovery(example.schema,example.data)}catch{valid=false};assert.equal(valid,example.valid);}
     const official = (await readdir(new URL('../../contracts/', import.meta.url))).filter(name => name.endsWith('.schema.json')).map(name => name.replace('.schema.json', '')).sort();
-    assert.deepEqual([...new Set(corpus.cases.map(c => c.schema))].sort(), official);
+    assert.deepEqual([...new Set([...corpus.cases,...additional.schemaCases].map(c => c.schema))].sort(), official);
     assert.equal(new Set(corpus.cases.map(c => c.id)).size, corpus.cases.length);
 });
 for (const example of corpus.cases)

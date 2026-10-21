@@ -67,7 +67,7 @@ func New(options Options) (*Runtime, error) {
 	return newRuntime(options, nil)
 }
 
-func newRuntime(options Options, manifestAnnotations map[string]*mcp.ToolAnnotations) (*Runtime, error) {
+func newRuntime(options Options, manifestAnnotations map[string]*mcp.ToolAnnotations, discovery ...*DiscoveryOptions) (*Runtime, error) {
 	if options.AppID == "" || options.Name == "" {
 		return nil, errors.New("app and server identity required")
 	}
@@ -84,7 +84,12 @@ func newRuntime(options Options, manifestAnnotations map[string]*mcp.ToolAnnotat
 		return nil, errors.New("invalid limits")
 	}
 	r := &Runtime{options: options, tools: map[string]compiledTool{}, slots: make(chan struct{}, options.MaxInFlight)}
-	r.Server = mcp.NewServer(&mcp.Implementation{Name: options.Name, Version: options.Version}, &mcp.ServerOptions{SupportedProtocolVersions: []string{"2025-11-25", "2026-07-28"}})
+	serverOptions := &mcp.ServerOptions{SupportedProtocolVersions: []string{"2025-11-25", "2026-07-28"}}
+	if len(discovery) > 0 {
+		serverOptions.Capabilities = &mcp.ServerCapabilities{Logging: &mcp.LoggingCapabilities{}}
+		serverOptions.Capabilities.AddExtension(DiscoveryExtension, DiscoveryCapability())
+	}
+	r.Server = mcp.NewServer(&mcp.Implementation{Name: options.Name, Version: options.Version}, serverOptions)
 	for _, t := range options.Tools {
 		if t.Name == "" || utf8.RuneCountInString(t.Name) > 64 || t.Execute == nil || t.InputSchema == nil || t.OutputSchema == nil || slices.Contains(t.RequiredScopes, "") {
 			return nil, errors.New("invalid tool")
@@ -124,6 +129,11 @@ func newRuntime(options Options, manifestAnnotations map[string]*mcp.ToolAnnotat
 			}
 			return r.boundedResult(value, false), nil
 		})
+	}
+	if len(discovery) > 0 {
+		if err := installDiscovery(r.Server, *discovery[0]); err != nil {
+			return nil, err
+		}
 	}
 	return r, nil
 }

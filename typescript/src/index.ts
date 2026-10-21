@@ -3,6 +3,8 @@ import { McpServer, fromJsonSchema, type StandardSchemaWithJSON, type jsonSchema
 import { z } from 'zod';
 import { defaults, McpError, bridgeErrorSchema, compileToolSchema, loadToolManifest, type McpErrorBody } from './contract.js';
 export * from './contract.js';
+export * from './discovery.js';
+import { installDiscovery, type DiscoveryOptions } from './discovery.js';
 
 export interface ExecutionContext {
   requestId: string; appId: string; userId?: string; scopes: ReadonlySet<string>;
@@ -17,6 +19,7 @@ export interface ToolDefinition {
   execute(input: unknown, context: ExecutionContext): Promise<Record<string, unknown>>;
 }
 export interface ServerOptions {
+  discovery?: DiscoveryOptions;
   appId: string; name: string; version: string; tools: readonly ToolDefinition[];
   auth?: { userId?: string; scopes: readonly string[] };
   timeoutMs?: number;
@@ -32,6 +35,7 @@ type RuntimeTool = Omit<ToolDefinition, 'inputSchema' | 'outputSchema'> & { inpu
 function createRuntimeServer(options: Omit<ServerOptions,'tools'> & { tools: readonly RuntimeTool[] }): McpServer {
   if (!options.appId || !options.name || options.tools.some(t => !t.name || [...t.name].length > 64 || t.requiredScopes?.some(s => typeof s !== 'string' || !s)) || new Set(options.tools.map(t => t.name)).size !== options.tools.length) throw new Error('Invalid server identity, tool or scopes.');
   const server = new McpServer({ name: options.name, version: options.version });
+  if (options.discovery) installDiscovery(server, options.discovery);
   const timeoutMs = options.timeoutMs ?? defaults.requestTimeoutMs;
   const maxBytes = options.maxPayloadBytes ?? defaults.maxPayloadBytes;
   const maxInFlight = options.maxInFlightRequests ?? defaults.maxInFlightRequests;

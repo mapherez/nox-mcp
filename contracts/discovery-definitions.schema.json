@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "resultType",
+    "catalog",
+    "definitions"
+  ],
+  "properties": {
+    "_meta": { "type": "object" },
+    "resultType": {
+      "const": "complete"
+    },
+    "catalog": {
+      "type": "string",
+      "minLength": 1
+    },
+    "definitions": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "required": [
+          "fingerprint",
+          "tool"
+        ],
+        "properties": {
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "tool": {
+            "type": "object",
+            "required": [
+              "name",
+              "inputSchema"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "inputSchema": {
+                "type": "object"
+              },
+              "outputSchema": {
+                "type": "object"
+              },
+              "_meta": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": true
+          },
+          "cli": {
+            "type": "object",
+            "required": [
+              "version"
+            ],
+            "properties": {
+              "version": {
+                "const": "1.0"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -11,6 +11,8 @@
     "contracts:sync": "node scripts/sync-contracts.mjs",
     "contracts:check": "node scripts/sync-contracts.mjs --check",
     "test:conformance": "npm run contracts:check && npm run build && node scripts/check-conformance.mjs",
+    "test:discovery": "npm run contracts:check && npm run build && node scripts/check-discovery.mjs",
+    "benchmark:discovery": "npm run build && node scripts/benchmark-discovery.mjs",
     "test:native-packages": "node scripts/check-native-packages.mjs",
     "build": "tsc -p typescript/tsconfig.json",
     "test": "npm run contracts:check && npm run build && node --test typescript/test/*.test.mjs scripts/*.test.mjs",
@@ -24,6 +26,7 @@
     "LICENSE",
     "README.md",
     "MIGRATION_0_5.md",
+    "DISCOVERY.md",
     "contracts/README.md"
   ],
   "exports": {
