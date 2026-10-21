@@ -64,7 +64,7 @@ export async function validateVersion(root, input) {
   return { version, files };
 }
 
-export async function updateVersion(root, input, { beforeCommit = async () => {} } = {}) {
+export async function updateVersion(root, input, { beforeCommit = async () => {}, allowCurrentVersion = false } = {}) {
   const { version, files } = await validateVersion(root, input);
   if (resolve(git(root, 'rev-parse', '--show-toplevel')) !== resolve(root)) {
     throw new Error('Executa o script no repositorio nox-mcp, nao num repositorio pai.');
@@ -76,7 +76,7 @@ export async function updateVersion(root, input, { beforeCommit = async () => {}
   git(root, 'var', 'GIT_AUTHOR_IDENT');
   git(root, 'var', 'GIT_COMMITTER_IDENT');
   const updates = files.map(file => ({ ...file, updated: file.render(version) })).filter(file => file.original !== file.updated);
-  if (!updates.length) throw new Error('Os ficheiros ja usam essa versao; escolhe uma nova versao.');
+  if (!updates.length && !allowCurrentVersion) throw new Error('Os ficheiros ja usam essa versao; usa npm run release -- ' + version + ' para publicar a versao preparada.');
   const head = git(root, 'rev-parse', 'HEAD');
   try {
     for (const file of updates) await writeFile(resolve(root, file.path), file.updated);
@@ -88,13 +88,17 @@ export async function updateVersion(root, input, { beforeCommit = async () => {}
         git(root, 'ls-files', '--others', '--exclude-standard')) {
       throw new Error('A validacao alterou ficheiros fora da atualizacao de versao. Revê as alteracoes antes de publicar.');
     }
-    git(root, 'add', '--', ...updates.map(file => file.path));
-    git(root, 'commit', '-m', `chore: release ${tag}`);
+    // A version prepared in an earlier commit still needs checks and a tag,
+    // but must not create an empty release commit.
+    if (updates.length) {
+      git(root, 'add', '--', ...updates.map(file => file.path));
+      git(root, 'commit', '-m', `chore: release ${tag}`);
+    }
   } catch (error) {
     // Restore only our version edits when the release commit was not created.
     if (git(root, 'rev-parse', 'HEAD') === head) {
       for (const file of updates) await writeFile(resolve(root, file.path), file.original);
-      git(root, 'restore', '--staged', '--', ...updates.map(file => file.path));
+      if (updates.length) git(root, 'restore', '--staged', '--', ...updates.map(file => file.path));
     }
     throw error;
   }
@@ -102,7 +106,7 @@ export async function updateVersion(root, input, { beforeCommit = async () => {}
   try {
     git(root, 'tag', '-a', tag, '-m', `Release ${tag}`);
   } catch (error) {
-    throw new Error(`Commit de versao criado, mas a tag ${tag} falhou. Corrige o erro e cria a tag nesse commit.`, { cause: error });
+    throw new Error(`${updates.length ? 'Commit de versao criado' : 'Versao preparada validada'}, mas a tag ${tag} falhou. Corrige o erro e cria a tag nesse commit.`, { cause: error });
   }
   return tag;
 }

@@ -299,6 +299,18 @@ These contracts exist to keep behavior consistent between TypeScript, Rust, and 
 Releases are created from a clean working tree with:
 
 ```sh
+npm run release
+```
+
+The interactive command shows the current versions in the project files and asks
+which version to publish. Enter a version such as `0.5.0` or `0.6.0-rc.1`; press
+Enter without a version to cancel. A prepared version can be selected again if
+its release tag does not exist yet. Inconsistent file versions are shown before
+you choose the version.
+
+For non-interactive use, the explicit version remains supported:
+
+```sh
 npm run release -- X.Y.Z
 ```
 
@@ -308,7 +320,7 @@ The release process:
 2. synchronizes versioned project files;
 3. runs the TypeScript, Go, and Rust test suites;
 4. verifies the distributable TypeScript package;
-5. creates a release commit;
+5. creates a release commit if version files changed, otherwise uses the existing prepared commit;
 6. creates an annotated `vX.Y.Z` Git tag;
 7. pushes the commit and tag;
 8. lets GitHub Actions validate the tagged source again;
@@ -325,6 +337,12 @@ X.Y.Z-beta.1
 are supported.
 
 Existing release tags and GitHub Releases are never silently replaced.
+
+If the version files already contain the intended version (for example `0.5.0`),
+commit all prepared changes and run `npm run release -- 0.5.0`. The same checks
+still run before the existing commit is tagged and pushed. No additional version
+bump or empty commit is required. `version:update` only prepares a changed version;
+use `release` to publish an already prepared version.
 
 No package registry is currently required: TypeScript uses the GitHub Release asset, Go resolves the repository tag directly, and Rust can use the corresponding tagged Git dependency.
 

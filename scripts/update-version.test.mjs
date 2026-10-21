@@ -18,6 +18,7 @@ async function repository(t) {
   await mkdir(resolve(root, 'rust'));
   await mkdir(resolve(root, 'scripts'));
   await copyFile(new URL('./update-version.mjs', import.meta.url), resolve(root, 'scripts/update-version.mjs'));
+  await copyFile(new URL('./release.mjs', import.meta.url), resolve(root, 'scripts/release.mjs'));
   await writeFile(resolve(root, 'package.json'), JSON.stringify({ name: '@nox/mcp', version: '0.3.0', dependencies: { example: '0.1.0' } }, null, 2) + '\n');
   await writeFile(resolve(root, 'package-lock.json'), JSON.stringify({ name: '@nox/mcp', version: '0.2.0', lockfileVersion: 3, packages: {
     '': { name: '@nox/mcp', version: '0.2.0' }, 'node_modules/example': { version: '0.1.0' },
@@ -34,6 +35,14 @@ async function repository(t) {
   git(root, 'add', '.');
   git(root, 'commit', '-m', 'Initial fixture');
   return root;
+}
+
+async function prepareVersion(root, version) {
+  for (const file of await readVersionFiles(root)) {
+    await writeFile(resolve(root, file.path), file.render(version));
+  }
+  git(root, 'add', '.');
+  git(root, 'commit', '-m', `Prepare ${version}`);
 }
 
 test('release synchronizes only project versions and tags the updated commit', async t => {
@@ -116,6 +125,58 @@ test('interactive script reports inconsistencies and accepts the typed version f
   assert.equal(git(root, 'rev-parse', 'v0.4.0^{commit}'), git(root, 'rev-parse', 'HEAD'));
 });
 
+test('interactive release shows current versions and cancels on blank input or EOF without changes', async t => {
+  const root = await repository(t);
+  const head = git(root, 'rev-parse', 'HEAD');
+  const initial = await readVersionFiles(root);
+  for (const input of ['\n', '', '  \n']) {
+    const result = spawnSync(process.execPath, [resolve(root, 'scripts/release.mjs')], {
+      cwd: tmpdir(), input, encoding: 'utf8', timeout: 30000,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Versao atual \(package.json\): 0\.3\.0/);
+    assert.match(result.stdout, /package-lock.json: 0\.2\.0, 0\.2\.0/);
+    assert.match(result.stdout, /rust\/Cargo.toml: 0\.1\.0/);
+    assert.match(result.stdout, /Existem versoes inconsistentes/);
+    assert.match(result.stdout, /Versao a publicar \(Enter para cancelar\)/);
+    assert.match(result.stdout, /Cancelado/);
+    assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+    assert.equal(git(root, 'status', '--porcelain'), '');
+    assert.equal(git(root, 'tag', '--list'), '');
+    assert.deepEqual((await readVersionFiles(root)).map(file => file.original), initial.map(file => file.original));
+  }
+});
+
+test('interactive release passes the selected prepared version through existing release checks', async t => {
+  const root = await repository(t);
+  await prepareVersion(root, '0.5.0');
+  git(root, 'tag', 'v0.5.0');
+  git(root, 'remote', 'add', 'origin', root);
+  const head = git(root, 'rev-parse', 'HEAD');
+  const script = resolve(root, 'scripts/release.mjs');
+  const run = (args, input = '') => spawnSync(process.execPath, [script, ...args], {
+    cwd: tmpdir(), input, encoding: 'utf8', timeout: 30000,
+  });
+  const interactive = run([], 'v0.5.0\n');
+  assert.equal(interactive.status, 1);
+  assert.match(interactive.stdout, /Versao atual \(package.json\): 0\.5\.0/);
+  assert.doesNotMatch(interactive.stdout, /Existem versoes inconsistentes/);
+  assert.match(interactive.stderr, /A tag v0\.5\.0 ja existe em origin/);
+  const explicit = run(['0.5.0']);
+  assert.equal(explicit.status, 1);
+  assert.match(explicit.stderr, /A tag v0\.5\.0 ja existe em origin/);
+  assert.doesNotMatch(explicit.stdout, /Versao a publicar/);
+  const invalid = run([], 'not-a-version\n');
+  assert.equal(invalid.status, 1);
+  assert.match(invalid.stderr, /Versao invalida/);
+  const extra = run(['0.5.0', 'unexpected']);
+  assert.equal(extra.status, 1);
+  assert.match(extra.stderr, /Uso: npm run release/);
+  assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+  assert.equal(git(root, 'status', '--porcelain'), '');
+  assert.equal(git(root, 'tag', '--list'), 'v0.5.0');
+});
+
 test('release validates synchronized versions before committing and pushes both refs to origin', async t => {
   const root = await repository(t);
   const remote = await mkdtemp(resolve(tmpdir(), 'nox-release-origin-'));
@@ -148,6 +209,65 @@ test('failed release checks restore versions and never commit, tag or push', asy
   assert.equal(git(root, 'tag', '--list'), '');
   assert.equal(git(root, 'status', '--porcelain'), '');
   assert.deepEqual((await readVersionFiles(root)).map(file => file.original), initial.map(file => file.original));
+});
+
+test('release publishes an already prepared version after checks without an empty commit', async t => {
+  const root = await repository(t);
+  await prepareVersion(root, '0.5.0');
+  const head = git(root, 'rev-parse', 'HEAD');
+  const initial = await readVersionFiles(root);
+  await assert.rejects(updateVersion(root, '0.5.0'), /ja usam essa versao.*npm run release/);
+  const remote = await mkdtemp(resolve(tmpdir(), 'nox-release-origin-'));
+  t.after(() => rm(remote, { recursive: true, force: true }));
+  git(remote, 'init', '--bare');
+  git(root, 'remote', 'add', 'origin', remote);
+  let checked = false;
+  const url = await release(root, '0.5.0', { check: () => {
+    assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+    assert.equal(git(root, 'tag', '--list'), '');
+    assert.equal(git(remote, 'for-each-ref'), '');
+    checked = true;
+  } });
+  assert.ok(checked, 'Prepared releases must run the same validation');
+  assert.equal(url, 'https://github.com/mapherez/nox-mcp/releases/download/v0.5.0/nox-mcp.tgz');
+  assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+  assert.equal(git(root, 'cat-file', '-t', 'v0.5.0'), 'tag');
+  assert.equal(git(remote, 'rev-parse', 'v0.5.0^{commit}'), head);
+  const branch = git(root, 'symbolic-ref', '--short', 'HEAD');
+  assert.equal(git(remote, 'rev-parse', `refs/heads/${branch}`), head);
+  assert.equal(git(root, 'status', '--porcelain'), '');
+  assert.deepEqual((await readVersionFiles(root)).map(file => file.original), initial.map(file => file.original));
+  await assert.rejects(release(root, '0.5.0', { check: () => assert.fail('Must not retest an existing tag') }), /ja existe/);
+});
+
+test('failed checks for a prepared release leave the commit, files and remote intact', async t => {
+  const root = await repository(t);
+  await prepareVersion(root, '0.5.0');
+  git(root, 'remote', 'add', 'origin', root);
+  const head = git(root, 'rev-parse', 'HEAD');
+  const initial = await readVersionFiles(root);
+  await assert.rejects(release(root, '0.5.0', { check: () => { throw new Error('Tests failed'); } }), /Tests failed/);
+  assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+  assert.equal(git(root, 'tag', '--list'), '');
+  assert.equal(git(root, 'status', '--porcelain'), '');
+  assert.deepEqual((await readVersionFiles(root)).map(file => file.original), initial.map(file => file.original));
+});
+
+test('prepared release validation cannot leave unrelated tracked, staged or untracked changes', async t => {
+  for (const kind of ['tracked', 'staged', 'untracked']) await t.test(kind, async t => {
+    const root = await repository(t);
+    await prepareVersion(root, '0.5.0');
+    git(root, 'remote', 'add', 'origin', root);
+    const head = git(root, 'rev-parse', 'HEAD');
+    await assert.rejects(release(root, '0.5.0', { check: async () => {
+      const file = kind === 'untracked' ? 'unexpected.txt' : 'go.mod';
+      await writeFile(resolve(root, file), 'unexpected validation change');
+      if (kind === 'staged') git(root, 'add', file);
+    } }), /validacao alterou ficheiros/);
+    assert.equal(git(root, 'rev-parse', 'HEAD'), head);
+    assert.equal(git(root, 'tag', '--list'), '');
+    assert.equal(await readFile(resolve(root, kind === 'untracked' ? 'unexpected.txt' : 'go.mod'), 'utf8'), 'unexpected validation change');
+  });
 });
 
 test('a remote-only tag blocks release before any changes', async t => {
