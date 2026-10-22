@@ -1,3 +1,5 @@
+> **Documento histórico arquivado.** As versões, resultados e indicações de estado abaixo pertencem às revisões descritas. Consultar a [documentação atual](../README.md).
+
 Nota de estado: este documento conserva a migração histórica de 0.5.0. A versão 0.6.0 também já está publicada e fica intocada. A revisão posterior da pipeline e das entradas públicas é descrita no README e na secção E da auditoria.
 
 # Migração para 0.5.0
@@ -30,7 +32,7 @@ As versões do protocolo de bridge (`1.0`/`2.0`) e do schema de manifesto (`1`) 
 
 Os novos carregadores completos e construtores a partir de manifesto não substituem as APIs nativas. São a via explícita para partilhar o mesmo JSON e as mesmas regras de validação entre linguagens. A associação só aceita executores fornecidos pela aplicação; não executa código proveniente de metadados. Requisitos declarados são unidos à política local e nunca concedidos ao utilizador.
 
-O perfil comum recusa dialetos/keywords/formatos desconhecidos, referências remotas ou recursivas e regex não portáveis. Suporta `multipleOf` apenas com inteiro positivo seguro: confirmou-se que Go rejeitava `0.3` com divisor `0.1`, enquanto Rust o aceitava. A restrição é explícita nas três implementações; não se promete equivalência decimal arbitrária. As APIs nativas mantêm a sua abrangência anterior. Ver [regras completas](contracts/README.md#schemas-de-ferramentas).
+O perfil comum recusa dialetos/keywords/formatos desconhecidos, referências remotas ou recursivas e regex não portáveis. Suporta `multipleOf` apenas com inteiro positivo seguro: confirmou-se que Go rejeitava `0.3` com divisor `0.1`, enquanto Rust o aceitava. A restrição é explícita nas três implementações; não se promete equivalência decimal arbitrária. As APIs nativas mantêm a sua abrangência anterior. Ver [regras completas](../../contracts/README.md#schemas-de-ferramentas).
 
 Ajv é acrescentado como dependência de execução TypeScript para compilação draft-07. Não se atualizaram as versões das dependências já existentes. Go/Rust continuam a compilar como dependências externas sem scripts Node.
 
@@ -55,4 +57,4 @@ O NoteX não recebe esta normalização através de geração ou da CI do `nox-m
 4. Executar as suites do produto: erros, limites, cancelamento, transportes e, quando aplicável, desktop/bridge.
 5. Atualizar a dependência e o lockfile apenas nesse produto, de forma deliberada. A publicação e estas atualizações não fazem parte deste passo.
 
-A equivalência é verificada para os contratos e perfil comuns, com as diferenças legítimas de SDK/transporte descritas em [contracts/README.md](contracts/README.md). O desenho dos novos contratos pode partir desta base; publicação e migração dos produtos continuam a ser decisões posteriores.
+A equivalência é verificada para os contratos e perfil comuns, com as diferenças legítimas de SDK/transporte descritas em [contracts/README.md](../../contracts/README.md). O desenho dos novos contratos pode partir desta base; publicação e migração dos produtos continuam a ser decisões posteriores.

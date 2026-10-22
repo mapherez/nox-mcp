@@ -27,9 +27,9 @@
     "typescript/dist",
     "LICENSE",
     "README.md",
-    "MIGRATION_0_5.md",
-    "DISCOVERY.md",
-    "COMPATIBILITY_AUDIT.md",
+    "Documents/README.md",
+    "Documents/COMPATIBILITY.md",
+    "Documents/DISCOVERY.md",
     "contracts/README.md"
   ],
   "exports": {

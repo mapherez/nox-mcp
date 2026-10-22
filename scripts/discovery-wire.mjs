@@ -80,7 +80,7 @@ export async function exerciseDiscoveryFixtures(fixtures,{suite='supported'}={})
     assert.equal(late.frames[0].method,'notifications/progress');assert.equal(late.message.result,undefined);
     if(language==='go'&&late.unframed.length){
      assert.equal(late.unframed.length,1);assert.equal(late.frames.length,1);
-     const failure=`Investigating / Future Support: Go MCP SDK late ${code} after SSE progress is unframed JSON, not a terminal SSE event (see COMPATIBILITY_AUDIT.md).`;
+     const failure=`Investigating / Future Support: Go MCP SDK late ${code} after SSE progress is unframed JSON, not a terminal SSE event (see Documents/COMPATIBILITY.md).`;
      transportFailures.push(failure);console.error('NON-CONFORMANT: '+failure);
     }else{assert.deepEqual(late.unframed,[]);assert.equal(late.frames.at(-1).id,late.message.id);}
    }

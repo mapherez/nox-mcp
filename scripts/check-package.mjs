@@ -27,9 +27,9 @@ try {
   assert.equal(packed.version, pkg.version);
   for (const path of paths) {
     // npm also includes license files in ancestors of a files entry.
-    assert.ok(['package.json', 'README.md', 'MIGRATION_0_5.md', 'DISCOVERY.md', 'COMPATIBILITY_AUDIT.md', 'contracts/README.md', 'LICENSE', 'typescript/LICENSE'].includes(path) || path.startsWith('typescript/dist/'), `Unexpected packed file: ${path}`);
+    assert.ok(['package.json', 'README.md', 'Documents/README.md', 'Documents/COMPATIBILITY.md', 'Documents/DISCOVERY.md', 'contracts/README.md', 'LICENSE', 'typescript/LICENSE'].includes(path) || path.startsWith('typescript/dist/'), `Unexpected packed file: ${path}`);
   }
-  for (const file of ['MIGRATION_0_5.md', 'DISCOVERY.md', 'COMPATIBILITY_AUDIT.md', 'contracts/README.md']) assert.ok(paths.has(file), `Missing migration documentation: ${file}`);
+  for (const file of ['Documents/README.md', 'Documents/COMPATIBILITY.md', 'Documents/DISCOVERY.md', 'contracts/README.md']) assert.ok(paths.has(file), `Missing current documentation: ${file}`);
   for (const entry of Object.values(pkg.exports)) {
     for (const path of Object.values(entry)) assert.ok(paths.has(path.replace(/^\.\//, '')), `Missing export: ${path}`);
   }

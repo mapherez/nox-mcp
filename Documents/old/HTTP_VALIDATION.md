@@ -1,3 +1,5 @@
+> **Documento histórico arquivado.** As versões, resultados e indicações de estado abaixo pertencem às revisões descritas. Consultar a [documentação atual](../README.md).
+
 # HTTP JSON default validation
 
 Validated on Windows on 2026-10-08, against the implementation for the next

@@ -1,3 +1,5 @@
+> **Documento histórico arquivado.** As versões, resultados e indicações de estado abaixo pertencem às revisões descritas. Consultar a [documentação atual](../README.md).
+
 # NoX MCP — baseline de compatibilidade
 
 Data: 20 de outubro de 2026. Âmbito: análise do código local, sem alterações às implementações, dependências, schemas ou configurações.
@@ -42,7 +44,7 @@ As implementações partilham conceitos, mas **não expõem APIs nem mecanismos 
 
 ### TypeScript / Node.js
 
-O mapa `exports` de [package.json](package.json) é parte do contrato de instalação. Não existe uma entrada pública `@nox/mcp/http` nem uma exportação CommonJS `require`.
+O mapa `exports` de [package.json](../../package.json) é parte do contrato de instalação. Não existe uma entrada pública `@nox/mcp/http` nem uma exportação CommonJS `require`.
 
 | Entrada pública | Superfície exposta |
 | --- | --- |
@@ -59,7 +61,7 @@ Em `contract`, são públicos `bridgeErrorSchema`, `bridgeTicketSchema`, `bridge
 
 `BridgeRegistry` é extensível: o NoteX herda desta classe. São públicos `issueTicket`, `consumeTicket`, `attach`, `markReady`, `markPong`, `getPresence`, `dispatch`, `acceptResponse`, `detach`, `revokeUserConnection`, `closeStaleConnections` e `close`. Também fazem parte da integração os callbacks de sessões, validação de entrada/saída, classificação de leituras, schema de resposta e fábrica de erros. Os campos públicos de `BridgeConnection` incluem identidade, socket, estado, versão, geração, heartbeat e pedidos pendentes.
 
-Fontes: [index.ts](typescript/src/index.ts), [contract.ts](typescript/src/contract.ts), [http.ts](typescript/src/http.ts), [bridge.ts](typescript/src/bridge.ts), [bridge-client.ts](typescript/src/bridge-client.ts), [bridge-server.ts](typescript/src/bridge-server.ts).
+Fontes: [index.ts](../../typescript/src/index.ts), [contract.ts](../../typescript/src/contract.ts), [http.ts](../../typescript/src/http.ts), [bridge.ts](../../typescript/src/bridge.ts), [bridge-client.ts](../../typescript/src/bridge-client.ts), [bridge-server.ts](../../typescript/src/bridge-server.ts).
 
 ### Go
 
@@ -77,7 +79,7 @@ Fontes: [index.ts](typescript/src/index.ts), [contract.ts](typescript/src/contra
 
 Os executores recebem/devolvem `map[string]any`. `Execute` permite execução direta sem transporte; o HTTP acrescenta o envelope MCP. Go não expõe aqui um registo de ligações servidor equivalente a `BridgeRegistry`, nem uma função equivalente a `load_tools` Rust.
 
-Fontes: [nox.go](go/nox.go), [contracts.go](go/contracts.go), [jwt.go](go/jwt.go), [bridge.go](go/bridge.go), [defaults.go](go/defaults.go).
+Fontes: [nox.go](../../go/nox.go), [contracts.go](../../go/contracts.go), [jwt.go](../../go/jwt.go), [bridge.go](../../go/bridge.go), [defaults.go](../../go/defaults.go).
 
 ### Rust
 
@@ -95,7 +97,7 @@ Fontes: [nox.go](go/nox.go), [contracts.go](go/contracts.go), [jwt.go](go/jwt.go
 | `CredentialStore<T>` | Trait com tipo associado `Error` e métodos `load`, `save`, `delete` |
 | Constantes | `BRIDGE_PROTOCOL_VERSION`, `DEFAULT_TIMEOUT_MS`, `MAX_PAYLOAD_BYTES`, `MAX_IN_FLIGHT_REQUESTS` |
 
-Fonte: [lib.rs](rust/src/lib.rs) e [defaults.rs](rust/src/defaults.rs). Os tipos `Tool` e `CallToolResult` pertencem a `rmcp`; não são contratos independentes desse SDK.
+Fonte: [lib.rs](../../rust/src/lib.rs) e [defaults.rs](../../rust/src/defaults.rs). Os tipos `Tool` e `CallToolResult` pertencem a `rmcp`; não são contratos independentes desse SDK.
 
 ## 4. Comportamentos e contratos existentes
 
@@ -152,37 +154,37 @@ No NoteX, atualizar apenas a dependência da raiz não atualiza necessariamente 
 
 ### NoX Backend
 
-[mcp.go](../nox-backend/backend/internal/app/mcp.go) importa o pacote Go e usa `New`, `Tool`, `Options`, `Runtime.HTTPHandler`, `ExecutionContext.CheckActive` e `Error`. Constrói schemas a partir dos mesmos tipos Go usados na execução. Expõe dez ferramentas: saúde, informação, identidade, seis operações de vault e listagem de ficheiros. Atribui `_meta.cli` a todas e rejeita mapeamentos em falta/duplicados.
+[mcp.go](../../../nox-backend/backend/internal/app/mcp.go) importa o pacote Go e usa `New`, `Tool`, `Options`, `Runtime.HTTPHandler`, `ExecutionContext.CheckActive` e `Error`. Constrói schemas a partir dos mesmos tipos Go usados na execução. Expõe dez ferramentas: saúde, informação, identidade, seis operações de vault e listagem de ficheiros. Atribui `_meta.cli` a todas e rejeita mapeamentos em falta/duplicados.
 
 O endpoint `/mcp` usa os limites por omissão. Saúde e informação são públicas; as restantes operações resolvem a API Key através do código do Backend e transportam utilizador/erro num contexto privado. Não usam `Protect`/`JWTVerifier` da biblioteca. Devem continuar a existir erros estruturados `AUTH_REQUIRED`/`AUTH_FAILED`, autorização por proprietário e os códigos de domínio, em vez de uma exigência global de OAuth para todo o catálogo. A conversão de resultados preserva inteiros `int64` de revisões/tamanhos, evitando arredondamento por `float64`.
 
 ### NoX Yard
 
-[server.go](../nox-yard/internal/mcpapi/server.go) usa `Tool`, `New`, `Runtime`, `Error` e o contexto Go para adaptar a fachada de aplicação. Expõe ferramentas de inventário, configuração, containers/projetos, Compose, remoção, jobs e atualização, com `_meta.cli` e anotações explícitas. Tem limites próprios: **60 segundos, 8 MiB e 32 execuções**.
+[server.go](../../../nox-yard/internal/mcpapi/server.go) usa `Tool`, `New`, `Runtime`, `Error` e o contexto Go para adaptar a fachada de aplicação. Expõe ferramentas de inventário, configuração, containers/projetos, Compose, remoção, jobs e atualização, com `_meta.cli` e anotações explícitas. Tem limites próprios: **60 segundos, 8 MiB e 32 execuções**.
 
-A autenticação está em [machine.go](../nox-yard/internal/httpapi/machine.go): listener MCP próprio, `/mcp`, desativado por omissão, token Bearer de máquina ou modo anónimo explicitamente configurado. Uma credencial fornecida mas inválida nunca recua para anónimo. As políticas `Write`/`Secrets` filtram a descoberta e são verificadas novamente na execução. `NewHandler` prepara quatro catálogos e acrescenta um limite global de 32 pedidos HTTP. Não é correto descrever o estado atual como um endpoint sempre ativo e anónimo.
+A autenticação está em [machine.go](../../../nox-yard/internal/httpapi/machine.go): listener MCP próprio, `/mcp`, desativado por omissão, token Bearer de máquina ou modo anónimo explicitamente configurado. Uma credencial fornecida mas inválida nunca recua para anónimo. As políticas `Write`/`Secrets` filtram a descoberta e são verificadas novamente na execução. `NewHandler` prepara quatro catálogos e acrescenta um limite global de 32 pedidos HTTP. Não é correto descrever o estado atual como um endpoint sempre ativo e anónimo.
 
 Preservar erros e resultados parciais da fachada, identificadores de alvos, confirmações/fingerprints de operações destrutivas, seguimento por jobs e o campo legado `intervalMinutes` da ferramenta de atualização. O timeout não confirma o resultado de uma mutação.
 
 ### NoteX
 
-O [backend MCP](../notex/backend/src/mcp.ts) usa `createHttpHandler`, `resolveAuth`, `requiredScopes` e `formatError`. Na auditoria histórica, uma integração específica de identidade protegia MCP e a API desktop com verificação ativa de autorização; essa integração deixou de fazer parte do SDK. Os scopes são `notex:read`, `notex:create`, `notex:edit`, `notex:delete`; a identidade é passada em `authInfo.extra.userId`. Esta revisão não alterou nem voltou a inspecionar esse produto.
+O [backend MCP](../../../notex/backend/src/mcp.ts) usa `createHttpHandler`, `resolveAuth`, `requiredScopes` e `formatError`. Na auditoria histórica, uma integração específica de identidade protegia MCP e a API desktop com verificação ativa de autorização; essa integração deixou de fazer parte do SDK. Os scopes são `notex:read`, `notex:create`, `notex:edit`, `notex:delete`; a identidade é passada em `authInfo.extra.userId`. Esta revisão não alterou nem voltou a inspecionar esse produto.
 
-O [registo de ponte](../notex/backend/src/bridge/registry.ts) herda de `BridgeRegistry`, fornece schemas e erros próprios e adapta presença offline em `notex_status`. A [instalação WebSocket](../notex/backend/src/bridge/server.ts) fornece `parseDesktopFrame` próprio. Sessões, tickets, revogação e substituição de ligações são parte da integração efetiva.
+O [registo de ponte](../../../notex/backend/src/bridge/registry.ts) herda de `BridgeRegistry`, fornece schemas e erros próprios e adapta presença offline em `notex_status`. A [instalação WebSocket](../../../notex/backend/src/bridge/server.ts) fornece `parseDesktopFrame` próprio. Sessões, tickets, revogação e substituição de ligações são parte da integração efetiva.
 
-O [pacote de contratos do NoteX](../notex/packages/notex-mcp-contract/src/index.ts) importa constantes, defaults, `createResponseSchema`, ticket e `parseFrame`; define 34 ferramentas, aliases CLI, schemas de domínio e um manifesto próprio. O backend transforma estas definições em ferramentas TypeScript e o desktop carrega o manifesto via `load_tools` Rust.
+O [pacote de contratos do NoteX](../../../notex/packages/notex-mcp-contract/src/index.ts) importa constantes, defaults, `createResponseSchema`, ticket e `parseFrame`; define 34 ferramentas, aliases CLI, schemas de domínio e um manifesto próprio. O backend transforma estas definições em ferramentas TypeScript e o desktop carrega o manifesto via `load_tools` Rust.
 
-No desktop, [mcp_local_server.rs](../notex/src-tauri/src/mcp_local_server.rs) implementa `Executor`, cria `McpServer` e monta HTTP JSON stateless em loopback. [mcp_request_broker.rs](../notex/src-tauri/src/mcp_request_broker.rs) usa `RequestBroker<DesktopResponse>` com prefixo `local-mcp-`. [mcp_bridge.rs](../notex/src-tauri/src/mcp_bridge.rs) implementa o armazenamento de credenciais e usa `ExecutionRegistry`, `ServerFrame`, `parse_server_frame` e `parse_deadline`. O renderer verifica prazos numéricos ou ISO e a atividade dos pedidos antes de mutações.
+No desktop, [mcp_local_server.rs](../../../notex/src-tauri/src/mcp_local_server.rs) implementa `Executor`, cria `McpServer` e monta HTTP JSON stateless em loopback. [mcp_request_broker.rs](../../../notex/src-tauri/src/mcp_request_broker.rs) usa `RequestBroker<DesktopResponse>` com prefixo `local-mcp-`. [mcp_bridge.rs](../../../notex/src-tauri/src/mcp_bridge.rs) implementa o armazenamento de credenciais e usa `ExecutionRegistry`, `ServerFrame`, `parse_server_frame` e `parse_deadline`. O renderer verifica prazos numéricos ou ISO e a atividade dos pedidos antes de mutações.
 
 Devem ser preservados `expectedVersion`, `currentVersion`, conflitos, edições locais pendentes, tradução de erros offline e a separação entre operações locais e remotas. O NoteX mapeia `APP_OFFLINE`/`CANCELLED` para `NOTEX_OFFLINE`; os seus erros próprios não conservam todos os `details` do erro base. Esta é uma diferença já existente, não uma garantia uniforme de informação sobre resultados incertos.
 
 ### NoX Bot
 
-[mcp.ts](../nox-bot/src/services/mcp.ts) usa `ToolDefinition`, `ExecutionContext`, `McpError` e `toNodeHandler`. Expõe 14 ferramentas de estado, guild, canais, envio de mensagens, plugins e Quick Commands. Todas têm `_meta.cli`; entradas usam objetos Zod estritos. Os erros de domínio são adaptados por `formatError`, incluindo `WRITE_UNCONFIRMED` com resultado desconhecido.
+[mcp.ts](../../../nox-bot/src/services/mcp.ts) usa `ToolDefinition`, `ExecutionContext`, `McpError` e `toNodeHandler`. Expõe 14 ferramentas de estado, guild, canais, envio de mensagens, plugins e Quick Commands. Todas têm `_meta.cli`; entradas usam objetos Zod estritos. Os erros de domínio são adaptados por `formatError`, incluindo `WRITE_UNCONFIRMED` com resultado desconhecido.
 
 O endpoint `/mcp/guilds/:guildId` é montado no listener do dashboard e não exige autenticação própria. A execução fica ligada à guild do URL e volta a validar a instalação e as permissões relevantes. Preservar revisões, isolamento entre guilds, redação de segredos, cancelamento antes de enviar mensagens e encerramento que aguarda operações aceites.
 
-Apesar de já depender de `0.4.3`, [mcpHttp.ts](../nox-bot/src/services/mcpHttp.ts) mantém o adaptador HTTP para clientes legados criado para `0.4.1`: combina `createServer` com o transporte JSON do SDK e delega os pedidos modernos ao handler da biblioteca. Portanto, atualizar a versão não eliminou esta segunda implementação de negociação/cancelamento. Não foi removida nesta auditoria.
+Apesar de já depender de `0.4.3`, [mcpHttp.ts](../../../nox-bot/src/services/mcpHttp.ts) mantém o adaptador HTTP para clientes legados criado para `0.4.1`: combina `createServer` com o transporte JSON do SDK e delega os pedidos modernos ao handler da biblioteca. Portanto, atualizar a versão não eliminou esta segunda implementação de negociação/cancelamento. Não foi removida nesta auditoria.
 
 ### Dependências externas relevantes
 

@@ -1,3 +1,5 @@
+> **Documento histórico arquivado.** As versões, resultados e indicações de estado abaixo pertencem às revisões descritas. Consultar a [documentação atual](../README.md).
+
 # Auditoria de compatibilidade, robustez e qualidade
 
 Data: 21 de outubro de 2026. Âmbito: apenas `nox-mcp`, versão publicada atual **0.6.0**. Nenhuma release publicada, tag substituída ou aplicação consumidora alterada. Os consumidores referidos abaixo são aplicações temporárias criadas pelos testes, fora do checkout.

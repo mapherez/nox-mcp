@@ -8,11 +8,15 @@ The project focuses on the infrastructure commonly needed around MCP: tool regis
 
 > **Status:** Alpha — APIs and contracts may evolve as the project matures.
 
-Compatibility requirements, tested dependency versions and CI evidence are recorded in [COMPATIBILITY_AUDIT.md](COMPATIBILITY_AUDIT.md). **Supported / Required:** stdio and HTTP JSON in TypeScript, Go and Rust; SSE in TypeScript and Rust. **Investigating / Future Support:** Go SSE, including a known invalid terminal error after progress in the upstream Go SDK. Full Go SSE conformance is not advertised.
+Compatibility requirements, tested dependency versions and CI evidence are recorded in [compatibility and support](Documents/COMPATIBILITY.md). **Supported / Required:** stdio and HTTP JSON in TypeScript, Go and Rust; SSE in TypeScript and Rust. **Investigating / Future Support:** Go SSE, including a known invalid terminal error after progress in the upstream Go SDK. Full Go SSE conformance is not advertised.
+
+## Documentation
+
+See the [documentation index](Documents/README.md) for current integration guides and the historical archive.
 
 ## Features
 
-Optional compact CLI descriptors and incremental discovery are documented in [DISCOVERY.md](DISCOVERY.md), including server/client integration for TypeScript, Go and Rust, transport compatibility and measured payload sizes. This work does not change the public SDK version.
+Optional compact CLI descriptors and incremental discovery are documented in [discovery guide](Documents/DISCOVERY.md), including server/client integration for TypeScript, Go and Rust, transport compatibility and measured payload sizes. This work does not change the public SDK version.
 
 NoX MCP provides reusable primitives for building MCP servers without requiring each application to implement the same infrastructure independently.
 
@@ -48,7 +52,7 @@ Rust requires `rmcp >=3.5.0, <4`; the independently tested MSRV is 1.88 with Rus
 
 Shared schemas and protocol definitions live under [`contracts/`](contracts/).
 
-The shared manifest loaders and execution constructors use the portable schema profile described in [contract management](contracts/README.md). Published releases through `v0.6.0` remain unchanged; the release-tooling changes and removal of the retired identity adapter in this working tree are unreleased. Review the [migration notes](MIGRATION_0_5.md), including the approved tool-error envelope correction. This checkout does not publish a release or migrate consumers.
+The shared manifest loaders and execution constructors use the portable schema profile described in [contract management](contracts/README.md). Tool errors use JSON text content without `structuredContent`; success results retain `structuredContent`. Review [compatibility and support](Documents/COMPATIBILITY.md) before updating consumers. Historical migration notes and audit evidence are archived under [`Documents/old/`](Documents/old/README.md).
 
 ## Installation
 
@@ -202,10 +206,9 @@ Depending on the implementation, this includes:
 
 Applications remain responsible for deciding which transports should be exposed and how they should be authenticated.
 
-### TypeScript HTTP response modes (next release)
+### TypeScript HTTP response modes
 
-Updating from `0.4.1` changes normal HTTP exchanges to **JSON by default**.
-Applications pinned to the previous release retain their existing behavior.
+Normal HTTP exchanges use **JSON by default**.
 Both the legacy `initialize`/`tools/list`/`tools/call` flow and modern
 `server/discover`/tool exchanges use the SDK's native `application/json`
 responses. There is no SSE-to-JSON conversion in applications.
@@ -253,27 +256,13 @@ Disconnecting or closing the handler cancels active work and settles pending
 JSON exchanges. Legacy batch cancellation returns a terminal JSON-RPC
 cancellation error because the SDK suppresses the cancelled handler's reply.
 
-The Go transport already configures JSON responses and keeps its current
-behavior. This change standardizes HTTP response formats; the cause of the
-earlier transient Codex connection failure has not been identified.
+The Go transport also configures JSON responses. Go SSE remains outside the
+supported matrix; see [compatibility and support](Documents/COMPATIBILITY.md).
 
-See [HTTP validation](typescript/HTTP_VALIDATION.md) for automated checks,
-real Codex/LM Studio versions and results, and reproduction scripts.
-
-### Application migration
-
-For NoX Bot, after publishing and pinning the new release in the Bot repository:
-
-1. Update its fixed `@nox/mcp` release dependency and lockfile.
-2. Remove the local transport adapter and use `createHttpHandler` directly.
-3. Validate initialization, tool discovery, harmless calls and authentication
-   with its actual clients; set `responseMode: 'sse'` if intermediate events
-   are required.
-
-That migration is a later change in the Bot repository. Before recommending
-an update for NoteX or Yard, confirm their current response parsing, progress,
-notification and authentication flows. They are not migrated by this library
-change.
+Automated checks use real HTTP servers and installed SDK consumers. Earlier
+Codex and LM Studio results are retained in the [historical HTTP report](Documents/old/HTTP_VALIDATION.md).
+Test each application's response parsing, progress, cancellation and authentication
+when updating its pinned SDK dependency.
 
 ## Authorization
 
@@ -302,7 +291,7 @@ These contracts exist to keep behavior consistent between TypeScript, Rust, and 
 
 ## Releases
 
-Version `v0.6.0` is already published and is not modified by this revision.
+Published tags and release assets must never be overwritten.
 Commit reviewed changes first. On a clean `master` branch, run:
 
 ```sh
@@ -359,6 +348,8 @@ only (`workflow_dispatch`) and never participates in the release gate.
 ## Repository structure
 
 ```text
+Documents/      Current integration guides
+Documents/old/  Historical audits and migration reports
 contracts/      Shared protocol contracts and schemas
 typescript/     TypeScript implementation
 go/             Go implementation

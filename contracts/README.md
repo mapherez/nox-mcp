@@ -1,10 +1,10 @@
 # Contratos partilhados
 
-`contracts/` é a fonte oficial dos seis schemas de protocolo, dos defaults, do perfil de schemas de ferramentas e do corpus de conformidade. Esta normalização prepara a versão **0.5.0**, com alterações incompatíveis descritas em [MIGRATION_0_5.md](../MIGRATION_0_5.md). A [baseline histórica](../COMPATIBILITY_BASELINE.md) mantém o estado auditado antes destas correções.
+`contracts/` é a fonte oficial dos seis schemas de protocolo, dos defaults, do perfil de schemas de ferramentas e do corpus de conformidade. O âmbito suportado está em [compatibilidade e suporte](../Documents/COMPATIBILITY.md). As auditorias e notas de migração anteriores estão no [arquivo histórico](../Documents/old/README.md).
 
 ## Responsabilidades
 
-O Passo 2B acrescenta contratos opcionais separados para descritores CLI e discovery incremental, sem alterar os contratos anteriores. Consultar [DISCOVERY.md](../DISCOVERY.md) para negociação, exemplos nas três linguagens, fingerprints, snapshots e cache. `cli.schema.json` e `discovery-*.schema.json` são validados pelos validadores JSON Schema nativos; o corpus adicional é `discovery-conformance.json`. `npm run contracts:sync` gera as cópias e os schemas TypeScript, e `npm run test:discovery` compara as implementações e os transportes reais.
+O Passo 2B acrescenta contratos opcionais separados para descritores CLI e discovery incremental, sem alterar os contratos anteriores. Consultar [discovery incremental](../Documents/DISCOVERY.md) para negociação, exemplos nas três linguagens, fingerprints, snapshots e cache. `cli.schema.json` e `discovery-*.schema.json` são validados pelos validadores JSON Schema nativos; o corpus adicional é `discovery-conformance.json`. `npm run contracts:sync` gera as cópias e os schemas TypeScript, e `npm run test:discovery` compara as implementações e os transportes reais.
 
 Um manifesto estruturalmente válido não constitui uma autorização nem garante que pode ser executado.
 
@@ -60,7 +60,7 @@ Nas chamadas comuns, o sucesso contém um objeto `structuredContent` validado pe
 
 Um erro de ferramenta tem `isError: true` e um corpo conforme a `error.schema.json`. Códigos de domínio e propriedades adicionais continuam permitidos, incluindo `details` e `currentVersion`. Na fronteira de execução, `retryable` omitido é materializado como `false`; erros malformados e envelopes demasiado grandes dão origem a um erro `INTERNAL` mínimo. Esse erro mínimo pode exceder um limite configurado demasiado pequeno para conter qualquer erro válido.
 
-Na correção atualmente em revisão, aprovada pelo utilizador, esse corpo de erro é transportado como JSON em `content[].text`, **sem `structuredContent`**. O campo `structuredContent` fica reservado aos resultados de sucesso que respeitam o `outputSchema` anunciado. Os consumidores podem validar o corpo de erro com `error.schema.json`. Ver [auditoria e migração](../COMPATIBILITY_AUDIT.md).
+Esse corpo de erro é transportado como JSON em `content[].text`, **sem `structuredContent`**. O campo `structuredContent` fica reservado aos resultados de sucesso que respeitam o `outputSchema` anunciado. Os consumidores podem validar o corpo de erro com `error.schema.json`. Ver [compatibilidade e migração](../Documents/COMPATIBILITY.md#resultados-e-erros).
 
 O prazo é calculado uma vez à entrada da execução da biblioteca; inclui validação e execução e é transmitido ao executor. Uma chamada já cancelada não inicia o executor. A biblioteca volta a verificar prazo/cancelamento antes de aceitar um sucesso, impedindo que um resultado tardio seja tratado como confirmado. Não inclui autenticação ou processamento do transporte anterior à entrada no runtime.
 
@@ -91,7 +91,7 @@ Go usa `go:embed`; Rust usa `include_str!`. Os pacotes instalados contêm as có
 
 Para alterar um contrato:
 
-1. Consultar a baseline e a migração; identificar operações, consumidores e impacto de compatibilidade.
+1. Consultar a documentação de compatibilidade e, quando relevante, o arquivo de migrações; identificar operações, consumidores e impacto de compatibilidade.
 2. Alterar as fontes oficiais. Se introduzir uma assertion nova, acrescentar suporte explícito ao gerador ou ao perfil, sem a ignorar num motor.
 3. Acrescentar casos válidos, inválidos e regressões ao corpus. `cases` testa documentos, `executable` testa preparação e `loadTools` testa a limitação da projeção legada Rust. `schemaCases` separa validade do schema e do valor. `runtimeCases` descreve chamadas, autorização, erros e término.
 4. Sincronizar, rever o diff e executar as verificações seguintes. Incluir os ficheiros gerados e documentar qualquer migração necessária.
@@ -108,6 +108,6 @@ npm run package:check
 
 As suites usam os mesmos exemplos e expectativas, sem exceções por linguagem na validação/preparação comum. `test:conformance` executa os três runtimes, recolhe observações normalizadas e compara os JSON efetivamente produzidos: sucesso/erro, corpo, código, `retryable`, `details` e se o executor chegou a ser invocado. Verifica também a descoberta real dos metadados e schemas através dos SDKs. Exclui mensagens humanas, IDs e relógios. Os testes de transporte existentes cobrem HTTP/SDK em separado; o cancelamento controlado evita depender da supressão de respostas pelo transporte.
 
-`test:native-packages` compila um consumidor Go isolado e uma crate Rust empacotada fora do checkout, sem a pasta oficial `contracts/` nem Node na build nativa. `package:check` instala o tarball, testa imports e HTTP JSON/SSE antes de instalar TypeScript e, depois, compila e executa uma aplicação consumidora estrita. `test:consumers -- --language=rust` e `--language=go` verificam aplicações com resolução própria; `--minimum` seleciona o perfil mínimo. A matriz de toolchains/dependências e os bloqueadores estão em [COMPATIBILITY_AUDIT.md](../COMPATIBILITY_AUDIT.md). Os testes nativos de distribuição usam as caches preenchidas pelas suites normais.
+`test:native-packages` compila um consumidor Go isolado e uma crate Rust empacotada fora do checkout, sem a pasta oficial `contracts/` nem Node na build nativa. `package:check` instala o tarball, testa imports e HTTP JSON/SSE antes de instalar TypeScript e, depois, compila e executa uma aplicação consumidora estrita. `test:consumers -- --language=rust` e `--language=go` verificam aplicações com resolução própria; `--minimum` seleciona o perfil mínimo. A matriz de toolchains/dependências e os bloqueadores estão em [compatibilidade e suporte](../Documents/COMPATIBILITY.md). Os testes nativos de distribuição usam as caches preenchidas pelas suites normais.
 
-O workflow de contratos executa estas verificações; a release consulta as aprovações do mesmo SHA, sem repetir a matriz nem as suites. `npm test` e `prepack` recusam ficheiros gerados desatualizados. Nenhum destes comandos atualiza Backend, Yard, Bot ou NoteX. Esta revisão não acrescenta novos contratos de CLI, Gateway ou Portal.
+O workflow de contratos executa estas verificações; a release consulta as aprovações do mesmo SHA, sem repetir a matriz nem as suites. `npm test` e `prepack` recusam ficheiros gerados desatualizados. Nenhum destes comandos atualiza Backend, Yard, Bot ou NoteX. Não editar as cópias geradas diretamente.
