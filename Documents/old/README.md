@@ -1,12 +1,12 @@
-# Arquivo de documentação
+# Documentation archive
 
-Estes documentos foram arquivados em 22 de outubro de 2026. Não usar como instruções atuais de integração ou publicação. Consultar o [índice de documentação atual](../README.md).
+These documents were archived on October 22, 2026. Do not use them as current integration or publication instructions. See the [current documentation index](../README.md).
 
-| Documento | Motivo de conservação |
+| Document | Reason for keeping it |
 | --- | --- |
-| [COMPATIBILITY_BASELINE.md](COMPATIBILITY_BASELINE.md) | Auditoria inicial, anterior à normalização dos contratos; inventário histórico das utilizações nos produtos |
-| [MIGRATION_0_5.md](MIGRATION_0_5.md) | Alterações e cuidados de migração de versões antigas, incluindo diferenças incompatíveis documentadas |
-| [COMPATIBILITY_AUDIT.md](COMPATIBILITY_AUDIT.md) | Relatório detalhado das correções, resultados locais e runs remotos identificados por SHA; inclui a revisão da pipeline após 0.6.0 |
-| [HTTP_VALIDATION.md](HTTP_VALIDATION.md) | Ensaios HTTP de 8 de outubro de 2026 com versões específicas do Codex e LM Studio |
+| [COMPATIBILITY_BASELINE.md](COMPATIBILITY_BASELINE.md) | Initial audit before contract normalization; historical inventory of product usage |
+| [MIGRATION_0_5.md](MIGRATION_0_5.md) | Changes and migration guidance for older versions, including documented breaking changes |
+| [COMPATIBILITY_AUDIT.md](COMPATIBILITY_AUDIT.md) | Detailed correction report, local results, and remote runs identified by SHA; includes the pipeline review after 0.6.0 |
+| [HTTP_VALIDATION.md](HTTP_VALIDATION.md) | HTTP checks from October 8, 2026 with specific Codex and LM Studio versions |
 
-O conteúdo histórico foi preservado; apenas os links relativos e um aviso de arquivo foram ajustados. A documentação histórica fica no repositório e não acompanha o pacote npm.
+Historical facts and evidence are preserved. The documents have been translated into English, relative links updated, and archive notices added. Historical documentation remains in the repository and is excluded from the npm package.

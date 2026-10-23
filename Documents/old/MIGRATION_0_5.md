@@ -1,60 +1,60 @@
-> **Documento histórico arquivado.** As versões, resultados e indicações de estado abaixo pertencem às revisões descritas. Consultar a [documentação atual](../README.md).
+> **Archived historical document.** The versions, results, and status statements below apply to the revisions described. See the [current documentation](../README.md).
 
-Nota de estado: este documento conserva a migração histórica de 0.5.0. A versão 0.6.0 também já está publicada e fica intocada. A revisão posterior da pipeline e das entradas públicas é descrita no README e na secção E da auditoria.
+Status note: this document preserves the historical 0.5.0 migration. Version 0.6.0 has also been published and remains untouched. The subsequent pipeline and public-entry-point review is described in the README and audit section E.
 
-# Migração para 0.5.0
+# Migration to 0.5.0
 
-A tag `0.5.0` já foi publicada. As notas históricas abaixo explicam a migração para essa versão. A árvore de trabalho contém agora correções adicionais em revisão, **sem nova release e sem incremento de versão**; estas correções não alteram retroativamente a tag publicada. Instalar uma versão/tag explícita, rever o lockfile e testar cada produto antes de uma atualização.
+Tag `0.5.0` has already been published. The historical notes below explain migration to that version. The working tree now contains additional corrections under review, **without a new release or version increment**; these corrections do not retroactively change the published tag. Install an explicit version/tag, review the lockfile, and test each product before updating.
 
-## Correções adicionais em revisão
+## Additional corrections under review
 
-- Rust passa a exigir rmcp 3.5.0 ou superior compatível e os mínimos compilados indicados na [auditoria](COMPATIBILITY_AUDIT.md).
-- Com aprovação explícita do utilizador, erros MCP `isError: true` deixam de incluir `structuredContent`. Ler o corpo JSON de `content[].text`; `code`, `message`, `retryable`, detalhes e extensões mantêm-se. Os resultados de sucesso continuam em `structuredContent`. Esta mudança evita validar um erro de autenticação/domínio contra o `outputSchema` de sucesso.
-- O suporte completo a SSE Go foi adiado por decisão explícita: `Investigating / Future Support`. O diagnóstico continua a falhar perante a resposta inválida após progresso; stdio e HTTP JSON continuam obrigatórios. Consultar a matriz e os resultados na auditoria antes de publicar.
+- Rust now requires rmcp 3.5.0 or a compatible higher version and the compiled minimum versions listed in the [audit](COMPATIBILITY_AUDIT.md).
+- With explicit user approval, MCP `isError: true` results no longer include `structuredContent`. Read the JSON body from `content[].text`; `code`, `message`, `retryable`, details, and extensions are preserved. Successful results remain in `structuredContent`. This avoids validating an authentication/domain error against the success `outputSchema`.
+- Full Go SSE support was explicitly deferred: `Investigating / Future Support`. The diagnostic continues failing on the invalid response after progress; stdio and HTTP JSON remain mandatory. Consult the audit matrix and results before publication.
 
-As versões do protocolo de bridge (`1.0`/`2.0`) e do schema de manifesto (`1`) não mudam: os envelopes mantêm-se e a alteração está na validação e execução da biblioteca. Não foi redesenhado o protocolo MCP. As observações históricas da baseline mantêm-se, exceto a remoção posterior expressamente autorizada da integração específica de identidade.
+Bridge protocol versions (`1.0`/`2.0`) and manifest schema version (`1`) do not change: envelopes remain intact, and the changes concern library validation and execution. The MCP protocol was not redesigned. Historical baseline observations remain, except for the later expressly authorized removal of the specific identity integration.
 
-## Alterações incompatíveis confirmadas
+## Confirmed breaking changes
 
-| Antes | A partir de 0.5.0 | Migração |
+| Before | From 0.5.0 onward | Migration |
 | --- | --- | --- |
-| O schema estrutural aceitava `_meta` escalar/array/null; o carregador Rust tinha outra interpretação. | `_meta`, quando presente, é um objeto em todas as linguagens. Objetos vazios, `_meta.cli` e propriedades personalizadas são conservados. | Omitir metadados ausentes; transportar valores personalizados dentro de um objeto. Não substituir `{}` por `null`. |
-| O parse TypeScript inseria `retryable: false` num documento que não tinha o campo; Go/Rust não o inseriam. | A validação estrutural não modifica documentos. Apenas a fronteira de execução materializa `false` nos erros produzidos. | Se o código lê o parser diretamente, usar `error.retryable ?? false` ou distinguir explicitamente ausência. |
-| `ToolManifestEntry.annotations` exigia quatro booleanos no tipo TypeScript, embora o JSON permitisse omiti-los. | Os quatro membros são opcionais, como no contrato. | Rever leituras que assumiam `boolean` obrigatório; usar `=== true` para reconhecer uma indicação explícita. |
-| Rust `load_tools` ignorava `requiredScopes`, incluindo valores malformados. | Valida o manifesto completo e rejeita requisitos não vazios, porque `Vec<Tool>` não os transporta. | Para executar manifestos com requisitos, usar `McpServer::from_manifest`; para inspeção sem perdas, usar `load_manifest`. Não eliminar requisitos para contornar a validação. |
-| Rust `load_tools` aceitava objetos de schema sem garantir que eram compiláveis. Os motores aplicavam assertions/formatos de forma diferente. | Preparação verifica o perfil comum e falha cedo perante schemas inválidos ou não portáveis. | Validar os manifestos no CI. Adaptar schemas ao perfil documentado; conservar APIs nativas quando a ferramenta depende deliberadamente de outro dialeto. |
-| Requisitos vazios podiam chegar à execução com significados diferentes. | `requiredScopes: [""]` e requisitos vazios nas configurações nativas são inválidos. | Remover strings vazias; manter a lista vazia apenas quando não há requisitos. Scopes concedidos continuam a vir da autenticação. |
-| Comprimentos podiam contar bytes Go/Rust ou unidades UTF-16 TypeScript. | Limites dos contratos contam pontos de código Unicode, incluindo nomes até 64 caracteres. | Não truncar nomes por bytes. Não há alteração dos nomes das ferramentas existentes. |
-| SDK/validação TypeScript podia produzir erros fora da fronteira NoX; saída inválida podia ser confundida com erro de entrada. Rust não uniformizava erros/panics do executor. | Entrada inválida → `INVALID_INPUT`; saída/erro malformado e falha inesperada → `INTERNAL`. Erros estruturados são validados, sanitizados e limitados. | Rever clientes/testes que dependiam de erros SDK, mensagens internas ou erros sem corpo estruturado; manter códigos de domínio e detalhes válidos. |
-| Alguns caminhos de cancelamento/prazo divergiam no código, `retryable`, detalhes e aceitação de resultados tardios. | Prazo único desde a entrada no runtime; `TIMEOUT`/`CANCELLED`, repetição apenas para leitura explícita e resultado desconhecido nas restantes operações. | Respeitar o sinal/contexto e o prazo recebido. Tratar `details.outcome: "unknown"` sem repetir escritas automaticamente. |
-| Rust `McpServer::new` podia aceitar nomes repetidos, schemas inválidos e políticas para ferramentas inexistentes. | Rejeita essas configurações no arranque. | Corrigir nomes/políticas e schemas antes de criar o servidor. |
-| `Tool` Go não representava `openWorldHint`. | Acrescentado `OpenWorld *bool`; `nil` significa ausência. | Usar literais com nomes de campos. Literais posicionais precisam de adaptação ao novo campo. |
+| The structural schema accepted scalar/array/null `_meta`; the Rust loader interpreted it differently. | When present, `_meta` is an object in all languages. Empty objects, `_meta.cli`, and custom properties are preserved. | Omit absent metadata; carry custom values inside an object. Do not replace `{}` with `null`. |
+| TypeScript parsing inserted `retryable: false` into documents lacking the field; Go/Rust did not. | Structural validation does not modify documents. Only the execution boundary materializes `false` in produced errors. | When reading parser output directly, use `error.retryable ?? false` or explicitly distinguish absence. |
+| `ToolManifestEntry.annotations` required four booleans in TypeScript even though JSON allowed them to be omitted. | All four members are optional, matching the contract. | Review reads assuming a required `boolean`; use `=== true` to recognize an explicit hint. |
+| Rust `load_tools` ignored `requiredScopes`, including malformed values. | It validates the full manifest and rejects non-empty requirements because `Vec<Tool>` cannot carry them. | Use `McpServer::from_manifest` to execute manifests with requirements; use `load_manifest` for lossless inspection. Do not remove requirements to bypass validation. |
+| Rust `load_tools` accepted schema objects without checking compilability. Engines applied assertions/formats differently. | Preparation checks the shared profile and fails early on invalid or non-portable schemas. | Validate manifests in CI. Adapt schemas to the documented profile; retain native APIs when a tool deliberately depends on another dialect. |
+| Empty requirements could reach execution with different meanings. | `requiredScopes: [""]` and empty requirements in native configurations are invalid. | Remove empty strings; keep an empty list only when there are no requirements. Granted scopes still come from authentication. |
+| Lengths could count Go/Rust bytes or TypeScript UTF-16 units. | Contract limits count Unicode code points, including names up to 64 characters. | Do not truncate names by bytes. Existing tool names are unchanged. |
+| TypeScript SDK/validation could emit errors outside the NoX boundary; invalid output could be confused with input errors. Rust did not normalize executor errors/panics. | Invalid input → `INVALID_INPUT`; invalid output/malformed error and unexpected failures → `INTERNAL`. Structured errors are validated, sanitized, and bounded. | Review clients/tests relying on SDK errors, internal messages, or errors without a structured body; preserve valid domain codes and details. |
+| Some cancellation/deadline paths differed in code, `retryable`, details, and acceptance of late results. | One deadline from runtime entry; `TIMEOUT`/`CANCELLED`, retryability only for explicit reads, unknown outcomes for other operations. | Respect the received signal/context and deadline. Handle `details.outcome: "unknown"` without automatically retrying writes. |
+| Rust `McpServer::new` could accept duplicate names, invalid schemas, and policies for nonexistent tools. | These configurations are rejected at startup. | Fix names/policies and schemas before creating the server. |
+| Go `Tool` did not represent `openWorldHint`. | Added `OpenWorld *bool`; `nil` means absent. | Use named-field literals. Positional literals must be adapted to the new field. |
 
-Os novos carregadores completos e construtores a partir de manifesto não substituem as APIs nativas. São a via explícita para partilhar o mesmo JSON e as mesmas regras de validação entre linguagens. A associação só aceita executores fornecidos pela aplicação; não executa código proveniente de metadados. Requisitos declarados são unidos à política local e nunca concedidos ao utilizador.
+New complete loaders and manifest constructors do not replace native APIs. They are the explicit path for sharing the same JSON and validation rules across languages. Binding accepts only application-supplied executors; it does not execute code from metadata. Declared requirements are combined with local policy and never granted to the user.
 
-O perfil comum recusa dialetos/keywords/formatos desconhecidos, referências remotas ou recursivas e regex não portáveis. Suporta `multipleOf` apenas com inteiro positivo seguro: confirmou-se que Go rejeitava `0.3` com divisor `0.1`, enquanto Rust o aceitava. A restrição é explícita nas três implementações; não se promete equivalência decimal arbitrária. As APIs nativas mantêm a sua abrangência anterior. Ver [regras completas](../../contracts/README.md#schemas-de-ferramentas).
+The shared profile rejects unknown dialects/keywords/formats, remote or recursive references, and non-portable regex. It supports `multipleOf` only with a safe positive integer: Go was confirmed to reject `0.3` with divisor `0.1` while Rust accepted it. The restriction is explicit in all three implementations; arbitrary decimal equivalence is not promised. Native APIs retain their previous scope. See the [full rules](../../contracts/README.md#tool-schemas).
 
-Ajv é acrescentado como dependência de execução TypeScript para compilação draft-07. Não se atualizaram as versões das dependências já existentes. Go/Rust continuam a compilar como dependências externas sem scripts Node.
+Ajv is added as a TypeScript runtime dependency for draft-07 compilation. Existing dependency versions were not upgraded. Go/Rust continue compiling as external dependencies without Node scripts.
 
-## Impacto previsto nos consumidores
+## Expected consumer impact
 
-As referências abaixo foram consultadas apenas em leitura. Não foram alterados código, dependências ou lockfiles dos produtos, nem foram executadas as suas suites de integração. As versões instaladas continuam independentes deste checkout.
+The references below were inspected read-only. No product code, dependencies, or lockfiles were changed, and product integration suites were not run. Installed versions remain independent of this checkout.
 
-| Produto | Dependência observada | Impacto de uma atualização futura |
+| Product | Observed dependency | Impact of a future update |
 | --- | --- | --- |
-| NoX Backend | Go `v0.4.3`, ferramentas construídas no código | Os literais existentes usam nomes de campos. Rever erros de validação, prazos, cancelamento e scopes; pode continuar a usar `New`. |
-| NoX Yard | Go `v0.4.3`, ferramentas e workflows no código | Mesmas verificações do Backend, incluindo cancelamento de operações com efeitos. Preservar nomes, schemas e `_meta.cli`. |
-| NoX Bot | TypeScript `0.4.3`, schemas Zod e `formatError` | Mantém `createServer`/adaptador Node e schemas nativos. Testar erros de domínio e `WRITE_UNCONFIRMED`, validação e cancelamento. Um formatter tem de produzir um corpo de erro válido. |
-| NoteX | TypeScript `0.4.3` na raiz e `0.4.1` no backend/contratos; Rust `0.1.0` fixado em `fd1b688d700b37caf96961c15f6d7022a09ab7a4` | **Intocado.** Não atualizar nesta fase. Uma migração futura exige ensaiar o manifesto real, `load_tools`/scopes, extensões de erro, bridges, tickets, broker desktop e integração entre versões. |
+| NoX Backend | Go `v0.4.3`, tools constructed in code | Existing literals use named fields. Review validation errors, deadlines, cancellation, and scopes; it may continue using `New`. |
+| NoX Yard | Go `v0.4.3`, tools and workflows in code | Same checks as Backend, including cancellation of effectful operations. Preserve names, schemas, and `_meta.cli`. |
+| NoX Bot | TypeScript `0.4.3`, Zod schemas and `formatError` | Retains `createServer`/Node adapter and native schemas. Test domain errors and `WRITE_UNCONFIRMED`, validation, and cancellation. Formatters must produce a valid error body. |
+| NoteX | TypeScript `0.4.3` at root and `0.4.1` in backend/contracts; Rust `0.1.0` pinned to `fd1b688d700b37caf96961c15f6d7022a09ab7a4` | **Untouched.** Do not update in this phase. A future migration must exercise the real manifest, `load_tools`/scopes, error extensions, bridges, tickets, desktop broker, and cross-version integration. |
 
-O NoteX não recebe esta normalização através de geração ou da CI do `nox-mcp`: os artefactos e referências fixadas continuam a usar as versões anteriores. Não se afirma compatibilidade automática de `0.5.0` com código ainda não migrado/testado.
+NoteX does not receive this normalization through `nox-mcp` generation or CI: pinned artifacts and references continue using earlier versions. Automatic compatibility of `0.5.0` with unmigrated/untested code is not claimed.
 
-## Adoção explícita
+## Explicit adoption
 
-1. Manter a referência atual até existir uma release aprovada. Não substituir a versão instalada por uma branch móvel.
-2. Rever as alterações e validar os manifestos reais com as novas funções. Projeções SDK não conservam o documento integral.
-3. Se adotar os construtores de manifesto, fornecer bindings/executor de confiança, política local e identidade autenticada em separado. Testar permissão em falta, autorização explícita e impossibilidade de retirar requisitos locais.
-4. Executar as suites do produto: erros, limites, cancelamento, transportes e, quando aplicável, desktop/bridge.
-5. Atualizar a dependência e o lockfile apenas nesse produto, de forma deliberada. A publicação e estas atualizações não fazem parte deste passo.
+1. Keep the current reference until an approved release exists. Do not replace an installed version with a moving branch.
+2. Review changes and validate real manifests with the new functions. SDK projections do not preserve the complete document.
+3. When adopting manifest constructors, separately supply trusted bindings/executor, local policy, and authenticated identity. Test missing permission, explicit authorization, and inability to remove local requirements.
+4. Run product suites for errors, limits, cancellation, transports, and, where applicable, desktop/bridge behavior.
+5. Deliberately update dependencies and lockfiles only in that product. Publication and those updates are outside this step.
 
-A equivalência é verificada para os contratos e perfil comuns, com as diferenças legítimas de SDK/transporte descritas em [contracts/README.md](../../contracts/README.md). O desenho dos novos contratos pode partir desta base; publicação e migração dos produtos continuam a ser decisões posteriores.
+Equivalence is checked for shared contracts and profile, with legitimate SDK/transport differences documented in [contracts/README.md](../../contracts/README.md). New contracts may be designed on this foundation; publication and product migration remain later decisions.

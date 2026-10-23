@@ -357,6 +357,21 @@ rust/           Rust implementation
 scripts/        Release, validation, and packaging tooling
 ```
 
-## License
+## License & Attribution
 
-Licensed under the [MIT License](LICENSE).
+This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license.
+
+### How to Credit This Project
+
+If you use, fork, or modify this code, you **must** provide attribution by linking back to my GitHub profile. Please include the following credit notice prominently in your repository or project documentation:
+
+> **Based on [nox-mcp](https://github.com/mapherez/nox-mcp) by [mapherez](https://github.com/mapherez)**
+> This project includes code from [nox-mcp](https://github.com/mapherez/nox-mcp), used under the CC BY-NC-SA 4.0 license.
+
+---
+
+*For more details on what you can and cannot do, please refer to the [LICENSE](LICENSE) file in this repository.*
+
+## Disclaimer of Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

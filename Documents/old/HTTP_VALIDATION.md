@@ -1,4 +1,4 @@
-> **Documento histórico arquivado.** As versões, resultados e indicações de estado abaixo pertencem às revisões descritas. Consultar a [documentação atual](../README.md).
+> **Archived historical document.** The versions, results, and status statements below apply to the revisions described. See the [current documentation](../README.md).
 
 # HTTP JSON default validation
 

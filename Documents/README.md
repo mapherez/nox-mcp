@@ -1,13 +1,16 @@
-# Documentação do NoX MCP
+# NoX MCP documentation
 
-Começar pelo [README do projeto](../README.md) para instalação, APIs principais e processo de release.
+Start with the [project README](../README.md) for installation, the main APIs, and the release process.
 
-| Documento atual | Conteúdo |
+Repository documentation is maintained in English, including historical documents.
+
+| Current document | Contents |
 | --- | --- |
-| [Compatibilidade e suporte](COMPATIBILITY.md) | Matriz suportada, dependências, erros, validação e limitações conhecidas |
-| [Metadados CLI e discovery incremental](DISCOVERY.md) | Contrato da extensão, exemplos de servidor/cliente, fingerprints, snapshots e cache |
-| [Manutenção dos contratos](../contracts/README.md) | Fonte oficial dos schemas, geração e testes de conformidade |
+| [NoX Suite implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md) | Source of truth for approved requirements, responsibilities, implementation order, and pending technical decisions |
+| [Compatibility and support](COMPATIBILITY.md) | Supported matrix, dependencies, errors, validation, and known limitations |
+| [CLI metadata and incremental discovery](DISCOVERY.md) | Extension contract, server/client examples, fingerprints, snapshots, and caching |
+| [Contract maintenance](../contracts/README.md) | Authoritative schemas, generation, and conformance tests |
 
-## Histórico
+## History
 
-[old/](old/README.md) guarda as auditorias anteriores, a migração para 0.5.0 e os resultados antigos de clientes HTTP. Esses documentos conservam evidência e contexto de decisões; não são guias do estado atual. As versões dos consumidores e os resultados de testes aí registados correspondem apenas às revisões identificadas.
+[old/](old/README.md) contains earlier audits, the migration to 0.5.0, and historical HTTP client results. These documents preserve evidence and decision context; they are not guides to the current implementation. Consumer versions and test results recorded there apply only to the identified revisions.
