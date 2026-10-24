@@ -7,6 +7,7 @@ Repository documentation is maintained in English, including historical document
 | Current document | Contents |
 | --- | --- |
 | [NoX Suite implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md) | Source of truth for approved requirements, responsibilities, implementation order, and pending technical decisions |
+| [Product integration proposal](PRODUCT_INTEGRATION_PROPOSAL.md) | Proposed product declaration, Backend registration, lifecycle rules, failure handling, and approval decisions; not implemented |
 | [Compatibility and support](COMPATIBILITY.md) | Supported matrix, dependencies, errors, validation, and known limitations |
 | [CLI metadata and incremental discovery](DISCOVERY.md) | Extension contract, server/client examples, fingerprints, snapshots, and caching |
 | [Contract maintenance](../contracts/README.md) | Authoritative schemas, generation, and conformance tests |

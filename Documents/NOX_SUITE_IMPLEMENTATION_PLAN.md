@@ -405,3 +405,5 @@ Design must present alternatives and consequences where relevant. Do not invent 
 | Automatic expiry deletes offline products | Registration persists; removal requires an explicit confirmed action |
 
 **Next work:** design product integration/registration and Gateway contracts from these requirements, preserving the existing Core/CLI foundation and correcting only demonstrated gaps.
+
+The [product integration proposal](PRODUCT_INTEGRATION_PROPOSAL.md) is the stage-2 design under review. Its proposed fields, routes, and policies do not become approved requirements until explicitly accepted.
