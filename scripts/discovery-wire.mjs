@@ -6,6 +6,7 @@ import {createInterface} from 'node:readline';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {DiscoveryCache,discoveryMeta,DISCOVERY_EXTENSION} from '../typescript/dist/index.js';
+import {expectedHttpStatus} from './discovery-http-policy.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const corpus=JSON.parse(await readFile(resolve(root,'contracts/discovery-conformance.json'),'utf8'));
 const requiredCapabilities={extensions:{[DISCOVERY_EXTENSION]:{version:'1.0'}}};
@@ -13,6 +14,13 @@ export async function exerciseDiscoveryFixtures(fixtures,{suite='supported'}={})
  assert.ok(['supported','investigating-go-sse'].includes(suite));
  const transportFailures=[];
  for(const[language,command,args,options={}]of fixtures){
+  if(language==='rust'){
+   // Resolve policy before starting a process; do not leave an unknown version
+   // looking like a protocol failure after partially exercising the fixture.
+   const handlerCase=corpus.negotiationCases.find(example=>example.invalidParams);
+   expectedHttpStatus(handlerCase,language,options.sdkVersion);
+   console.log(`Rust wire fixture: rmcp ${options.sdkVersion}`);
+  }
   // Go SSE is explicitly outside the supported transport matrix. Its complete
   // reproducer lives in the separate investigating suite, never a passing skip.
   const transports=suite==='investigating-go-sse'?['http-sse']:language==='go'?['stdio','http','stdio-legacy','http-legacy']:['stdio','http','http-sse','stdio-legacy','http-legacy'];
@@ -22,8 +30,8 @@ export async function exerciseDiscoveryFixtures(fixtures,{suite='supported'}={})
   const http=transport.startsWith('http'),legacy=transport.endsWith('legacy');
   const child=spawn(command,[...args,...(http?['--http']:[]),...(transport==='http-sse'?['--sse']:[])],{cwd:root,stdio:['pipe','pipe','pipe']});const closed=new Promise(resolve=>child.once('close',resolve));let stderr='';child.stderr.on('data',b=>stderr+=b);const lines=createInterface({input:child.stdout});let id=0;const pending=new Map();let urlResolve,urlReject;const url=new Promise((resolve,reject)=>{urlResolve=resolve;urlReject=reject;});url.catch(()=>{});
   lines.on('line',line=>{if(line.startsWith('http://'))urlResolve(line);else{let message;try{message=JSON.parse(line)}catch{return};const entry=pending.get(message.id);if(entry){pending.delete(message.id);clearTimeout(entry.timer);entry.resolve(message);}}});child.on('error',e=>{urlReject(e);for(const entry of pending.values()){clearTimeout(entry.timer);entry.reject(e)}});child.on('exit',code=>{if(code){const e=Error(`${language} exited ${code}: ${stderr}`);urlReject(e);for(const entry of pending.values()){clearTimeout(entry.timer);entry.reject(e)}}});
-  let endpoint;
-  async function rpc(method,params={},modern=!legacy,raw=false){const request={jsonrpc:'2.0',id:++id,method,params:{...params,...(modern?{_meta:{...discoveryMeta(),...params._meta}}:{})}};let message,status,contentType,frames=[],unframed=[];
+  let endpoint,lastMethod='startup';
+  async function rpc(method,params={},modern=!legacy,raw=false){lastMethod=method;const request={jsonrpc:'2.0',id:++id,method,params:{...params,...(modern?{_meta:{...discoveryMeta(),...params._meta}}:{})}};let message,status,contentType,frames=[],unframed=[];
    if(!http){message=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{pending.delete(request.id);reject(Error(`${language}/${method} timed out: ${stderr}`))},5000);pending.set(request.id,{resolve,reject,timer});child.stdin.write(JSON.stringify(request)+'\n');});}
    else{const response=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json',accept:'application/json, text/event-stream',...(modern?{'mcp-protocol-version':request.params._meta['io.modelcontextprotocol/protocolVersion']??'2026-07-28','mcp-method':method,...(method==='tools/call'?{'mcp-name':params.name}:{})}:{})},body:JSON.stringify(request),signal:AbortSignal.timeout(5000)});status=response.status;contentType=response.headers.get('content-type');const text=await response.text();try{
     if(contentType?.includes('text/event-stream')){
@@ -63,7 +71,7 @@ export async function exerciseDiscoveryFixtures(fixtures,{suite='supported'}={})
      if(fixture.code===-32022){assert.equal(message.error.data.requested,fixture.protocol);assert.ok(message.error.data.supported.includes('2026-07-28'));}
     }
     if(http){
-     const expected=fixture.httpStatusBySDK?.[options.sdk]??fixture.httpStatusBySDK?.[language]??fixture.httpStatus;
+     const expected=expectedHttpStatus(fixture,language,options.sdkVersion);
      // A successful or ordinary in-band response may already use SSE/200.
      const streaming=contentType?.includes('text/event-stream');
      assert.equal(status,streaming?200:expected,`${language}/${transport}/${fixture.id}`);
@@ -98,7 +106,7 @@ export async function exerciseDiscoveryFixtures(fixtures,{suite='supported'}={})
    assert.equal((await rpc('test/executions')).count,before+2,'A revoked request reached the executor');
    await cache.sync((method,p)=>rpc(method,{...p,_meta:{'test/policy':'revoked'}}));assert.equal(cache.definitions.size,0,'Revoked tools remained in the synchronized cache');
    console.log(`${language}: real ${transport} discovery, cache, listing, negotiation, permissions and execution ${transportFailures.length>failuresBefore?'checked; FAILED terminal SSE framing':'passed'}.`);
-  }catch(e){throw Error(`${language}/${transport}: ${e.stack}\n${stderr}`)}finally{lines.close();child.stdin.end();child.kill();await closed;for(const entry of pending.values()){clearTimeout(entry.timer);entry.reject(Error('closed'))}}
+  }catch(e){throw Error(`${language}/${transport}/${lastMethod}: ${e.stack}\n${stderr}`,{cause:e})}finally{lines.close();child.stdin.end();child.kill();await closed;for(const entry of pending.values()){clearTimeout(entry.timer);entry.reject(Error('closed'))}}
  }}
 
  assert.deepEqual(transportFailures,[], suite==='supported'?'Supported transport checks failed':'Investigating: Go SSE remains non-conformant; not a supported-conformance pass');

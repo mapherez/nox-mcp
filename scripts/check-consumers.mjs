@@ -90,7 +90,7 @@ try{
    run('cargo',['test','--locked','--all-targets'],app,env);
    run('cargo',['run','--locked'],app,env);
    run('cargo',['build','--locked','--example','discovery_fixture'],app,env);
-   await exerciseDiscoveryFixtures([['rust',resolve(env.CARGO_TARGET_DIR,'debug/examples/discovery_fixture'+(process.platform==='win32'?'.exe':'')),[],{sdk:'rust@'+mcp[0].version.split('.').slice(0,2).join('.')}]]);
+   await exerciseDiscoveryFixtures([['rust',resolve(env.CARGO_TARGET_DIR,'debug/examples/discovery_fixture'+(process.platform==='win32'?'.exe':'')),[],{sdkVersion:mcp[0].version}]]);
    // An explicitly incompatible application requirement must fail resolution.
    await writeFile(resolve(app,'Cargo.toml'),manifest.replace('rmcp = { version = "3.0"','rmcp = { version = "=3.2.0"'));
    assert.throws(()=>output('cargo',['generate-lockfile'],app,env),error=>/failed to select a version|conflict/i.test(error.stderr?.toString()??''));

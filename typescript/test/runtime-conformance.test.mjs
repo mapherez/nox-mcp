@@ -28,7 +28,7 @@ async function discover(server) {
     await client.send({ jsonrpc: '2.0', method: 'notifications/initialized' });
     return { tool: (await request('tools/list')).tools[0], request };
 }
-test('shared runtime semantics, including authorization and cancellation', { timeout: 10000 }, async () => {
+test('shared runtime semantics, including authorization and cancellation', { timeout: 30000 }, async () => {
     const report = [];
     for (const example of corpus.runtimeCases) {
         const manifest = structuredClone(corpus.runtimeManifest), tool = manifest.tools[0];
@@ -44,7 +44,8 @@ test('shared runtime semantics, including authorization and cancellation', { tim
         let server, startedResolve, executed = false;
         const started = new Promise(r => startedResolve = r);
         try {
-            server = createServerFromManifest({ appId: 'conformance', name: 'conformance', version: '1', manifest, timeoutMs: 30, maxPayloadBytes: example.maxPayloadBytes, auth: { scopes: example.grants ?? [] }, bindings: { echo: { requiredScopes: example.appRequiredScopes ?? [], execute: async (input, context) => {
+            const timeoutMs = corpus.runtimeTestPolicy[example.behavior === 'timeout' ? 'timeoutCaseMs' : 'normalTimeoutMs'];
+            server = createServerFromManifest({ appId: 'conformance', name: 'conformance', version: '1', manifest, timeoutMs, maxPayloadBytes: example.maxPayloadBytes, auth: { scopes: example.grants ?? [] }, bindings: { echo: { requiredScopes: example.appRequiredScopes ?? [], execute: async (input, context) => {
                             startedResolve();
                             executed = true;
                             assert.notEqual(example.behavior, 'pre-cancel', 'pre-cancelled request executed');
@@ -52,8 +53,11 @@ test('shared runtime semantics, including authorization and cancellation', { tim
                                 throw new McpError('', 'Invalid error');
                             if (example.behavior === 'custom-error')
                                 throw new McpError('CONFLICT', 'Domain conflict', false, { version: 2 });
-                            if (example.behavior === 'panic')
+                            if (example.behavior === 'panic') {
+                                // The old universal 30 ms deadline would mask this error.
+                                await new Promise(resolve => setTimeout(resolve, example.delayMs ?? 0));
                                 throw new Error('PRIVATE SECRET');
+                            }
                             if (['cancel', 'timeout'].includes(example.behavior)) {
                                 await new Promise(r => context.signal.addEventListener('abort', r, { once: true }));
                                 return { value: 'late' };

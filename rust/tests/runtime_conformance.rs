@@ -31,7 +31,14 @@ impl Executor for ExampleExecutor {
                 json!({"code":"CONFLICT","message":"Domain conflict","details":{"version":2}}),
                 true,
             ),
-            Some("panic") => panic!("PRIVATE SECRET"),
+            Some("panic") => {
+                // Exercise sanitization beyond the old, unrelated 30 ms deadline.
+                tokio::time::sleep(Duration::from_millis(
+                    self.example["delayMs"].as_u64().unwrap_or(0),
+                ))
+                .await;
+                panic!("PRIVATE SECRET")
+            }
             Some("timeout" | "cancel") => {
                 context.cancellation.cancelled().await;
                 tool_result(json!({"value":"late"}), false)
@@ -77,7 +84,17 @@ async fn shared_runtime_conformance() {
         };
         let options = ServerOptions {
             app_id: "conformance".into(),
-            timeout: Duration::from_millis(30),
+            // Only deadline scenarios need a short execution budget. In all
+            // other cases scheduling/panic-hook delays must not decide the error.
+            timeout: Duration::from_millis(
+                corpus["runtimeTestPolicy"][if example["behavior"] == "timeout" {
+                    "timeoutCaseMs"
+                } else {
+                    "normalTimeoutMs"
+                }]
+                .as_u64()
+                .unwrap(),
+            ),
             max_payload_bytes: example["maxPayloadBytes"]
                 .as_u64()
                 .unwrap_or(nox_mcp::MAX_PAYLOAD_BYTES as u64)

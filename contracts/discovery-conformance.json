@@ -72,7 +72,10 @@
       "httpStatus": 400,
       "httpStatusBySDK": {
         "typescript": 200,
-        "rust@3.6": 200
+        "rust": [
+          { "minVersion": "3.5.0", "beforeVersion": "3.6.0", "status": 400 },
+          { "minVersion": "3.6.0", "beforeVersion": "4.0.0", "status": 200 }
+        ]
       }
     },
     {
