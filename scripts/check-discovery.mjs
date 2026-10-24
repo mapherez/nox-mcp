@@ -18,6 +18,8 @@ try{
  for(const report of reports.slice(1))assert.deepEqual(report,reports[0],'NoX discovery behavior differs across languages');
  console.log('Identical JCS bytes, fingerprints, CLI interpretations, catalogs and definitions in all three languages.');
  const go=resolve(temp,'discovery-go'+exe);run('go',['build','-mod=readonly','-o',go,'./go/testdata/discovery-server']);run('cargo',['build','--locked','--manifest-path','rust/Cargo.toml','--example','discovery_fixture']);
- const fixtures=[['typescript',process.execPath,[resolve(root,'scripts/fixtures/discovery-server.mjs')]],['go',go,[]],['rust',resolve(root,'rust/target/debug/examples/discovery_fixture'+exe),[]]];
+ const metadata=JSON.parse(execFileSync('cargo',['metadata','--locked','--format-version','1','--manifest-path','rust/Cargo.toml'],{cwd:root,encoding:'utf8',maxBuffer:16*1024*1024}));
+ const mcp=metadata.packages.filter(pkg=>pkg.name==='rmcp');assert.equal(mcp.length,1,'Expected one resolved rmcp dependency');
+ const fixtures=[['typescript',process.execPath,[resolve(root,'scripts/fixtures/discovery-server.mjs')]],['go',go,[]],['rust',resolve(root,'rust/target/debug/examples/discovery_fixture'+exe),[],{sdkVersion:mcp[0].version}]];
  await exerciseDiscoveryFixtures(fixtures);
 }finally{assert.equal(dirname(temp),resolve(tmpdir()));await rm(temp,{recursive:true,force:true,maxRetries:5,retryDelay:100});}

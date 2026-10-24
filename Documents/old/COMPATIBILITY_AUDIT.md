@@ -294,3 +294,38 @@ Platform: Windows x64. The new publication flow was exercised against a local HT
 | `actionlint`, `git diff --check` | Passed |
 
 The 17 remote jobs in section B are historical evidence, not execution of the new revision. No real release was launched and no consumer applications changed. Tag `v0.6.0` remains at commit `726c53f77608d33bf59849d7b851b7ed36a5900b`; public manifest versions remain 0.6.0. No regressions were observed in executed tests; actual GitHub listener/publisher integration still depends on normal workflow installation on master, without publishing in this task.
+
+## F. October 24, 2026 — HTTP profile and intermittent runtime regressions
+
+These findings extend the historical report; they do not revise the results or public versions recorded above. The SDK's public version in this work is **0.6.1**, unchanged.
+
+### Confirmed failures and corrections
+
+- [Run 40046289985](https://github.com/mapherez/nox-mcp/actions/runs/40046289985), commit `46ef090`: 14/17 jobs passed. All three recent Rust consumer jobs resolved rmcp 3.7.0 and failed handler validation with `200 !== 400`. The earlier correction at `64b580d` selected an exact `rust@3.6` override; any other minor silently inherited the old HTTP 400 expectation. This was reproduced locally before editing the selector. The packaged official 3.5/3.6/3.7 transport implementations confirm the behavior boundary at 3.6.
+- [Run 39667704875](https://github.com/mapherez/nox-mcp/actions/runs/39667704875), commit `726c53f`: 16/17 jobs passed. Rust minimum/Windows, using Rust 1.88/rmcp 3.5, returned `TIMEOUT` where `unexpected-error-sanitized` expected `INTERNAL`. The universal 30 ms test budget competed with scheduling/panic handling and the runtime's required final deadline check. A controlled 60 ms delayed error reproduced that exact mismatch under the old budget. Section E had explicitly left this intermittent failure uninvestigated.
+
+The HTTP corpus now defines non-overlapping profiles: rmcp >=3.5,<3.6 expects 400 for invalid handler parameters; >=3.6,<4 expects 200. A shared selector validates full resolved versions and rejects unsupported/missing/ambiguous profiles. Both checkout and independent consumers read Cargo metadata. Tests cover boundaries, later compatible minors, invalid policies, and mandatory envelope/negotiation statuses. Actual responses still have exactly one expected status; future dependency regressions are not automatically accepted.
+
+The runtime corpus now supplies test-only budgets of 5 seconds for ordinary/error/cancellation cases and 1 second for deliberate timeouts, consumed by all three harnesses. The delayed-error regression still requires `INTERNAL`, sanitization, and no successful structured output. Timeout/cancellation assertions, write unknown-outcome semantics, production defaults, runtime source, and authorization are unchanged.
+
+### Validation of the correction
+
+Local platform: Windows x64; Node 24.22.0, Go 1.26.0/1.26.3, Rust 1.88.0/1.95.0 as applicable.
+
+| Check | Actual local result |
+| --- | --- |
+| `npm test` | 202 passed; no failures, skips, or cancellations; includes four new HTTP-policy tests |
+| Complete Go and Rust suites | Passed; Go graph read-only, Rust all targets with locked SDK graph |
+| Runtime conformance | 18 matching scenarios across TypeScript, Go, and Rust |
+| Minimum Rust runtime repetition | 20/20 independent process runs passed; 360 scenario observations, without retrying failures |
+| Discovery conformance | Matching JCS/fingerprints/CLI/cache; real stdio/HTTP JSON and legacy clients in all languages; SSE in TypeScript/Rust |
+| Rust independent Git/path consumers | Minimum Rust 1.88/rmcp 3.5 and recent Rust 1.95/rmcp 3.7 passed, including production compilation, runtime, transports, and rejection of incompatible rmcp 3.2 |
+| Additional rmcp 3.6 transport fixture | Supported transports passed; a further 20/20 complete wire repetitions passed |
+| Go independent consumers | Minimum/recent dependency profiles passed, including stdio/HTTP JSON and legacy clients |
+| Installed TypeScript consumers | Minimum/recent dependency profiles passed, strict compilation and real HTTP JSON/SSE |
+| Native distribution | Actual packaged Rust crate and external Go/Rust consumers passed without root contracts or Node compilation hooks |
+| Discovery benchmark | Existing budgets passed; one change among 100 tools remains 93.3% smaller than conventional discovery |
+
+The first extra rmcp 3.6 transport run produced a generic `fetch failed` after stdio passed. It did not reproduce on the subsequent single run or 20 full repetitions. Its network cause is **unconfirmed**, and no retry was inserted into required tests. The wire runner now preserves the original error cause and failing method so a recurrence can be diagnosed rather than masked. That initial failure is not counted as a pass.
+
+This table records local validation only. Cross-platform GitHub approval must refer to the exact tested SHA and run; local results do not certify Linux/macOS or a later revision. Go SSE remains Investigating; no custom transport, dependency pin/update, public API/version change, release, or consumer-product modification is part of this correction.

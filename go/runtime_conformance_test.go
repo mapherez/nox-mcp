@@ -17,6 +17,10 @@ import (
 func TestSharedRuntimeConformance(t *testing.T) {
 	data, _ := Contracts.ReadFile("contracts/conformance.json")
 	var corpus struct {
+		RuntimeTestPolicy struct {
+			NormalTimeoutMS int `json:"normalTimeoutMs"`
+			TimeoutCaseMS   int `json:"timeoutCaseMs"`
+		}
 		RuntimeManifest map[string]any
 		RuntimeCases    []struct {
 			ID                                        string
@@ -25,6 +29,7 @@ func TestSharedRuntimeConformance(t *testing.T) {
 			Scope, Behavior                           string
 			ReadOnly                                  *bool
 			MaxPayloadBytes                           int
+			DelayMS                                   int `json:"delayMs"`
 			Expect                                    map[string]any
 		}
 	}
@@ -54,7 +59,13 @@ func TestSharedRuntimeConformance(t *testing.T) {
 			encoded, _ = json.Marshal(manifest)
 			started := make(chan struct{})
 			var executed atomic.Bool
-			runtime, err := NewFromManifest(Options{AppID: "conformance", Name: "conformance", Version: "1", Timeout: 30 * time.Millisecond, MaxPayloadBytes: example.MaxPayloadBytes, Tools: []Tool{{Name: "echo", RequiredScopes: example.AppRequiredScopes, Execute: func(ctx ExecutionContext, input map[string]any) (map[string]any, error) {
+			// Deadline scenarios deliberately expire; ordinary cases need enough
+			// time for scheduling and panic recovery under CI load.
+			timeoutMS := corpus.RuntimeTestPolicy.NormalTimeoutMS
+			if example.Behavior == "timeout" {
+				timeoutMS = corpus.RuntimeTestPolicy.TimeoutCaseMS
+			}
+			runtime, err := NewFromManifest(Options{AppID: "conformance", Name: "conformance", Version: "1", Timeout: time.Duration(timeoutMS) * time.Millisecond, MaxPayloadBytes: example.MaxPayloadBytes, Tools: []Tool{{Name: "echo", RequiredScopes: example.AppRequiredScopes, Execute: func(ctx ExecutionContext, input map[string]any) (map[string]any, error) {
 				close(started)
 				executed.Store(true)
 				if example.Behavior == "pre-cancel" {
@@ -67,6 +78,7 @@ func TestSharedRuntimeConformance(t *testing.T) {
 					return nil, &Error{Code: "CONFLICT", Message: "Domain conflict", Details: map[string]any{"version": 2}}
 				}
 				if example.Behavior == "panic" {
+					time.Sleep(time.Duration(example.DelayMS) * time.Millisecond)
 					panic("PRIVATE SECRET")
 				}
 				if example.Behavior == "timeout" || example.Behavior == "cancel" {

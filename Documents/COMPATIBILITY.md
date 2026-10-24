@@ -35,11 +35,19 @@ Successes include `structuredContent` matching the `outputSchema`. Tool errors u
 | Required extension missing or incompatible extension version | `-32021`, with `requiredCapabilities` | 400 |
 | Unknown protocol version | `-32022`, with `requested` and `supported` | 400 |
 | Required `protocolVersion` or `clientCapabilities` missing | `-32602` | 400 |
-| Invalid parameters inside the NoX handler | `-32602` | TS/rmcp 3.6: 200; Go/rmcp 3.5: 400 |
+| Invalid parameters inside the NoX handler | `-32602` | TS: 200; Go/rmcp 3.5.x: 400; rmcp >=3.6, <4: 200 |
 | Stale definition or snapshot | `-32602`, `STALE_DEFINITION` or `STALE_CATALOG` | SDK mapping |
 | Runtime authorization/domain error | MCP result with `isError: true` | 200 |
 
 On supported SSE transports, an error after streaming starts retains HTTP 200 and arrives as the terminal event for the same request. Stdio uses the same JSON-RPC envelope, without an HTTP status. Legacy clients continue using `initialize`, `tools/list`, and `tools/call`; modern negotiation does not apply to their requests. See [discovery](DISCOVERY.md) for details.
+
+### Regression policy for SDK HTTP mappings and test deadlines
+
+The rmcp 3.6 change separates invalid handler parameters from malformed request metadata. The shared corpus models that behavior boundary with version ranges, rather than an exact `rust@3.6` exception. Both checkout and independent-consumer wire tests obtain the complete resolved rmcp version from Cargo metadata. Missing, prerelease, unsupported, or ambiguous profiles fail with a policy diagnostic instead of silently inheriting HTTP 400. The `<4` range is an explicit expectation for compatible versions, not certification of future releases: real wire tests still reject an actual status change.
+
+This applies only to the handler's invalid-parameters case. Negotiation/envelope status requirements, JSON-RPC codes/data, JSON content type, and SSE framing remain independently enforced. New policy tests cover the 3.5/3.6 boundary, 3.7 and later compatible minors, unsupported majors, malformed profiles, and mandatory HTTP 400 cases.
+
+Runtime conformance uses the same test-only timing policy in all three languages: 5 seconds for normal/error/cancellation cases, and 1 second for deliberate timeout cases. A deliberately delayed internal error (60 ms) guards against the old universal 30 ms deadline masking sanitization as `TIMEOUT`. Timeout cases still wait for cancellation, and write timeouts retain the unknown-outcome requirement. Production deadlines and runtime behavior are unchanged.
 
 ## Required validation and releases
 
