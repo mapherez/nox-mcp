@@ -1,6 +1,6 @@
 [package]
 name = "nox-mcp"
-version = "0.6.1"
+version = "0.7.0"
 edition = "2021"
 rust-version = "1.88"
 license = "CC-BY-NC-SA-4.0"
