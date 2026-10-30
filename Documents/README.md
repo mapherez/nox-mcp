@@ -4,12 +4,14 @@ Start with the [project README](../README.md) for installation, the main APIs, a
 
 Repository documentation is maintained in English, including historical documents.
 
+Delivery baseline, updated **October 30, 2026**: [NoX MCP `0.7.0`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.0) is published and available to consumers; the Suite wire contract remains `1.0`. Next, follow the [Backend work sequence and completion criteria](NOX_SUITE_IMPLEMENTATION_PLAN.md#19-current-delivery-and-next-work-backend). Product migrations and service implementations are still pending.
+
 | Current document | Contents |
 | --- | --- |
-| [NoX Suite implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md) | Source of truth for approved requirements, responsibilities, implementation order, and pending technical decisions |
+| [NoX Suite implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md) | Approved requirements, responsibilities, delivery status, Backend work sequence and completion criteria, and separate future product work |
 | [Product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) | Consolidated product declaration, Backend registration, lifecycle, failure handling, and migration requirements; historical filename retained; shared SDK implementation available |
 | [Gateway and shared integration contract](GATEWAY_CONTRACT.md) | Product-independent normative contract for pairing, service credentials, five-minute delegated authorization, events, aggregation, caches, and execution; Gateway/CLI/Portal do not yet exist |
-| [Suite SDK integration](INTEGRATION.md) | Implemented TypeScript/Go/Rust APIs, native runtime admission, examples, verification, and service responsibilities |
+| [Suite SDK integration](INTEGRATION.md) | Consuming SDK `0.7.0`, implemented TypeScript/Go/Rust APIs, native runtime admission, examples, verification, and service responsibilities |
 | [Compatibility and support](COMPATIBILITY.md) | Supported matrix, dependencies, errors, validation, and known limitations |
 | [CLI metadata and incremental discovery](DISCOVERY.md) | Extension contract, server/client examples, fingerprints, snapshots, and caching |
 | [Contract maintenance](../contracts/README.md) | Authoritative schemas, generation, and conformance tests |

@@ -1,8 +1,34 @@
 # NoX Suite SDK integration
 
-The working tree implements the shared Suite `1.0` contracts in TypeScript, Go, and Rust. The [Gateway Contract](GATEWAY_CONTRACT.md) defines the normative behavior; this guide describes the available SDK mechanisms. Product identity is open to any conforming product. No product names, business permissions, menus, or database layouts are built into the SDK.
+NoX MCP `0.7.0` implements the shared Suite `1.0` contracts in TypeScript, Go, and Rust. The [Gateway Contract](GATEWAY_CONTRACT.md) defines the normative behavior; this guide describes the available SDK mechanisms. Product identity is open to any conforming product. No product names, business permissions, menus, or database layouts are built into the SDK.
 
-Gateway, CLI, and Portal are separate applications and do not exist in this repository. Backend management routes, token issuance, persistent registry/outbox, enrollment transactions, HTTPS deployment, and product migrations remain service work. No SDK version or release was created by this implementation.
+[Release `0.7.0`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.0) is published and available for explicit consumer migrations. Gateway, CLI, and Portal are separate applications and do not exist in this repository. Backend management routes, token issuance, persistent registry/outbox, enrollment transactions, HTTPS deployment, and product migrations remain service work.
+
+## Consume the released SDK
+
+Pin the published version in the product repository and commit its dependency/lockfile changes with the adaptation. Installing the SDK does not implement the host responsibilities below.
+
+TypeScript:
+
+```sh
+npm install https://github.com/mapherez/nox-mcp/releases/download/v0.7.0/nox-mcp.tgz
+```
+
+Go, from the consuming Go module:
+
+```sh
+go get github.com/mapherez/nox-mcp@v0.7.0
+go mod tidy
+```
+
+Rust, in the consuming `Cargo.toml`:
+
+```toml
+[dependencies]
+nox-mcp = { git = "https://github.com/mapherez/nox-mcp.git", tag = "v0.7.0" }
+```
+
+Refresh and commit the consuming Rust lockfile. SDK release `0.7.0` and wire contract `1.0` identify different compatibility boundaries; do not replace document `contractVersion` values with the SDK version.
 
 ## Documents and validation
 
@@ -122,4 +148,4 @@ Use `suiteAuthorizationViewKey` / `SuiteAuthorizationViewKey` / `suite_authoriza
 
 The required minimum/latest consumer jobs execute Suite behavior against each consumer's dependency graph: the complete Go SDK test package from the external module, Rust's integration tests against the external dependency, and all TypeScript Suite tests through installed public exports. The standalone Go/Rust package checks also execute their SDK tests. Linux conformance runs the Go race detector. Successful local checks do not replace the required GitHub jobs for the exact commit being released.
 
-The next service implementation is the Backend authority: persistence, pairing/credential issuance, ES256 signing/key rotation, registry transactions and durable events, then the Gateway against these SDK mechanisms. After that, implement the CLI and adapt every participating product against the same contracts. Portal contribution loading and the CLI's own MCP-server lifecycle are separate product contracts already identified in the implementation plan.
+The next service implementation is the Backend authority, its own Suite adaptation, and separate frontend/backend builds, images, and containers in the same `nox-backend` project. The native frontend retains current management functionality, planned initial service connections, and the existing integration used by another product; frontend updates must not require rebuilding the backend image. Follow the [Backend work sequence and completion criteria](NOX_SUITE_IMPLEMENTATION_PLAN.md#19-current-delivery-and-next-work-backend). Gateway, installer/product adapters, and CLI follow their dependencies against the unchanged approved contracts. The Portal remains a separate application, with its own contribution/loading work; it does not replace the Backend frontend. The CLI's own MCP-server lifecycle also remains separate product work.

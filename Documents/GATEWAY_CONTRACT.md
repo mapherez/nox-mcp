@@ -2,7 +2,7 @@
 
 Consolidated on **October 29, 2026**. Contract compatibility version: **`1.0`**.
 
-Status: **shared SDK mechanisms implemented in this working tree; service implementation pending**. The authoritative schemas, native SDK APIs, runtime admission, and conformance tests implement the shared portions of this contract. See [SDK integration](INTEGRATION.md) for exact APIs and host responsibilities. Backend management routes, persistence/issuance, Gateway, CLI, Portal, and product adaptations remain separate service work. Contract `1.0` is a wire-compatibility identifier, not a provisional product release.
+Status, updated **October 30, 2026**: **shared SDK mechanisms published in NoX MCP `0.7.0`; service implementation pending**. The authoritative schemas, native SDK APIs, runtime admission, and conformance tests implement the shared portions of this contract. See [SDK integration](INTEGRATION.md) for consumption, exact APIs, and host responsibilities, and the [Backend work sequence](NOX_SUITE_IMPLEMENTATION_PLAN.md#19-current-delivery-and-next-work-backend) for the next scope. Backend management routes, persistence/issuance, Gateway, CLI, Portal, and product adaptations remain separate service work. Contract `1.0` is a wire-compatibility identifier, not a provisional product release.
 
 ## 1. Purpose, applicability, and boundaries
 

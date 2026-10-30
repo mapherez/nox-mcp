@@ -14,11 +14,11 @@ Compatibility requirements, tested dependency versions and CI evidence are recor
 
 See the [documentation index](Documents/README.md) for current integration guides and the historical archive.
 
-The [Suite implementation plan](Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md), [product integration design](Documents/PRODUCT_INTEGRATION_PROPOSAL.md), and [Gateway Contract](Documents/GATEWAY_CONTRACT.md) define the shared integration target for present and future products. The shared schemas, validation, delegated authorization, private aggregation, state helpers, and Suite runtime admission are implemented in this working tree; see [Suite SDK integration](Documents/INTEGRATION.md). Backend management services and Gateway, CLI, and Portal remain separate application work. No SDK version or release is changed.
+The [Suite implementation plan](Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md), [product integration design](Documents/PRODUCT_INTEGRATION_PROPOSAL.md), and [Gateway Contract](Documents/GATEWAY_CONTRACT.md) define the shared integration target for present and future products. [Release `0.7.0`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.0) provides the shared schemas, validation, delegated authorization, private aggregation, state helpers, and Suite runtime admission for wire contract `1.0`; see [Suite SDK integration](Documents/INTEGRATION.md). Backend management services and Gateway, CLI, and Portal remain separate application work. The [Backend work sequence](Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md#19-current-delivery-and-next-work-backend) defines the next scope, including separate frontend/backend builds, images, and containers within the same Backend project, with its native frontend retained.
 
 ## Features
 
-Optional compact CLI descriptors and incremental discovery are documented in [discovery guide](Documents/DISCOVERY.md), including server/client integration for TypeScript, Go and Rust, transport compatibility and measured payload sizes. This work does not change the public SDK version.
+Optional compact CLI descriptors and incremental discovery are documented in [discovery guide](Documents/DISCOVERY.md), including server/client integration for TypeScript, Go and Rust, transport compatibility and measured payload sizes.
 
 NoX MCP provides reusable primitives for building MCP servers without requiring each application to implement the same infrastructure independently.
 

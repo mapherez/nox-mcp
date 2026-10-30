@@ -1,8 +1,8 @@
 # NoX Suite — Product integration and registration proposal
 
-Status: **consolidated design; shared SDK contracts/helpers implemented in this working tree; Backend/service integration pending**.
+Status: **consolidated design; shared SDK contracts/helpers published in NoX MCP `0.7.0`; Backend/service integration pending**.
 
-Prepared on **October 24, 2026**; consolidated on **October 29, 2026**, against the [general implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md). The historical filename is retained. This design and the [Gateway Contract](GATEWAY_CONTRACT.md) define the documentation baseline for implementation. Routes describe service requirements. The shared schema/API implementation and its boundaries are documented in [SDK integration](INTEGRATION.md); Backend management routes are not supplied by the SDK. No consumer changes or release publication are included.
+Prepared on **October 24, 2026**; consolidated on **October 29, 2026**; delivery status updated on **October 30, 2026**, against the [general implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md). The historical filename is retained. This design and the [Gateway Contract](GATEWAY_CONTRACT.md) define the documentation baseline for implementation. Routes describe service requirements. The released schema/API implementation and its boundaries are documented in [SDK integration](INTEGRATION.md); Backend management routes and consumer migrations are not supplied by the SDK.
 
 ## 1. Scope and existing foundation
 
@@ -36,6 +36,8 @@ All existing products require the relevant adaptations to the resulting contract
 Yard initiates integration; it does not become a second registry. Gateway receives reconstructible registry data and reports observations; it cannot independently enroll products. Product announcements are data, not proof of trust.
 
 Foundation products are associated through the Backend's existing native administrative UI and equivalent APIs. That explicit administrative path precedes automatic Yard integration and does not require Portal.
+
+During Backend implementation, isolate presentation from shared operations and expose complete authenticated administration APIs. Retain its native frontend and all current management functionality, planned initial service connection configuration, and the existing frontend integration used by another product. Frontend and backend remain in the same `nox-backend` project/repository with separate builds, images, and containers so frontend updates do not require rebuilding the backend image. The [Backend work sequence](NOX_SUITE_IMPLEMENTATION_PLAN.md#19-current-delivery-and-next-work-backend) defines this separation; the Portal remains a separate application. This clarification changes no registration, trust, or other approved contract rule.
 
 ## 3. Product declaration
 
@@ -288,4 +290,4 @@ The consolidated integration baseline consists of these choices:
 
 The [Gateway Contract](GATEWAY_CONTRACT.md) completes service credentials, delegated identity, classification, five-minute authorization reuse/invalidation, registry propagation, routing, cache isolation, and Backend outage behavior. These mechanisms are explicit contract rules, not consequences inferred from MCP annotations.
 
-The shared SDK implementation is described in [SDK integration](INTEGRATION.md). The next work is service implementation and adaptation of all participating products. SDK versions, release publication, and consumer migrations remain unchanged.
+The shared SDK implementation is published as [NoX MCP `0.7.0`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.0) and described in [SDK integration](INTEGRATION.md). The next scope is the [Backend implementation and frontend/backend deployment separation](NOX_SUITE_IMPLEMENTATION_PLAN.md#19-current-delivery-and-next-work-backend), followed by the dependent services and adaptation of participating products. The SDK release does not migrate consumers automatically.

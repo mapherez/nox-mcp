@@ -1,6 +1,6 @@
 # NoX Suite — General implementation plan
 
-Originally consolidated on **October 23, 2026**; decisions updated on **October 29, 2026**.
+Originally consolidated on **October 23, 2026**; delivery status and Backend/frontend work sequence updated on **October 30, 2026**.
 
 Status: **reference for approved requirements and architectural decisions**. This document does not imply that planned features are implemented, nor does it independently authorize product changes or release publication.
 
@@ -80,6 +80,8 @@ Preserve SQLite, `/data`, blobs, vaults, synchronization, authentication, and ex
 
 Retain a native administrative UI and independent APIs. Administrators configure essential Yard and Gateway connections in that UI without depending on the Portal.
 
+Separate frontend and backend delivery during the Backend implementation. Keep both components in the same `nox-backend` repository/project, with separate builds, images, and containers, so a frontend change can be delivered without rebuilding the backend image. The native frontend remains part of the product, retaining all current management functionality and the planned initial Yard/Gateway connection configuration. Preserve the existing frontend integration used by another product. Isolate business operations from presentation and expose complete authenticated administration APIs; frontend separation does not transfer this interface to the Portal. See [the concrete work sequence](#19-current-delivery-and-next-work-backend).
+
 ### NoX Gateway
 
 It is an independent service. It does not issue API keys, manage accounts, maintain a second autonomous registry, or implement product business logic.
@@ -99,7 +101,7 @@ This snapshot reflects the local analysis on October 23, 2026. It does not claim
 
 Updating dependencies to 0.6.1 was not a functional migration to the SDK's new capabilities. All four products still need the planned adaptation. The reviewed integrations did not enable `nox/discovery` or publish advanced CLI descriptors.
 
-The SDK already provides the Core/CLI foundation, incremental discovery, fingerprints, snapshots, and caching. This working tree now also provides the shared Suite schemas, native DTOs/loaders, trust and authorization helpers, aggregation/state helpers, and protected runtime admission described in [SDK integration](INTEGRATION.md). Backend management services and Gateway/CLI/Portal are not implemented here.
+The versions and product integrations above are historical observations, not a statement of the current SDK release. [NoX MCP `0.7.0`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.0) is now published. It provides the Core/CLI foundation, incremental discovery, fingerprints, snapshots, caching, and the shared Suite schemas, native DTOs/loaders, trust and authorization helpers, aggregation/state helpers, and protected runtime admission described in [SDK integration](INTEGRATION.md). Backend management services and Gateway/CLI/Portal are not implemented here. Publishing the SDK does not adapt those consumers.
 
 The retained NoteX remote code imports `@nox/mcp/better-auth`, which is incompatible with the entry points available in the installed SDK 0.6.1. Resolution returned `ERR_PACKAGE_PATH_NOT_EXPORTED`. This is a confirmed incompatibility in that remote path, not evidence that local MCP is broken. Do not reintroduce that adapter into the SDK to work around it.
 
@@ -288,6 +290,8 @@ The future UI contract will define loading, compatibility, communication, permis
 
 The Backend's native administrative interface retains essential connection configuration. The Portal handles aggregated Suite management. Both use service APIs without duplicating business rules.
 
+The Backend retains its own frontend as a permanent product component, deployed separately from its backend service within the same project. This separation supports independent frontend image updates and preserves current management and dependent-product integration. The Portal remains a separate application for aggregated Suite management and product contributions. Its future loading, compatibility, and browser integration work does not remove or replace the Backend's native frontend.
+
 The Portal has the lowest priority among future products and does not block MCP contracts, the Backend, or the Gateway. Do not implement its UI loader now.
 
 ## 13. Operation without Internet
@@ -331,7 +335,7 @@ Contract design precedes service implementation and product adaptation. No pilot
 | Repository/product | Planned evolution |
 | --- | --- |
 | `nox-mcp` | Shared contracts, validation and APIs in all three languages, corpus, packages, and CI |
-| `nox-backend` | Persistent registry, administrative configuration, central authorization, and integration APIs while preserving existing services |
+| `nox-backend` | Persistent registry, administrative configuration, central authorization, integration APIs, own Suite adaptation, and separate frontend/backend builds, images, and containers in the same project while preserving existing services and frontend integrations |
 | `nox-yard` | Authorized post-deployment integration, lifecycle signals, and separation of Suite/direct MCP |
 | NoX Bot and other host products | Integration/registration, capabilities, a Suite path independent of direct access, and optional descriptors |
 | NoteX and other desktop/web products | Adapt relevant integrations to the shared contracts, respecting each product's storage, execution, and independent-access model |
@@ -366,7 +370,7 @@ Tests must not replace authorization checks with hidden UI options. Visual confi
 
 ## 17. Decision status and separate product work
 
-The following design areas are specified. Shared SDK mechanisms are implemented in this working tree; service responsibilities remain to be implemented. See [SDK integration](INTEGRATION.md) for the implemented APIs and exact boundaries:
+The following design areas are specified. Shared SDK mechanisms are published in `0.7.0`; service responsibilities remain to be implemented. See [SDK integration](INTEGRATION.md) for the implemented APIs and exact boundaries:
 
 | Area | Reference |
 | --- | --- |
@@ -409,6 +413,56 @@ The detailed routes, payloads, and validation rules in the Gateway Contract form
 | Disabling MCP in the application also disables Suite access | The switch controls only direct MCP |
 | Automatic expiry deletes offline products | Registration persists; removal requires an explicit confirmed action |
 
-**Next work:** implement the Backend authority and durable management/event services against the shared SDK, followed by Gateway and the participating products. Preserve the existing Core/CLI foundation and support matrix. This document is not release or consumer-migration authorization.
+## 19. Current delivery and next work: Backend
+
+Delivery baseline as of **October 30, 2026**:
+
+| Item | State |
+| --- | --- |
+| Shared integration/Gateway contract | Defined; wire compatibility version `1.0` |
+| NoX MCP SDK | `0.7.0` published on GitHub after CI approval; available for explicit consumer migrations |
+| Backend authority and own Suite adaptation | Next implementation scope; pending |
+| Backend frontend/backend separation | Separate builds, images, and containers within the same `nox-backend` project; native frontend retained; pending |
+| Gateway, installer/product adaptations, and CLI | Follow their service dependencies; pending |
+| Generic Portal | Separate application and contribution/loading work; pending; does not replace the Backend frontend |
+
+The SDK implementation and release delivery are complete for this scope. This does not certify service implementations, consumer adaptations, or end-to-end Suite operation. Existing products must be adapted to the published contracts; unchanged Backend/Yard deployments are not a prerequisite for starting this work.
+
+### Backend work sequence
+
+The table is an implementation sequence for the complete Backend scope, not a list of temporary product versions. It organizes the approved plan and the clarified frontend/backend deployment separation without changing any other approved decision. Use the linked contracts for exact routes, payloads, limits, and failure behavior; do not redefine those rules in Backend-local documents.
+
+| Work | Required result |
+| --- | --- |
+| 1. Establish the consumer baseline | Pin SDK `v0.7.0` in the Backend Go module and update its lock data; record existing API, authentication, MCP, dashboard, storage, deployment, and dependent-product frontend integration behavior before changing it. |
+| 2. Separate frontend/backend delivery and operations | Keep both components in the same `nox-backend` repository/project with independent builds, images, and containers. Frontend updates must not require rebuilding the backend image. Move business/permission rules into backend operations shared by HTTP APIs, direct MCP, and Suite MCP; the native frontend consumes authenticated backend APIs. Preserve SQLite, `/data`, blobs, vaults, synchronization, and existing client APIs. |
+| 3. Complete administration APIs and retain native UI | Expose the operations currently available through the dashboard through authenticated APIs, including account/role administration, personal key management, and relevant vault operations. Retain their frontend functionality and add the initial foundation-service connection configuration required by the plan. Keep Google authentication/session authority in Backend. JSON APIs must return API results/errors rather than depend on HTML or dashboard redirects. Preserve existing browser-facing authentication and dependent-product integration. |
+| 4. Implement persistent service trust | Add issuer identity, signing-key storage/rotation and public verification keys, scoped service credentials, pairing/provisioning recovery, credential rotation/revocation, and persistent associations under [Gateway Contract sections 3–6](GATEWAY_CONTRACT.md#3-addresses-and-authenticated-transport). |
+| 5. Implement registry and durable events | Add verified declaration retrieval, registration revisions, conditional management operations, durable idempotency, role-filtered snapshots, event delivery/reconciliation, and authorized observations under the [integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway Contract section 8](GATEWAY_CONTRACT.md#8-registry-events-lifecycle-and-availability). Commit registration mutations, idempotency outcomes, and their events atomically. |
+| 6. Implement authorization issuance | Map existing roles to agreed capabilities and issue signed, product-bound user delegations and distinct service probe tokens. Enforce current key/service/association revisions and emit invalidation events for relevant changes. Use the already agreed five-minute bounds and offline behavior; do not add repeated Google login or per-call remote authorization. |
+| 7. Adapt Backend as a Suite product | Serve `/nox/integration`, declare and implement a protected Suite MCP path, classify tools, and enforce verified identity, scopes, ownership, deadlines, and limits. Preserve or explicitly migrate the existing direct `/mcp` policy; both paths share operations and remain independently configurable. |
+| 8. Integrate administration and validate delivery | Make foundation-service configuration usable through APIs and the native frontend, with accurate partial-failure states. Update Backend docs, migrations, separate image build/release jobs, Compose deployment, and required CI for the actual implementation. Verify installed/packaged behavior, independent frontend delivery, and the existing dependent-product frontend integration before claiming completion. |
+
+### Backend completion criteria
+
+- Existing supported client APIs, vault ownership, synchronization, storage, direct MCP, and dashboard workflows continue to work under the approved compatibility requirements. The product that depends on the Backend frontend retains a working integration, including its browser-facing routes and authentication flow.
+- The native frontend remains part of `nox-backend`, supports all current management functionality and the planned initial service connections, and works without requiring Gateway or Portal. All dashboard operations have corresponding authenticated APIs, and integration logic is independent of page rendering.
+- Frontend and backend have separate builds, images, and containers within the same project. A frontend-only change can be built and deployed without rebuilding the backend image. Compose/Yard represents one `nox-backend` project containing its frontend and backend services, plus other services only where required by the approved plan.
+- Database migrations preserve installed data. Issuer identity, signing/trust keys, service credentials, associations, pairing recovery, registry state, idempotency outcomes, and events survive restart as specified.
+- Real Backend HTTP/persistence tests cover authorized and forbidden operations, wrong/expired/replayed pairing proofs, credential/key rotation and revocation, invalid target/declaration, conditional conflicts, lost responses, repeated/concurrent mutations, restart, event cursor expiry, and observation ordering/freshness. Verify atomic rollback on failed commits and consistent snapshot/cursor state.
+- Issued user/probe tokens pass the released SDK verifier under the intended trust configuration; wrong audience, purpose, actor, scope, revision, or association cannot gain access. Backend Suite execution enforces the product rules independently of UI visibility.
+- Backend required CI and package/deployment checks pass for the exact implementation being delivered. SDK fixtures are supporting evidence, not a substitute for these service tests.
+
+Gateway/product end-to-end flows are validated when those services have been implemented/adapted. Tests for the Backend may use explicit protocol fixtures or test clients; they do not claim that a Gateway, CLI, Portal, or real adapted product already exists.
+
+### Frontend boundary and subsequent work
+
+Implement the frontend/backend separation in the Backend scope above. Keep the native frontend in the same repository/project, communicating with backend APIs and retaining current management and dependent-product integration. Its separate image/build lifecycle is the purpose of this separation; the frontend is not temporary and is not scheduled for removal when Portal exists.
+
+In Yard, the deployment is one `nox-backend` project containing `frontend` and `backend` containers/services, plus other services only if required by the approved plan. These are deployment components of the same product, not extra Suite registry products or a new module/instance hierarchy. Container separation does not change the approved origin/path, trust, API, or MCP contracts. Deployment routing must preserve the existing browser-facing frontend integration while exposing the approved Backend endpoints.
+
+Portal implementation remains separate work: the shared shell and generic product contribution contract, loading/compatibility, and browser authentication/session integration. It aggregates product interfaces while each product, including Backend, retains its own frontend. This clarification selects no frontend framework, Portal loader technology, or new browser credential scheme and changes no other approved architectural decision.
+
+After the Backend scope, implement Gateway and installer/product adapters against the same contracts, then the dependent CLI flows. Complete the Portal as its own product work.
 
 The [product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway Contract](GATEWAY_CONTRACT.md) together define the integration baseline. A contract version such as `1.0` identifies wire compatibility; it does not describe a provisional product release.
