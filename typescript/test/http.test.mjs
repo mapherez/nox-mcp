@@ -282,3 +282,14 @@ for (const mode of ['json', 'sse']) for (const era of ['legacy', 'modern']) {
     assert.ok(types.every(type => type.startsWith(mode === 'json' ? 'application/json' : 'text/event-stream')));
   });
 }
+
+test('HTTP execution capacity is shared across independent request-scoped servers',async t=>{
+ let finish;const held=new Promise(resolve=>{finish=resolve});let started;const entered=new Promise(resolve=>{started=resolve});
+ const e=await endpoint(t,{maxInFlightRequests:1,timeoutMs:40,tools:[{...echo,execute:async input=>{started();await held;return input;}}]});
+ t.after(()=>finish());const first=e.post('tools/call',call,{modern:true});await entered;
+ const second=await (await e.post('tools/call',call,{modern:false})).json();assert.equal(JSON.parse(second.result.content[0].text).code,'OVERLOADED');
+ const expired=await (await first).json();assert.equal(JSON.parse(expired.result.content[0].text).code,'TIMEOUT');
+ const third=await (await e.post('tools/call',call,{modern:true})).json();assert.equal(JSON.parse(third.result.content[0].text).code,'OVERLOADED');
+ finish();await delay(5);
+ const next=await (await e.post('tools/call',call,{modern:true})).json();assert.equal(next.result.structuredContent.value,'hello');
+});

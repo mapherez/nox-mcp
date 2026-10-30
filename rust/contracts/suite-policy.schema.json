@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoX Suite 1.0 policy; complete-document preservation; semantic rules in GATEWAY_CONTRACT.md.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "requiredScopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "nox:inspect",
+          "nox:write",
+          "nox:sensitive-read"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "contains": {
+        "const": "nox:inspect"
+      }
+    },
+    "argumentDependent": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "version",
+    "requiredScopes",
+    "argumentDependent"
+  ],
+  "additionalProperties": true
+}

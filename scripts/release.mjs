@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
+import { realpath } from 'node:fs/promises';
 import { readVersionFiles, updateVersion, validateVersion } from './update-version.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -28,7 +29,7 @@ export async function release(root, input, { check = () => {} } = {}) {
   return `https://github.com/mapherez/nox-mcp/releases/download/${tag}/nox-mcp.tgz`;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && await realpath(process.argv[1]).catch(() => '') === await realpath(fileURLToPath(import.meta.url))) {
   (async () => {
     if (process.argv.length > 3) throw new Error('Uso: npm run release [-- X.Y.Z]');
     let version = process.argv[2];

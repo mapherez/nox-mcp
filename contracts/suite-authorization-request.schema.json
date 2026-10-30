@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoX Suite 1.0 authorization-request; complete-document preservation; semantic rules in GATEWAY_CONTRACT.md.",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": "1.0",
+      "type": "string"
+    },
+    "apiKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "productId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "x-nox-kind": "product-id",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "registrationRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  },
+  "required": [
+    "contractVersion",
+    "apiKey",
+    "productId",
+    "registrationRevision"
+  ],
+  "additionalProperties": true
+}

@@ -66,3 +66,11 @@ func TestIndependentConsumer(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestIndependentSuiteContracts(t *testing.T){
+ declaration,err:=nox.LoadSuiteProductDeclaration([]byte(`{"contractVersion":"1.0","productId":"future-product","productVersion":"1","displayName":"Future product","capabilities":{"suiteMcp":{"path":"/mcp","custom":false}},"custom":[null,false]}`));if err!=nil{t.Fatal(err)}
+ data,err:=json.Marshal(declaration);if err!=nil{t.Fatal(err)};if _,err=nox.LoadSuiteDocument("product-declaration",data);err!=nil{t.Fatal(err)}
+ if origin,err:=nox.NormalizeSuiteOrigin("https://FUTURE.example.com:443/");err!=nil||origin!="https://future.example.com"{t.Fatalf("origin: %s %v",origin,err)}
+ if policy,err:=nox.NewSuitePolicy([]string{"nox:inspect"},false);err!=nil||policy.ArgumentDependent{t.Fatal("policy",err)}
+ if _,err=nox.NewSuite(nox.Options{AppID:"future-product",Name:"future-product",Version:"1"},nox.SuiteRuntimeOptions{});err==nil{t.Fatal("accepted missing Suite trust snapshot")}
+}

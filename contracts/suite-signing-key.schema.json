@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Trusted public ES256 verification key. Private key material is forbidden.",
+  "type": "object",
+  "properties": {
+    "kty": {
+      "type": "string",
+      "const": "EC"
+    },
+    "crv": {
+      "type": "string",
+      "const": "P-256"
+    },
+    "x": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
+    "y": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
+    "kid": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "alg": {
+      "type": "string",
+      "const": "ES256"
+    },
+    "use": {
+      "type": "string",
+      "const": "sig"
+    }
+  },
+  "required": [
+    "kty",
+    "crv",
+    "x",
+    "y"
+  ],
+  "additionalProperties": true,
+  "not": {
+    "required": [
+      "d"
+    ]
+  }
+}

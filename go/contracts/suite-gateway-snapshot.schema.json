@@ -1,0 +1,309 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoX Suite 1.0 gateway-snapshot",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "serverId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "viewId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "registryRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "catalog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "required": [
+        "resultType",
+        "serverId",
+        "viewId",
+        "catalog",
+        "ttlMs",
+        "cacheScope"
+      ],
+      "properties": {
+        "_meta": {
+          "type": "object"
+        },
+        "resultType": {
+          "const": "complete"
+        },
+        "serverId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "viewId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "catalog": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ttlMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cacheScope": {
+          "const": "private"
+        },
+        "notModified": {
+          "const": true
+        },
+        "presentation": {
+          "type": "object"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "fingerprint"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fingerprint": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{43}$"
+              },
+              "availability": {
+                "enum": [
+                  "available",
+                  "unavailable"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "nextCursor": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "notModified"
+          ],
+          "not": {
+            "required": [
+              "tools"
+            ]
+          }
+        },
+        {
+          "required": [
+            "tools"
+          ],
+          "not": {
+            "required": [
+              "notModified"
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "definitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              },
+              "_meta": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "name",
+              "inputSchema"
+            ],
+            "additionalProperties": true
+          },
+          "cli": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": true
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable"
+            ]
+          }
+        },
+        "required": [
+          "tool",
+          "fingerprint"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "productId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-nox-kind": "product-id",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "registrationRevision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "associationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "serverId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "viewId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "toolName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "endpoint": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "sourceFingerprint": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable"
+            ]
+          }
+        },
+        "required": [
+          "alias",
+          "productId",
+          "registrationRevision",
+          "associationId",
+          "serverId",
+          "viewId",
+          "toolName",
+          "endpoint",
+          "sourceFingerprint",
+          "fingerprint",
+          "availability"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "x-nox-kind": "product-id",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "toolName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "productId",
+          "toolName",
+          "code"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "contractVersion",
+    "serverId",
+    "viewId",
+    "registryRevision",
+    "catalog",
+    "definitions",
+    "routes",
+    "diagnostics"
+  ],
+  "additionalProperties": true
+}

@@ -8,7 +8,7 @@ import { extractArchive } from './extract-archive.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const temporary = await mkdtemp(resolve(tmpdir(), 'nox-native-packages-'));
-const run = (command, args, cwd, env = process.env) => execFileSync(command, args, { cwd, env, stdio: 'inherit' });
+const run = (command, args, cwd, env = process.env) => execFileSync(command, args, { cwd, env: { CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS: 'fallback', ...env }, stdio: 'inherit' });
 
 try {
   // An external Go module sees only the module files and committed go/ sources.
@@ -28,6 +28,8 @@ func main() {
   if err := noxmcp.ValidateFrame("manifest", []byte(\x60{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}\x60)); err != nil { panic(err) }
   if _, err := noxmcp.LoadToolManifest([]byte(\x60{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}\x60)); err != nil { panic(err) }
   if !noxmcp.ValidateToolValue(map[string]any{"type":"string"}, "installed policy and meta-schema") { panic("schema validation failed") }
+  if _, err := noxmcp.NormalizeSuiteOrigin("https://FUTURE.example.com:443/"); err != nil { panic(err) }
+  if _, err := noxmcp.LoadSuiteProductDeclaration([]byte(\x60{"contractVersion":"1.0","productId":"future-product","productVersion":"1","displayName":"Future","capabilities":{}}\x60)); err != nil { panic(err) }
   if _, err := noxmcp.New(noxmcp.Options{AppID:"consumer",Name:"consumer",Version:"1"}); err != nil { panic(err) }
 }
 `);
@@ -48,11 +50,13 @@ func main() {
   run('cargo', ['test', '--locked', '--offline', '--manifest-path', resolve(crate, 'Cargo.toml')], root);
   const rustConsumer = resolve(temporary, 'rust-consumer');
   await mkdir(resolve(rustConsumer, 'src'), { recursive: true });
-  await writeFile(resolve(rustConsumer, 'Cargo.toml'), `[package]\nname = "native-consumer"\nversion = "0.0.0"\nedition = "2021"\nrust-version = "1.88"\n[dependencies]\nnox-mcp = { path = ${JSON.stringify(crate.replaceAll('\\', '/'))} }\nrmcp = { version = "3.0", default-features = false, features = ["client"] }\nserde_json = "1"\ntokio = { version = "1", features = ["macros", "rt", "sync", "time"] }\ntokio-util = "0.7"\n`);
+  await writeFile(resolve(rustConsumer, 'Cargo.toml'), `[package]\nname = "native-consumer"\nversion = "0.0.0"\nedition = "2021"\nrust-version = "1.88"\n[dependencies]\nhttp = "1"\nbase64 = "0.23.1"\nnox-mcp = { path = ${JSON.stringify(crate.replaceAll('\\', '/'))} }\nrmcp = { version = "3.0", default-features = false, features = ["client"] }\nserde_json = "1"\ntokio = { version = "1", features = ["macros", "rt", "sync", "time"] }\ntokio-util = "0.7"\n`);
   // Deliberately no Cargo.lock: reproduce an application declaring rmcp="3.0".
   await cp(resolve(root, 'rust/tests'), resolve(rustConsumer, 'tests'), { recursive: true });
   await cp(resolve(root, 'rust/contracts'), resolve(rustConsumer, 'contracts'), { recursive: true });
   await writeFile(resolve(rustConsumer, 'src/main.rs'), `fn main() {
+    assert!(nox_mcp::suite::normalize_suite_origin("https://FUTURE.example.com:443/").is_ok());
+    assert!(nox_mcp::suite::load_suite_product_declaration(r#"{"contractVersion":"1.0","productId":"future-product","productVersion":"1","displayName":"Future","capabilities":{}}"#).is_ok());
     assert!(nox_mcp::load_tools(r#"{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}"#).is_ok());
     assert!(nox_mcp::load_manifest(r#"{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}"#).is_ok());
     assert!(nox_mcp::parse_server_frame(br#"{"type":"authenticated"}"#, nox_mcp::MAX_PAYLOAD_BYTES).is_ok());

@@ -1,0 +1,20 @@
+{
+  "contractVersion": "1.0",
+  "authorizationLifetimeMs": 300000,
+  "clockSafetyMs": 5000,
+  "pairingLifetimeMs": 600000,
+  "observationIntervalMs": 15000,
+  "observationFreshnessMs": 45000,
+  "eventWaitMs": 25000,
+  "eventPageSize": 256,
+  "eventRetentionMs": 604800000,
+  "eventRetentionCount": 100000,
+  "requestTimeoutMs": 20000,
+  "maxPayloadBytes": 2097152,
+  "maxInFlightRequests": 32,
+  "maxTokenBytes": 16384,
+  "maxDocumentDepth": 64,
+  "maxAuthorizationEntries": 1024,
+  "maxAuthorizationBytes": 8388608,
+  "maxGatewaySnapshotBytes": 8388608
+}

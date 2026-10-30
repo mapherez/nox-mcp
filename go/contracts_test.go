@@ -82,6 +82,27 @@ func TestSharedContractConformance(t *testing.T) {
 			t.Fatalf("discovery schema: %s", example.Schema)
 		}
 	}
+
+	suiteData, e := Contracts.ReadFile("contracts/suite-conformance.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	var suiteCases struct {
+		SchemaCases []struct {
+			Schema string
+			Data   json.RawMessage
+			Error  string
+		}
+	}
+	if e = json.Unmarshal(suiteData, &suiteCases); e != nil {
+		t.Fatal(e)
+	}
+	for _, example := range suiteCases.SchemaCases {
+		covered["suite-"+example.Schema] = true
+		if _, e = LoadSuiteDocument(example.Schema, example.Data); (e == nil) != (example.Error == "") {
+			t.Fatalf("suite schema: %s: %v", example.Schema, e)
+		}
+	}
 	files, err := Contracts.ReadDir("contracts")
 	if err != nil {
 		t.Fatal(err)

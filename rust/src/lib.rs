@@ -21,6 +21,7 @@ mod defaults;
 pub use defaults::*;
 pub mod discovery;
 mod manifest;
+pub mod suite;
 pub use manifest::{compile_tool_schema, load_manifest, validate_tool_value};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -388,8 +389,112 @@ pub struct McpServer<E: Executor> {
     next_id: Arc<AtomicU64>,
     portable_validators: Arc<HashMap<String, (jsonschema::Validator, jsonschema::Validator)>>,
     discovery: Option<discovery::ServerDiscovery>,
+    suite: Option<Arc<suite::SuiteRuntimeOptions>>,
 }
 impl<E: Executor> McpServer<E> {
+    /// Bind an independent Suite endpoint to trusted additive tool policy.
+    pub fn with_suite(mut self, config: suite::SuiteRuntimeOptions) -> suite::SuiteResult<Self> {
+        for policy in config.policies.values() {
+            let value =
+                serde_json::to_value(policy).map_err(|_| suite::SuiteError("INVALID_POLICY"))?;
+            suite::validate_suite_document("policy", &value)?;
+            if policy.argument_dependent && config.additional_scopes.is_none() {
+                return Err(suite::SuiteError("INVALID_POLICY"));
+            }
+        }
+        let mut tools = vec![];
+        for tool in self.tools.iter() {
+            let Some(policy) = config.policies.get(tool.name.as_ref()) else {
+                continue;
+            };
+            let mut value =
+                serde_json::to_value(tool).map_err(|_| suite::SuiteError("INVALID_POLICY"))?;
+            if value.get("_meta").is_none() {
+                value["_meta"] = serde_json::json!({})
+            }
+            value["_meta"]["nox/authorization"] = serde_json::to_value(policy).unwrap();
+            tools.push(
+                serde_json::from_value(value).map_err(|_| suite::SuiteError("INVALID_POLICY"))?,
+            );
+            let required = self
+                .options
+                .required_scopes
+                .entry(tool.name.to_string())
+                .or_default();
+            for scope in &policy.required_scopes {
+                if !required.contains(scope) {
+                    required.push(scope.clone())
+                }
+            }
+        }
+        self.tools = Arc::new(tools);
+        self.suite = Some(Arc::new(config));
+        Ok(self)
+    }
+    fn authorized_tools(
+        &self,
+        context: &RequestContext<RoleServer>,
+        method: &str,
+    ) -> Result<Vec<Tool>, ErrorData> {
+        let Some(config) = &self.suite else {
+            return Ok(self.tools.as_ref().clone());
+        };
+        let (_, scopes) = config
+            .authorize(context, method)
+            .map_err(|e| ErrorData::invalid_params(e.0, None))?;
+        Ok(self
+            .tools
+            .iter()
+            .filter(|tool| {
+                config
+                    .policies
+                    .get(tool.name.as_ref())
+                    .is_some_and(|policy| {
+                        policy
+                            .required_scopes
+                            .iter()
+                            .all(|scope| scopes.contains(scope))
+                    })
+                    && self
+                        .options
+                        .required_scopes
+                        .get(tool.name.as_ref())
+                        .is_none_or(|required| required.iter().all(|s| scopes.contains(s)))
+            })
+            .cloned()
+            .collect())
+    }
+    fn discovery_view(
+        &self,
+        context: &RequestContext<RoleServer>,
+    ) -> Result<discovery::View, ErrorData> {
+        let allowed = self.authorized_tools(context, "tools/list")?;
+        let d = self
+            .discovery
+            .as_ref()
+            .ok_or_else(|| ErrorData::invalid_params("Discovery unavailable", None))?;
+        let mut view = d
+            .view(context, &self.tools)
+            .map_err(discovery::protocol_error)?;
+        if let Some(config) = &self.suite {
+            let (identity, scopes) = config
+                .authorize(context, "tools/list")
+                .map_err(|e| ErrorData::invalid_params(e.0, None))?;
+            view.definitions.retain(|v| {
+                allowed
+                    .iter()
+                    .any(|t| Some(t.name.as_ref()) == v["tool"]["name"].as_str())
+            });
+            view.id = discovery::fingerprint(&serde_json::json!([
+                view.id,
+                identity.claims()["iss"],
+                identity.context(),
+                scopes
+            ]))
+            .map_err(discovery::protocol_error)?;
+        }
+        Ok(view)
+    }
     pub fn with_discovery(mut self, discovery: discovery::ServerDiscovery) -> Self {
         self.discovery = Some(discovery);
         self
@@ -488,6 +593,7 @@ impl<E: Executor> McpServer<E> {
             next_id: Arc::new(AtomicU64::new(1)),
             portable_validators: Arc::new(HashMap::new()),
             discovery: None,
+            suite: None,
         })
     }
 }
@@ -522,9 +628,8 @@ impl<E: Executor> ServerHandler for McpServer<E> {
         context: RequestContext<RoleServer>,
     ) -> impl Future<Output = Result<ListToolsResult, ErrorData>> + Send + '_ {
         std::future::ready((|| {
-            let tools = if let Some(d) = &self.discovery {
-                d.view(&context, &self.tools)
-                    .map_err(discovery::protocol_error)?
+            let tools = if self.discovery.is_some() {
+                self.discovery_view(&context)?
                     .definitions
                     .into_iter()
                     .map(|v| {
@@ -533,7 +638,7 @@ impl<E: Executor> ServerHandler for McpServer<E> {
                     })
                     .collect::<Result<Vec<Tool>, _>>()?
             } else {
-                self.tools.as_ref().clone()
+                self.authorized_tools(&context, "tools/list")?
             };
             Ok(ListToolsResult::with_all_items(tools))
         })())
@@ -557,9 +662,12 @@ impl<E: Executor> ServerHandler for McpServer<E> {
         if let Some(p) = params.as_object_mut() {
             p.remove("_meta");
         }
-        let view = d
-            .view(&context, &self.tools)
-            .map_err(discovery::protocol_error)?;
+        if let Some(config) = &self.suite {
+            config
+                .authorize(&context, &request.method)
+                .map_err(|e| ErrorData::invalid_params(e.0, None))?;
+        }
+        let view = self.discovery_view(&context)?;
         let result = match request.method.as_str() {
             "nox/tools/catalog" => d.service.catalog(&view, &params),
             "nox/tools/definitions" => d.service.definitions(&view, &params),
@@ -577,13 +685,44 @@ impl<E: Executor> ServerHandler for McpServer<E> {
         request: CallToolRequestParams,
         context: RequestContext<RoleServer>,
     ) -> Result<CallToolResponse, ErrorData> {
+        let (user_id, scopes) = if let Some(config) = &self.suite {
+            match config.authorize(&context, "tools/call") {
+                Ok((identity, scopes)) => (
+                    identity.context()["userId"].as_str().map(str::to_string),
+                    scopes,
+                ),
+                Err(_) => {
+                    return Ok(error_result(
+                        "FORBIDDEN",
+                        "The requested operation is not allowed",
+                        false,
+                    )
+                    .into())
+                }
+            }
+        } else {
+            (self.options.user_id.clone(), self.options.scopes.clone())
+        };
         let tool = self
             .get_tool(request.name.as_ref())
             .ok_or_else(|| ErrorData::invalid_params("Unknown tool", None))?;
+        if self.suite.as_ref().is_some_and(|config| {
+            config
+                .policies
+                .get(request.name.as_ref())
+                .is_none_or(|policy| {
+                    policy
+                        .required_scopes
+                        .iter()
+                        .any(|scope| !scopes.contains(scope))
+                })
+        }) {
+            return Ok(
+                error_result("FORBIDDEN", "The requested operation is not allowed", false).into(),
+            );
+        }
         if let Some(d) = &self.discovery {
-            let view = d
-                .view(&context, &self.tools)
-                .map_err(discovery::protocol_error)?;
+            let view = self.discovery_view(&context)?;
             d.service
                 .guard(
                     &view,
@@ -592,16 +731,40 @@ impl<E: Executor> ServerHandler for McpServer<E> {
                 )
                 .map_err(discovery::protocol_error)?;
         }
-        let deadline = now_ms() + self.options.timeout.as_millis() as u64;
+        let mut deadline = now_ms() + self.options.timeout.as_millis() as u64;
+        let mut request_id = format!("nox-{}", self.next_id.fetch_add(1, Ordering::Relaxed));
+        if self.suite.is_some() {
+            if let Some(controls) = context
+                .extensions
+                .get::<suite::SuiteRequestControls>()
+                .or_else(|| {
+                    context
+                        .extensions
+                        .get::<http::request::Parts>()
+                        .and_then(|parts| parts.extensions.get::<suite::SuiteRequestControls>())
+                })
+            {
+                match suite::suite_request_budget(
+                    controls,
+                    now_ms() as i64,
+                    self.options.timeout.as_millis() as i64,
+                    0,
+                ) {
+                    Ok(budget) => {
+                        request_id = budget.request_id;
+                        deadline = suite::parse_suite_timestamp(&budget.deadline_at)
+                            .map_err(|e| ErrorData::invalid_params(e.0, None))?
+                            as u64;
+                    }
+                    Err(_) => return Ok(ended_result("TIMEOUT", false).into()),
+                }
+            }
+        }
         if self
             .options
             .required_scopes
             .get(request.name.as_ref())
-            .is_some_and(|required| {
-                required
-                    .iter()
-                    .any(|scope| !self.options.scopes.contains(scope))
-            })
+            .is_some_and(|required| required.iter().any(|scope| !scopes.contains(scope)))
         {
             return Ok(
                 error_result("FORBIDDEN", "The requested operation is not allowed", false).into(),
@@ -648,15 +811,16 @@ impl<E: Executor> ServerHandler for McpServer<E> {
             cancellation: cancellation.clone(),
         };
         let execution = ExecutionContext {
-            request_id: format!("nox-{}", self.next_id.fetch_add(1, Ordering::Relaxed)),
+            request_id,
             app_id: self.options.app_id.clone(),
-            user_id: self.options.user_id.clone(),
-            scopes: self.options.scopes.clone(),
+            user_id,
+            scopes,
             deadline_ms: deadline,
             cancellation: cancellation.clone(),
         };
         let executor = self.executor.clone();
         let tool_name = request.name.into_owned();
+        let suite = self.suite.clone();
         let mut work = tokio::spawn(async move {
             if !execution.is_active() {
                 return ended_result(
@@ -667,6 +831,33 @@ impl<E: Executor> ServerHandler for McpServer<E> {
                     },
                     read_only,
                 );
+            }
+            if let Some(config) = suite {
+                if let Some(additional) = &config.additional_scopes {
+                    match additional(tool_name.clone(), input.clone(), execution.clone()).await {
+                        Ok(required)
+                            if required
+                                .iter()
+                                .all(|s| !s.is_empty() && execution.scopes.contains(s)) => {}
+                        _ => {
+                            return error_result(
+                                "FORBIDDEN",
+                                "The requested operation is not allowed",
+                                false,
+                            )
+                        }
+                    }
+                    if !execution.is_active() {
+                        return ended_result(
+                            if now_ms() >= execution.deadline_ms {
+                                "TIMEOUT"
+                            } else {
+                                "CANCELLED"
+                            },
+                            read_only,
+                        );
+                    }
+                }
             }
             executor.execute(tool_name, input, execution).await
         });

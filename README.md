@@ -14,6 +14,8 @@ Compatibility requirements, tested dependency versions and CI evidence are recor
 
 See the [documentation index](Documents/README.md) for current integration guides and the historical archive.
 
+The [Suite implementation plan](Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md), [product integration design](Documents/PRODUCT_INTEGRATION_PROPOSAL.md), and [Gateway Contract](Documents/GATEWAY_CONTRACT.md) define the shared integration target for present and future products. The shared schemas, validation, delegated authorization, private aggregation, state helpers, and Suite runtime admission are implemented in this working tree; see [Suite SDK integration](Documents/INTEGRATION.md). Backend management services and Gateway, CLI, and Portal remain separate application work. No SDK version or release is changed.
+
 ## Features
 
 Optional compact CLI descriptors and incremental discovery are documented in [discovery guide](Documents/DISCOVERY.md), including server/client integration for TypeScript, Go and Rust, transport compatibility and measured payload sizes. This work does not change the public SDK version.

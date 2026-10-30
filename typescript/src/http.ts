@@ -5,11 +5,15 @@ import {
 } from '@modelcontextprotocol/server';
 import { createServer, type ServerOptions } from './index.js';
 import { DiscoveryService } from './discovery.js';
+import { ExecutionLimiter } from './execution-limit.js';
+import { defaults } from './contract.js';
 
 export interface HttpHandlerOptions extends Omit<ServerOptions, 'auth'> {
   /** Normal exchanges use JSON by default. SSE preserves intermediate notifications. */
   responseMode?: 'json' | 'sse';
   resolveAuth?(authInfo?: AuthInfo): ServerOptions['auth'];
+  resolveTools?(authInfo?: AuthInfo): ServerOptions['tools'];
+  resolveDiscovery?(authInfo?: AuthInfo): ServerOptions['discovery'];
   onerror?(error: Error): void;
 }
 
@@ -45,7 +49,11 @@ export function createHttpHandler(options: HttpHandlerOptions): McpHttpHandler {
   if (responseMode !== 'json' && responseMode !== 'sse') throw new TypeError('Invalid HTTP response mode.');
   const report = (error: unknown) => { try { options.onerror?.(error instanceof Error ? error : new Error(String(error))); } catch { /* Reporting cannot change the response. */ } };
   const discovery=options.discovery && {...options.discovery,service:options.discovery.service??new DiscoveryService(options.discovery.serverId,options.discovery.ttlMs,options.discovery.maxBytes)};
-  const factory: McpServerFactory = ({ authInfo }) => createServer({ ...options, discovery, auth: options.resolveAuth?.(authInfo) });
+  const executionLimiter = options.executionLimiter ?? new ExecutionLimiter(options.maxInFlightRequests ?? defaults.maxInFlightRequests);
+  const factory: McpServerFactory = ({ authInfo }) => {
+    const selected = options.resolveDiscovery?.(authInfo) ?? discovery;
+    return createServer({ ...options, discovery: selected && { ...selected, service: selected.service ?? discovery?.service }, executionLimiter, tools: options.resolveTools?.(authInfo) ?? options.tools, auth: options.resolveAuth?.(authInfo) });
+  };
   const modern = createMcpHandler(factory, { legacy: 'reject', responseMode, onerror: report, maxRequestBodySize });
   const shutdown = new AbortController();
   const active = new Set<Promise<void>>();

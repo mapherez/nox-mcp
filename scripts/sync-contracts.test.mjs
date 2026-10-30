@@ -71,3 +71,13 @@ test('a standalone schema cannot diverge from its definition inside a bridge env
   await writeFile(file, JSON.stringify(schema));
   await assert.rejects(syncContracts(directory), /Inconsistent embedded contract: error/);
 });
+
+test('Suite generation preserves metadata identifiers, includes native documents, and detects DTO drift',async t=>{
+ const directory=await fixture(t);
+ const go=await readFile(resolve(directory,'go/suite_types.generated.go'),'utf8');
+ assert.match(go,/Meta \*map\[string\]json.RawMessage `json:"_meta,omitempty"`/);assert.doesNotMatch(go,/undefinedMeta/);
+ for(const path of ['typescript/src/suite-types.generated.ts','go/suite_types.generated.go','rust/src/suite_types.generated.rs','go/contracts/suite-conformance.json','rust/contracts/suite-product-declaration.schema.json']){
+  const file=resolve(directory,path);await writeFile(file,'edited');await assert.rejects(syncContracts(directory,{check:true}),/Generated contracts are stale/);await syncContracts(directory);
+ }
+ const file=resolve(directory,'contracts/suite-policy.schema.json');const schema=JSON.parse(await readFile(file,'utf8'));schema.unknownAssertion=true;await writeFile(file,JSON.stringify(schema));await assert.rejects(syncContracts(directory),/Unsupported Suite schema keyword/);
+});

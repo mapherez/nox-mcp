@@ -1,6 +1,6 @@
 # NoX Suite — General implementation plan
 
-Consolidated on **October 23, 2026**.
+Originally consolidated on **October 23, 2026**; decisions updated on **October 29, 2026**.
 
 Status: **reference for approved requirements and architectural decisions**. This document does not imply that planned features are implemented, nor does it independently authorize product changes or release publication.
 
@@ -18,22 +18,26 @@ Initial plans and reports in [old/](old/README.md) provide historical context. W
 
 When a new decision is made, update this document and the affected technical contracts/documents. Do not silently turn old suggestions or illustrative examples into requirements.
 
-## 2. Objective and initial scope
+## 2. Objective and deployment scope
 
 NoX Suite is a set of autonomous products integrated through common contracts. Each product retains its logic, data, frontend, and independent operation.
 
+The contracts and NoX MCP apply to **any present or future Suite product**. Product names in this document identify responsibilities or historical examples, not an exhaustive catalog or a list of allowed implementations. Adding a conforming product must not require product-specific code in the SDK, Gateway, CLI, or Portal.
+
+The target is a complete contract for the agreed scope, not a temporary first version or a pilot tied to existing products. All existing integrations must be adapted as necessary to the resulting contracts. Gateway, CLI, and Portal **do not exist yet**; their implementations follow the design established here.
+
 The objective is to let users and AI agents discover and execute functionality without product-specific integrations inside the CLI or Gateway.
 
-Approved initial scope:
+Approved deployment scope:
 
 - One environment administered by one NoX Backend, on the same network.
 - One product of each type: one Backend, one Yard, one Gateway, etc.
 - Multiple approved Google accounts in that Backend, each with its own API key.
-- Initial integration focused on applications installed on the environment's host/network.
+- Integration targets applications installed on the environment's host/network.
 - Products remain individually usable without Gateway, CLI, or Portal.
 - CLI, Gateway, and Portal are future products; do not treat plans or experiments as implemented products.
 
-Multiple copies of the same product in an environment, federation between Backends, and tunnels to products on other networks are outside the initial scope. Do not build architecture for those scenarios now, or make unnecessary choices that prevent future evolution.
+Multiple copies of the same product in an environment, federation between Backends, and tunnels to products on other networks are outside this deployment scope. This does not limit the number or business domains of distinct products. Do not build architecture for excluded deployments, or make unnecessary choices that prevent future evolution.
 
 The CLI may access the Gateway remotely when it is published. The network restriction above concerns the products reached by the Gateway.
 
@@ -50,7 +54,7 @@ The CLI may access the Gateway remotely when it is published. The network restri
 
 There is no additional functional entity called a **module**, or a mandatory application/module/instance hierarchy. Those terms appeared in old plans without an approved definition.
 
-In this work, the old term **Module Contract** refers to the future **product integration and registration contract**. Final schema, API, and extension names remain to be decided. Do not rename existing public APIs because of this terminology.
+In this work, the old term **Module Contract** refers to the **product integration and registration contract**. Its design is recorded in [product integration](PRODUCT_INTEGRATION_PROPOSAL.md), with shared trust and communication rules in the [Gateway Contract](GATEWAY_CONTRACT.md). Do not rename existing public APIs because of this terminology.
 
 ## 4. Component responsibilities
 
@@ -95,7 +99,7 @@ This snapshot reflects the local analysis on October 23, 2026. It does not claim
 
 Updating dependencies to 0.6.1 was not a functional migration to the SDK's new capabilities. All four products still need the planned adaptation. The reviewed integrations did not enable `nox/discovery` or publish advanced CLI descriptors.
 
-The SDK already provides the Core/CLI foundation, incremental discovery, fingerprints, snapshots, and caching. It does not yet provide the product registration or Gateway contracts planned here.
+The SDK already provides the Core/CLI foundation, incremental discovery, fingerprints, snapshots, and caching. This working tree now also provides the shared Suite schemas, native DTOs/loaders, trust and authorization helpers, aggregation/state helpers, and protected runtime admission described in [SDK integration](INTEGRATION.md). Backend management services and Gateway/CLI/Portal are not implemented here.
 
 The retained NoteX remote code imports `@nox/mcp/better-auth`, which is incompatible with the entry points available in the installed SDK 0.6.1. Resolution returned `ERR_PACKAGE_PATH_NOT_EXPORTED`. This is a confirmed incompatibility in that remote path, not evidence that local MCP is broken. Do not reintroduce that adapter into the SDK to work around it.
 
@@ -126,7 +130,7 @@ Each product classifies its tools during implementation. The Backend maps roles 
 
 Restrictions are checked during execution as well as presentation and catalog filtering. Admin access does not remove domain requirements for validity, revision checks, confirmation, availability, or conflict handling.
 
-Classification must distinguish normal reads, writes, and sensitive reads. `destructiveHint` does not replace authorization. Reuse existing metadata where appropriate; the sensitivity contract and operations whose access depends on arguments still require design.
+Classification distinguishes normal reads, writes, and sensitive reads using the shared capabilities and execution rules in the Gateway Contract. Argument-dependent requirements are calculated by trusted product code and can add restrictions. `destructiveHint` does not replace authorization.
 
 ### Direct product access
 
@@ -134,11 +138,13 @@ The product manages authentication and permissions for this access independently
 
 An optional token does not mean NoX authentication protects an anonymous endpoint: when the application explicitly allows that mode, the selected local permissions apply. Default and configuration consistency will be addressed during product adaptation.
 
-### Pending technical decisions
+### Consolidated trust and authorization decisions
 
-The Gateway Contract will define how a product recognizes authorized Gateway communication and receives verified identity/capabilities. Do not assume forwarding of the personal API key, identity taken from arbitrary metadata, or a credential technology that has already been selected.
+The Backend manages dedicated, scoped, revocable service credentials. Authorized pairing uses a temporary, single-use secret. Authenticated network communication uses HTTPS. The Gateway validates the personal API key with the Backend and receives a Backend-signed, product-specific delegation; the personal key is not forwarded to products. Products verify the delegation and enforce current domain rules at execution.
 
-Permission-cache updates, including role changes and credential revocation, must also be defined.
+Delegations may be reused for up to **five minutes**, never beyond the underlying credential validity. The Gateway validates requests locally while the authorization remains valid, invalidates cached authorizations on Backend events, and renews on demand. Missed revocation events can leave an already issued delegation usable until its original expiry, at most five minutes. During Backend unavailability, valid delegations remain usable until expiry; no fresh authorization or lifetime extension is permitted. A 1–3 hour CLI session does not expire on this schedule and does not repeat Google login.
+
+This supersedes the earlier discussion suggestion of a separate 30-second, argument-bound authorization for every request and a live Backend authorization call for every operation. Complete wire rules, cache partitions, and failure behavior are in the Gateway Contract.
 
 ## 7. Two MCP access paths without a mandatory third port
 
@@ -146,11 +152,11 @@ Approved exposure model, using illustrative values only:
 
 | Endpoint | Purpose |
 | --- | --- |
-| `http://192.168.10.10:8095/` | Product's native web application |
-| `http://192.168.10.10:8095/mcp` | MCP integrated with NoX Suite |
-| `http://192.168.10.10:8096/mcp` | Direct MCP for independent clients |
+| `https://192.168.10.10:8095/` | Product's native web application |
+| `https://192.168.10.10:8095/mcp` | MCP integrated with NoX Suite |
+| `https://192.168.10.10:8096/mcp` | Direct MCP for independent clients under product policy |
 
-Do not hardcode these IPs, ports, bind addresses, Docker publication settings, or access URLs. Configuration and reverse-proxy details will be defined per product/deployment through a common pattern.
+Do not hardcode these IPs, ports, bind addresses, Docker publication settings, or access URLs. A registered base address is an origin: IP/hostname with an optional port, or a dedicated domain/subdomain. Application prefixes such as `/apps/example` are **not supported**. `/nox/integration` is the bootstrap path; the protected Suite MCP path is declared by the product. HTTPS can use a trusted deployment certificate or an explicitly provisioned certificate pin, as defined in the Gateway Contract.
 
 - The application's MCP switch controls only **direct MCP**.
 - NoX Suite MCP remains accessible to the authorized Gateway when that switch is off.
@@ -176,7 +182,7 @@ These operations must also be available through the appropriate APIs. The Backen
 4. The Backend maintains the registry and makes the change available to relevant consumers.
 5. The Gateway discovers the product's MCP server; the Portal, once available, discovers its UI contribution.
 
-Capability declaration format, registration API, identifiers, and validation remain to be formalized. A product does not become trusted merely by claiming to belong to NoX.
+The declaration, registration API, identifiers, revisions, and validation are defined in [product integration](PRODUCT_INTEGRATION_PROPOSAL.md). Pairing and service trust are defined in the [Gateway Contract](GATEWAY_CONTRACT.md). A product does not become trusted merely by claiming to belong to NoX.
 
 Manually creating a container on the host still allows normal application use, but does not trigger the automatic integration above. Products outside the Suite retain Yard's normal installation process.
 
@@ -204,7 +210,7 @@ Approved rules:
 - Temporary failure does not delete product configuration or data.
 - Already registered products remain usable through the Gateway if Yard is unavailable.
 
-The contract must handle delayed, lost, or repeated events and reconcile state after recovery. Signal mechanisms and frequency have not been decided. Do not treat Docker healthchecks as sufficient proof of MCP availability.
+Delayed, lost, or repeated events are handled by a durable Backend event log, cursor-based long polling, producer sequences, and snapshot reconciliation. Long-poll waits default to 25 seconds; availability checks/reports default to 15 seconds and observations become stale after 45 seconds. These are configurable installation-wide operational intervals, not per-user authentication timers. Do not treat Docker healthchecks as sufficient proof of MCP availability.
 
 ## 10. Discovery, aggregation, and caching
 
@@ -219,7 +225,7 @@ The Gateway may keep:
 
 These copies are reconstructible; they do not form a second autonomous registry. Definition caching and authorization validity are separate concerns. Cache freshness/TTL does not expire a product's membership in the environment.
 
-The Gateway Contract must define:
+The Gateway Contract defines:
 
 - Tool identity and origin; name collision resolution.
 - Routing for calls and references to selections, previews, and workflows.
@@ -243,7 +249,7 @@ Access to **NoX Suite products is exclusively through the Gateway**, using the A
 
 Terminal experience, breadcrumbs, search, keyboard interaction, form state, and interaction execution belong to the CLI. The SDK validates and interprets descriptors; it does not display interfaces or automatically execute workflows on the user's behalf.
 
-Ambiguous navigation composition rules will be settled using the existing foundation, without redesigning the CLI Contract around one product's specific feature.
+Product boundaries, aliases, auxiliary references, and ambiguous action-path handling follow the Gateway Contract and existing CLI foundation. Terminal interaction is implemented in the CLI without redesigning the shared contract around a product-specific feature.
 
 ### AI and the CLI's MCP server
 
@@ -296,13 +302,13 @@ Environment control is local and must not require external services for every re
 
 Initial offline login or another identity provider to bypass Google unavailability is not planned. The LAN/host connection and required local services must remain operational.
 
-## 14. NoteX and desktop applications
+## 14. Existing applications and execution models
 
 The author confirmed functional equivalence between NoteX desktop and web, with these differences: the web version does not export the database and has no integrated MCP server. There is no need to reopen a functional parity investigation for this plan.
 
-Supporting applications on the host takes priority. NoteX desktop retains its current local MCP without changes in this phase.
+This historical snapshot is not a contract constraint or a permanent migration exemption. Existing desktop, web, and service products must be adapted wherever required for their intended Suite participation, while retaining their independent functionality and domain rules.
 
-The future intention is to build MCP for the web version, integrated with the Suite, so desktop changes are not a prerequisite. That feature does not exist yet. Retained remote bridge code must not be mistaken for implementation of this future web MCP.
+NoteX web MCP does not exist yet. Retained remote bridge code must not be mistaken for its implementation. The shared contract does not prescribe a renderer, browser-storage backend, desktop bridge, or product-specific execution architecture.
 
 Future integration must respect the web version's actual storage and execution model. Google synchronization between desktop and web requires Internet access and is not an offline Suite execution mechanism.
 
@@ -312,13 +318,13 @@ Future integration must respect the web version's actual storage and execution m
 | --- | --- | --- |
 | 1. Consolidate requirements | This document and analysis of existing implementations | Decisions separated from hypotheses; compatibility requirements identified |
 | 2. Design integration/registration | Product identity, capabilities, registration, update, removal, and relationship to MCP/UI | Approved proposal, examples, and clear failure cases |
-| 3. Design the Gateway Contract | Routing, trust, authorization, catalogs, fingerprints, and availability | Complete flows consistent with stage 2 and existing contracts |
+| 3. Define the Gateway Contract | Routing, trust, authorization, catalogs, fingerprints, and availability | [Complete contract](GATEWAY_CONTRACT.md) consistent with stage 2 and existing contracts |
 | 4. Implement SDK contracts | Authoritative schemas, TypeScript/Go/Rust APIs/validation, generation, documentation, and conformance | Tested equivalence, working external packages, and regression verification |
 | 5. Adapt products incrementally | Backend registry, Yard integration/lifecycle, two MCP access paths, product classification and descriptors | Real integrations validated, including failures and independent operation |
 | 6. Build Gateway and CLI | Gateway service; manual CLI and additional modes in increments | Real end-to-end execution and conventional MCP compatibility |
 | 7. Build Portal | Shared structure and dynamic loading of contributions | Product integration without rebuilding and consistent authorization |
 
-Stages may use fixtures and explicitly authorized minimal adaptations in real products to validate hypotheses. They do not require building final products ahead of time. Integrated CLI AI and the Portal are not prerequisites for validating contracts.
+Contract design precedes service implementation and product adaptation. No pilot using the current Backend/Yard implementations is a prerequisite for completing it. Shared fixtures validate SDK implementation against the contract; end-to-end tests follow once services and products have been implemented/adapted. Integrated CLI AI and the Portal are not prerequisites for validating the SDK.
 
 ### Areas affected by repository
 
@@ -328,7 +334,7 @@ Stages may use fixtures and explicitly authorized minimal adaptations in real pr
 | `nox-backend` | Persistent registry, administrative configuration, central authorization, and integration APIs while preserving existing services |
 | `nox-yard` | Authorized post-deployment integration, lifecycle signals, and separation of Suite/direct MCP |
 | NoX Bot and other host products | Integration/registration, capabilities, a Suite path independent of direct access, and optional descriptors |
-| NoteX | Desktop preserved; web MCP and integration handled as separate future work |
+| NoteX and other desktop/web products | Adapt relevant integrations to the shared contracts, respecting each product's storage, execution, and independent-access model |
 | Future Gateway | Aggregation and routing according to approved contracts |
 | Future CLI | Generic navigation, manual execution, external connections, and MCP/AI modes |
 | Future Portal | Aggregation of UI contributions supplied by products |
@@ -358,24 +364,23 @@ Acceptance cases for this evolution:
 
 Tests must not replace authorization checks with hidden UI options. Visual confirmation does not replace product validation.
 
-## 17. Technical decisions still to be formalized
+## 17. Decision status and separate product work
 
-Do not treat these choices as already approved:
+The following design areas are specified. Shared SDK mechanisms are implemented in this working tree; service responsibilities remain to be implemented. See [SDK integration](INTEGRATION.md) for the implemented APIs and exact boundaries:
 
-1. Identifiers, schemas, versions, and negotiation for the integration/registration contract.
-2. APIs and credentials for base configuration, authorized registration, and inter-service communication.
-3. A verifiable way to transmit identity and capabilities from Gateway to product.
-4. Representation of sensitive reads, argument-dependent policy, and compatibility with legacy tools.
-5. Events, notification persistence/retry, reconciliation, periodic checks, and consolidated state calculation.
-6. Name/origin mappings, reference transformation, and fingerprint/snapshot composition.
-7. Catalog and authorization cache invalidation; behavior during temporary Backend unavailability.
-8. Final endpoint names, network configuration, and reverse-proxy publication.
-9. Missing CLI composition rules without replacing `_meta.cli` or imposing `_meta.nox`.
-10. Transport, protection, process, and lifecycle for the CLI's MCP server; AI model integration.
-11. The UI contribution contract and Portal loading technology.
-12. NoteX web MCP implementation without mandatory desktop changes.
+| Area | Reference |
+| --- | --- |
+| Product declaration, identity, registration, conditional updates, removal, and durable idempotency | [Product integration](PRODUCT_INTEGRATION_PROPOSAL.md) |
+| Pairing, service credentials, HTTPS, signed delegated identity, and capability classification | [Gateway Contract](GATEWAY_CONTRACT.md), sections 3–7 |
+| Five-minute authorization reuse, event invalidation, on-demand renewal, and Backend outages | Gateway Contract, section 6 |
+| Durable events, reconciliation, observation sequences, and availability intervals | Gateway Contract, section 8 |
+| Aggregated names, reference rewriting, original/aggregate fingerprints, and private snapshots | Gateway Contract, sections 9–10 |
+| Deadlines, cancellation, limits, error propagation, and conventional MCP compatibility | Gateway Contract, sections 11–12 |
+| Origin-only deployment addresses and preservation of direct/Suite access during migration | Product integration and Gateway Contract, sections 3 and 13 |
 
-Design must present alternatives and consequences where relevant. Do not invent new entities, identity providers, or product dependencies to fill these gaps without an explicit decision.
+Separate product work still includes the CLI's own MCP-server transport/authentication/process lifecycle and AI integration, the Portal UI contribution/loading contract, and each product's storage/execution adapters. These do not reopen the completed integration/Gateway design or imply that those products already exist. CLI presentation must retain `_meta.cli`; no `_meta.nox` hierarchy is introduced.
+
+The detailed routes, payloads, and validation rules in the Gateway Contract formalize the consolidated choices for implementation. Product-specific business decisions remain with their products. Implementation findings must identify a concrete incompatibility before changing this baseline.
 
 ## 18. Compatibility and maintenance boundaries
 
@@ -388,15 +393,15 @@ Design must present alternatives and consequences where relevant. Do not invent 
 - Preserve `tools/list`, canonical names, existing metadata, and bridge protocols.
 - Do not reopen full Go SSE support or unrelated external issues outside the approved scope.
 - Do not modify consumer products in SDK-only tasks; integration changes require their own scope.
-- Keep NoteX desktop untouched in this phase.
-- Do not build Portal, CLI, or Gateway now to work around undefined contracts.
+- Adapt existing products only in their explicitly scoped implementation work; no existing integration is permanently exempt from the final shared contracts.
+- Shared SDK APIs and fixtures do not implement Portal, CLI, Gateway services, Backend persistence/issuance, or consumer changes.
 
 ### Explicit corrections to old plans
 
 | Old idea | Current decision |
 | --- | --- |
 | Autonomous registry in the Gateway | Registry in the Backend; Gateway holds cache and operational state |
-| Modules and instances as a formal hierarchy | Registered products; no such hierarchy in the initial scope |
+| Modules and instances as a formal hierarchy | Registered products; no such hierarchy in the agreed scope |
 | Gateway outbound channels to products on other networks | Gateway reaches products on the environment's network |
 | CLI connects directly to NoX products | CLI uses Gateway; external MCP connections follow a distinct path |
 | Portal must replace all frontends | Products retain frontends; Portal aggregates dedicated contributions |
@@ -404,6 +409,6 @@ Design must present alternatives and consequences where relevant. Do not invent 
 | Disabling MCP in the application also disables Suite access | The switch controls only direct MCP |
 | Automatic expiry deletes offline products | Registration persists; removal requires an explicit confirmed action |
 
-**Next work:** design product integration/registration and Gateway contracts from these requirements, preserving the existing Core/CLI foundation and correcting only demonstrated gaps.
+**Next work:** implement the Backend authority and durable management/event services against the shared SDK, followed by Gateway and the participating products. Preserve the existing Core/CLI foundation and support matrix. This document is not release or consumer-migration authorization.
 
-The [product integration proposal](PRODUCT_INTEGRATION_PROPOSAL.md) is the stage-2 design under review. Its proposed fields, routes, and policies do not become approved requirements until explicitly accepted.
+The [product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway Contract](GATEWAY_CONTRACT.md) together define the integration baseline. A contract version such as `1.0` identifies wire compatibility; it does not describe a provisional product release.

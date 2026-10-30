@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoX Suite 1.0 registration-record; complete-document preservation; semantic rules in GATEWAY_CONTRACT.md.",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": "1.0",
+      "type": "string"
+    },
+    "productId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "x-nox-kind": "product-id",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "associationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "declaration": {
+      "type": "object",
+      "properties": {
+        "contractVersion": {
+          "const": "1.0",
+          "type": "string"
+        },
+        "productId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-nox-kind": "product-id",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "productVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "suiteMcp": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048,
+                  "x-nox-kind": "path"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "requires": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "contractVersion",
+        "productId",
+        "productVersion",
+        "displayName",
+        "capabilities"
+      ],
+      "additionalProperties": true
+    },
+    "connection": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "minLength": 9,
+          "maxLength": 2048,
+          "x-nox-kind": "origin"
+        }
+      },
+      "required": [
+        "baseUrl"
+      ],
+      "additionalProperties": true
+    },
+    "managedBy": {
+      "type": "object",
+      "properties": {
+        "productId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-nox-kind": "product-id",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "deploymentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "productId",
+        "deploymentId"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "contractVersion",
+    "productId",
+    "revision",
+    "associationId",
+    "declaration",
+    "connection"
+  ],
+  "additionalProperties": true
+}

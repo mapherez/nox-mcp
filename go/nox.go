@@ -57,6 +57,7 @@ type compiledTool struct {
 	input, output *jsonschema.Resolved
 }
 type Runtime struct {
+	suite   *SuiteRuntimeOptions
 	options Options
 	tools   map[string]compiledTool
 	slots   chan struct{}
@@ -119,6 +120,14 @@ func newRuntime(options Options, manifestAnnotations map[string]*mcp.ToolAnnotat
 			if req.Extra != nil && req.Extra.TokenInfo != nil {
 				identity = req.Extra.TokenInfo
 			}
+			if r.suite != nil && req.Extra != nil && req.Extra.Header != nil {
+				bounded, cancel, err := r.suiteExecutionContext(ctx, req.Extra.Header, identity)
+				if err != nil {
+					return r.boundedResult(err, true), nil
+				}
+				defer cancel()
+				ctx = bounded
+			}
 			value, err := r.Execute(ctx, req.Params.Name, input, identity)
 			if err != nil {
 				var public *Error
@@ -173,6 +182,15 @@ func (r *Runtime) Execute(parent context.Context, name string, input map[string]
 		scopes = identity.Scopes
 		user = identity.UserID
 	}
+
+	if r.suite != nil {
+		verified, granted, e := r.suite.grants(identity, "tools/call")
+		if e != nil {
+			return nil, failure("FORBIDDEN", "The requested operation is not allowed")
+		}
+		scopes = granted
+		user = text(verified.context["userId"])
+	}
 	for _, required := range t.definition.RequiredScopes {
 		if !slices.Contains(scopes, required) {
 			return nil, failure("FORBIDDEN", "The requested operation is not allowed")
@@ -197,6 +215,10 @@ func (r *Runtime) Execute(parent context.Context, name string, input map[string]
 		return nil, failure("INTERNAL", "An internal error occurred")
 	}
 	execution := ExecutionContext{ctx, hex.EncodeToString(id), r.options.AppID, user, slices.Clone(scopes), deadline}
+
+	if controls, ok := parent.Value(suiteControlsKey{}).(SuiteRequestControls); ok {
+		execution.RequestID = controls.RequestID
+	}
 	type outcome struct {
 		value map[string]any
 		err   error
@@ -212,6 +234,18 @@ func (r *Runtime) Execute(parent context.Context, name string, input map[string]
 		if cause := executionEnded(ctx); cause != nil {
 			completed <- outcome{err: endedError(cause, t.definition.ReadOnly)}
 			return
+		}
+
+		if r.suite != nil && r.suite.AdditionalScopes != nil {
+			additional, e := r.suite.AdditionalScopes(name, input, execution)
+			if e != nil || !allSuiteScopes(scopes, additional) {
+				completed <- outcome{err: failure("FORBIDDEN", "The requested operation is not allowed")}
+				return
+			}
+			if cause := executionEnded(ctx); cause != nil {
+				completed <- outcome{err: endedError(cause, t.definition.ReadOnly)}
+				return
+			}
 		}
 		value, err := t.definition.Execute(execution, input)
 		completed <- outcome{value, err}
@@ -258,6 +292,9 @@ func endedError(cause error, readOnly bool) *Error {
 }
 func (r *Runtime) HTTPHandler() http.Handler {
 	handler := mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server { return r.Server }, &mcp.StreamableHTTPOptions{Stateless: true, JSONResponse: true})
+	if r.suite != nil {
+		return r.suiteHTTPHandler(handler)
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		req.Body = http.MaxBytesReader(w, req.Body, int64(r.options.MaxPayloadBytes))
 		handler.ServeHTTP(w, req)

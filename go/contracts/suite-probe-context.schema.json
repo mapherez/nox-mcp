@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoX Suite 1.0 probe-context; complete-document preservation; semantic rules in GATEWAY_CONTRACT.md.",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": "1.0",
+      "type": "string"
+    },
+    "serviceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "serviceCredentialRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "productId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "x-nox-kind": "product-id",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "registrationRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "associationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "purpose": {
+      "type": "string",
+      "const": "mcp-probe"
+    }
+  },
+  "required": [
+    "contractVersion",
+    "serviceId",
+    "serviceCredentialRevision",
+    "productId",
+    "registrationRevision",
+    "associationId",
+    "purpose"
+  ],
+  "additionalProperties": true
+}

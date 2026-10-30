@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoX Suite 1.0 gateway-route",
+  "type": "object",
+  "properties": {
+    "alias": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "productId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "x-nox-kind": "product-id",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "registrationRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "associationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "serverId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "viewId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "toolName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "endpoint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "sourceFingerprint": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
+    "availability": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable"
+      ]
+    }
+  },
+  "required": [
+    "alias",
+    "productId",
+    "registrationRevision",
+    "associationId",
+    "serverId",
+    "viewId",
+    "toolName",
+    "endpoint",
+    "sourceFingerprint",
+    "fingerprint",
+    "availability"
+  ],
+  "additionalProperties": true
+}

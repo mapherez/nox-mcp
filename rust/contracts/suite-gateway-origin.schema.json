@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoX Suite 1.0 gateway-origin; complete-document preservation; semantic rules in GATEWAY_CONTRACT.md.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "productId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "x-nox-kind": "product-id",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "toolName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "serverId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "registrationRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "sourceFingerprint": {
+      "type": "string",
+      "minLength": 43,
+      "maxLength": 43,
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    }
+  },
+  "required": [
+    "version",
+    "productId",
+    "toolName",
+    "serverId",
+    "registrationRevision",
+    "sourceFingerprint"
+  ],
+  "additionalProperties": true
+}

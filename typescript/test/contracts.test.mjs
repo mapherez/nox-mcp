@@ -15,7 +15,7 @@ test('shared corpus exercises every official contract', async () => {
     const additional=JSON.parse(await readFile(new URL('../../contracts/discovery-conformance.json',import.meta.url),'utf8'));
     for(const example of additional.schemaCases){let valid=true;try{validateDiscovery(example.schema,example.data)}catch{valid=false};assert.equal(valid,example.valid);}
     const official = (await readdir(new URL('../../contracts/', import.meta.url))).filter(name => name.endsWith('.schema.json')).map(name => name.replace('.schema.json', '')).sort();
-    assert.deepEqual([...new Set([...corpus.cases,...additional.schemaCases].map(c => c.schema))].sort(), official);
+    assert.deepEqual([...new Set([...corpus.cases,...additional.schemaCases, ...JSON.parse(await readFile(new URL('../../contracts/suite-conformance.json',import.meta.url),'utf8')).schemaCases.map(c=>({...c,schema:'suite-'+c.schema}))].map(c => c.schema))].sort(), official);
     assert.equal(new Set(corpus.cases.map(c => c.id)).size, corpus.cases.length);
 });
 for (const example of corpus.cases)

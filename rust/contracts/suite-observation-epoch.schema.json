@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "NoX Suite 1.0 observation-epoch; complete-document preservation; semantic rules in GATEWAY_CONTRACT.md.",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": "1.0",
+      "type": "string"
+    },
+    "productId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "x-nox-kind": "product-id",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "associationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "producerId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "yard",
+        "gateway"
+      ]
+    },
+    "producerEpoch": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  },
+  "required": [
+    "contractVersion",
+    "productId",
+    "associationId",
+    "producerId",
+    "source",
+    "producerEpoch"
+  ],
+  "additionalProperties": true
+}

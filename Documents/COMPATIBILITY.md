@@ -81,3 +81,9 @@ The NoX Go HTTP handler uses JSON and is unaffected by this late SSE error case.
 `npm run diagnose:go-sse` reproduces the defect and exits with code 1 on invalid framing. The `Investigating / Future Go SSE` workflow has only `workflow_dispatch`, without `continue-on-error`, and is outside the release gate and must not be a required check. Valid TypeScript/Rust SSE tests remain mandatory.
 
 Reconsider support when an upstream fix or a safe solution through official APIs exists and there is a concrete product need. Require framing tests for all four codes, results/errors, negotiation, and legacy clients on Windows/Linux, plus approval of the support matrix. A diagnostic that stops failing does not automatically promote support.
+
+## Shared Suite SDK mechanisms
+
+The working tree adds Suite `1.0` schemas and complete native DTOs, pinned ES256 delegation/probe verification, HMAC pairing/credential partitions, bounded authorization reuse/invalidation, private Gateway composition/routing, observation/registry reduction, and protected native runtime admission. See [Suite integration](INTEGRATION.md) for APIs, transport setup, and host responsibilities. These additions do not implement Backend management services, Gateway, CLI, or Portal applications, and do not change the SDK version or the supported transport matrix above. Rust additionally uses `http`, `hmac`, and `p256`; Go and TypeScript use their standard cryptographic libraries for these operations.
+
+`npm run test:suite` compares Suite outputs across all three SDKs inside the existing required conformance jobs. Ordinary tests and independent package/consumer checks also exercise the new APIs. The checks preserve existing transport, manifest, bridge, discovery, and release gates.

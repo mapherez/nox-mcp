@@ -137,7 +137,7 @@ async function main() {
   console.log(`Para pedir a publicacao apos o CI: npm run release -- ${tag.slice(1)}`);
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && await realpath(process.argv[1]).catch(() => '') === await realpath(fileURLToPath(import.meta.url))) {
   main().catch(error => {
     console.error(error.stderr?.toString().trim() || error.message);
     if (error.cause) console.error(error.cause.stderr?.toString().trim() || error.cause.message);

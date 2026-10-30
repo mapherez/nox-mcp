@@ -130,3 +130,13 @@ test('Go major validation and detached CI version validation remain strict',asyn
   git(root,'checkout','--detach','HEAD');const check=tag=>spawnSync(process.execPath,[fileURLToPath(new URL('./check-release-version.mjs',import.meta.url)),tag],{cwd:root,encoding:'utf8'});
   assert.equal(check('v2.0.0').status,0);assert.equal(check('v2.1.0').status,1);assert.equal(check('2.0.0').status,1);
 });
+
+test('version and release entry points also run through a symlinked checkout',async t=>{
+ const root=await repository(t),container=await mkdtemp(resolve(tmpdir(),'nox-entry-alias-'));
+ t.after(()=>rm(container,{recursive:true,force:true}));const alias=resolve(container,'checkout');await symlink(root,alias,process.platform==='win32'?'junction':'dir');
+ for(const script of ['update-version.mjs','release.mjs']){
+  const processResult=spawnSync(process.execPath,[resolve(alias,'scripts',script)],{cwd:alias,input:'\n',encoding:'utf8',timeout:10000});
+  assert.equal(processResult.status,0,processResult.stderr);assert.match(processResult.stdout,/Cancelado/);
+ }
+ assert.equal(git(root,'status','--porcelain'),'');
+});
