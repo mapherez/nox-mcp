@@ -38,6 +38,9 @@ jobs:
         run: npm test
       - name: Test Go contracts and existing behavior
         run: go test -mod=readonly ./...
+      - name: Detect Go races in authorization, cache and execution
+        if: runner.os == 'Linux'
+        run: go test -race -mod=readonly ./...
       - name: Test Rust contracts and existing behavior
         run: cargo test --locked --manifest-path rust/Cargo.toml
       - name: Compare actual runtime observations across languages
@@ -82,7 +85,7 @@ jobs:
           toolchain: ${{ matrix.profile == 'minimum' && '1.88.0' || 'stable' }}
       - run: npm ci --ignore-scripts
       - run: npm run build
-      - name: Compile and execute independent native application
+      - name: Test independent native application and SDK, including Suite runtime
         if: matrix.language != 'typescript'
         run: node scripts/check-consumers.mjs
         env:

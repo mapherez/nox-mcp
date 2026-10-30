@@ -37,6 +37,10 @@ try{
   }
   console.log('Independent Go graph:\n'+output('go',['list','-m','all'],consumer,env));
   run('go',['test','-count=1','-mod=readonly','./...'],consumer,env);
+  // Run the dependency's tests from the consumer module as well. Running them
+  // in lib would silently use the SDK's go.mod instead of this resolved graph.
+  console.log('Testing the complete Go SDK, including Suite authorization, execution, cancellation and cache, against the independent consumer graph.');
+  run('go',['test','-count=1','-mod=readonly','github.com/mapherez/nox-mcp/go'],consumer,env);
   run('go',['vet','./...'],consumer,env);
   await mkdir(resolve(consumer,'cmd/fixture'),{recursive:true});
   await cp(resolve(root,'go/testdata/discovery-server/main.go'),resolve(consumer,'cmd/fixture/main.go'));

@@ -36,6 +36,9 @@ func main() {
   const goEnv = { ...process.env, GOTOOLCHAIN: 'local' };
   run('go', ['mod', 'tidy'], goConsumer, goEnv);
   run('go', ['run', '-mod=readonly', '.'], goConsumer, goEnv);
+  // Embedded schemas and every SDK test must work from the standalone module,
+  // using the consuming application's graph and without the root checkout.
+  run('go', ['test', '-count=1', '-mod=readonly', 'github.com/mapherez/nox-mcp/go'], goConsumer, goEnv);
 
   // Test the actual Cargo package, outside this checkout, including its tests.
   const cargoManifest = await readFile(resolve(root, 'rust/Cargo.toml'), 'utf8');

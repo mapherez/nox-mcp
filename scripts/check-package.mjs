@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -78,8 +78,16 @@ try {
   `], { cwd: consumer, stdio: 'inherit' });
 
   await copyFile(resolve(root,'contracts/suite-conformance.json'),resolve(consumer,'suite-conformance.json'));
-  await writeFile(resolve(consumer,'suite-http.test.mjs'),(await readFile(resolve(root,'typescript/test/suite-http.test.mjs'),'utf8')).replace("'../dist/index.js'","'@nox/mcp'").replace("new URL('../../contracts/suite-conformance.json',import.meta.url)","new URL('./suite-conformance.json',import.meta.url)"));
-  execFileSync(process.execPath,['--test','suite-http.test.mjs'],{cwd:consumer,stdio:'inherit'});
+  const suiteTests=(await readdir(resolve(root,'typescript/test'))).filter(name=>name.startsWith('suite')&&name.endsWith('.test.mjs')).sort();
+  assert.ok(suiteTests.includes('suite.test.mjs')&&suiteTests.includes('suite-http.test.mjs'),'Missing Suite conformance or runtime tests');
+  for(const name of suiteTests){
+    const source=(await readFile(resolve(root,'typescript/test',name),'utf8'))
+      .replace(/from\s+(['"])\.\.\/dist\/[^'"]+\.js\1/g,"from '@nox/mcp'")
+      .replaceAll("new URL('../../contracts/suite-conformance.json',import.meta.url)","new URL('./suite-conformance.json',import.meta.url)");
+    assert.doesNotMatch(source,/\.\.\/dist\/|\.\.\/\.\.\/contracts\//,'Installed Suite tests must use public package exports and local fixtures');
+    await writeFile(resolve(consumer,name),source);
+  }
+  execFileSync(process.execPath,['--test',...suiteTests],{cwd:consumer,stdio:'inherit'});
 
   // Exercise the installed tarball through the public Node adapter, with no
   // checkout imports and no application-level transport adaptation.
