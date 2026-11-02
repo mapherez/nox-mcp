@@ -1,6 +1,6 @@
 # NoX Suite — Product integration and registration proposal
 
-**Deployment clarification, November 2, 2026:** participating Suite products must run on the **same host**. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the requirement and proposed Unix-socket implementation, superseding earlier LAN-wide transport descriptions. SDK `0.7.1` is released; the local channel and automated service setup are not yet implemented.
+**Deployment clarification, November 2, 2026:** participating Suite products must run on the **same host**. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the local-channel target, adapter delivery and validation boundaries, superseding earlier LAN-wide transport descriptions. SDK `0.7.2` is released; [current consumer progress](SUITE_CORRECTION_STATUS.md) distinguishes implemented Backend source from pending Gateway/Yard adaptation.
 
 Status: **consolidated design; shared SDK contracts/helpers published in NoX MCP `0.7.0`; Backend/service integration pending**.
 

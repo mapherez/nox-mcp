@@ -2,7 +2,7 @@
 
 Recorded **November 2, 2026**. This document captures the owner's same-host clarification and the local-channel design discussed afterwards. It applies to every present or future Suite product, independently of its business domain or implementation language.
 
-**Status:** the same-host requirement is decided. Unix sockets in a shared local Docker volume are the proposed implementation target, recorded here for review and subsequent implementation. The local transport, automated foundation association and Yard adaptation are **not implemented** by this document or supplied by SDK release `0.7.1`. Recording the design does not authorize applying consumer changes that still require confirmation.
+**Status, updated November 2, 2026:** the same-host requirement and local-channel target are recorded here. SDK `0.7.2` is released; SDK code does not create the channel. The **Backend side is implemented in its working tree, not yet released**: local listener, automatic foundation setup, recovery, Compose and native dashboard/API adaptation passed local validation. Gateway/Yard adapters and actual Suite end-to-end validation remain outstanding. The Backend tests use an explicitly disposable protocol participant, not an adapted Yard release.
 
 ## 1. Reference and precedence
 
@@ -21,11 +21,11 @@ The [original implementation plan at 3e19feb](https://github.com/mapherez/nox-mc
 
 This restriction concerns **participating product services**. It does not, by itself, prohibit an authenticated human from opening an existing dashboard or using the CLI through the product's supported access policy. Browser/client access and inter-product Suite transport are separate boundaries.
 
-## 3. Proposed local channel
+## 3. Shared local channel
 
 Use HTTP messages over **Unix-domain sockets**, carried through an ordinary local Docker volume shared by the participating service containers. HTTP here is the protocol framing; the connection is to a local socket, not to a TCP/IP destination. There is no network port or TLS certificate for this inter-product channel.
 
-Proposed deployment conventions:
+Deployment conventions:
 
 | Item | Meaning |
 | --- | --- |
@@ -77,17 +77,27 @@ Creating a socket, returning a declaration or appearing in a directory never aut
 5. Where MCP and CLI metadata are provided, Gateway exposes the authorized tools and the CLI consumes the shared metadata. Neither needs a business-specific integration for the new product.
 6. Updates, restart, failure and removal use the existing lifecycle responsibilities: Yard reports deployment changes, Backend maintains registry/trust state, and Gateway reports its observed MCP availability.
 
+### Automatic pairing delivery
+
+The participant's local listener exposes **`POST /nox/integration/pairing`** for Backend-initiated setup. The JSON object contains `contractVersion: "1.0"`, `backendOrigin: "http://nox-backend"`, and `intent`, which is the complete existing SDK `SuitePairingIntent` object. `Idempotency-Key` is the stable setup attempt ID. This envelope is a host-adapter responsibility; the nested intent uses the existing shared loader and proof rules. No personal key or browser cookie is forwarded.
+
+The receiver validates version, intended product/origin and expiry, then resumes the existing completion/provisioning/ACK exchange through `nox-backend.sock`. Persist the received intent/recovery state and provisioning privately before acknowledging with the issued service credential. Repeated delivery must resume that same intent rather than create a second association. Allow concurrent declaration reads while handling delivery: Backend verifies `/nox/integration` during the completion callback.
+
+Accepted delivery may return `200`, `202` or `204`; it does not establish registration. Backend requires actual credential acknowledgement, then verifies and commits registration. A missing receiver (`404`/`405`) reports an explicit adapter-update error. Redirects are refused. A receipt timeout is reconciled against actual pairing state before any retry; background reconciliation does not redeliver intents automatically.
+
 ## 6. URLs, identity and existing SDK contracts
 
 Native web addresses remain HTTP/HTTPS origins with an IP/port or dedicated hostname. Application prefixes such as `/apps/product` remain unsupported. Native URLs, OAuth callbacks and existing client APIs must not be silently rewritten when adding the Suite channel.
 
-The local transport needs a stable protocol identity for registry origins and signed audiences. The proposed convention is **`http://<productId>`**, such as `http://nox-backend`, routed exclusively to that product's socket by the host adapter. It is a logical origin, not a request to resolve that name using DNS. Preserve canonical origin/path rules and exact audience binding; keep the native web URL separate.
+The local transport needs a stable protocol identity for registry origins and signed audiences. The normal convention is **`http://<productId>`**, such as `http://nox-backend`, routed exclusively to that product's socket by the host adapter. It is a logical origin, not a request to resolve that name using DNS. Preserve canonical origin/path rules and exact audience binding; keep the native web URL separate.
 
-This convention and its mapping into consumer persistence/APIs must be implemented and validated consistently before declaring the local flow complete. Existing stored network associations must not be silently reinterpreted as local associations.
+The mapping must cover every SDK-valid product ID. Numeric-only IDs use `http://<id>.nox-suite` so URL parsers cannot reinterpret them as numeric IPs. A 64-character ID is split after its first 32 characters into two DNS labels and suffixed with `.nox-suite`, keeping each label within DNS syntax limits. The socket filename remains the complete original `<productId>.sock`. Accept only this canonical mapping; do not add DNS resolution or alternate network destinations. Ordinary IDs retain the readable origin shown above.
+
+This convention and its mapping into consumer persistence/APIs must be implemented and validated consistently in every adapter before declaring the Suite flow complete. Backend mapping tests cover numeric-only and maximum-length IDs. Existing stored network associations must not be silently reinterpreted as local associations.
 
 SDK `0.7.1` supplies HTTP/HTTPS validation, pairing proofs, scoped credentials, signed delegation verification and the other shared mechanisms. **It does not create sockets, mount volumes, perform announcements or prove host locality.** Host adapters must enforce the local transport. Sharing the volume does not replace authentication, grants, revocation, user capabilities or product domain authorization.
 
-For Backend inter-product endpoints such as `/api/nox/*` and `/mcp/suite`, the proposed adapter accepts service communication only through the local listener. TLS, loopback/private source addresses and forwarded headers must not authorize a TCP service connection. Authenticated human administration remains available through the native dashboard/APIs with its existing session/API-key and CSRF protections; it must not turn into a general network proxy for service credentials.
+For Backend inter-product endpoints such as `/api/nox/*` and `/mcp/suite`, the adapter accepts service communication only through the local listener. TLS, loopback/private source addresses and forwarded headers must not authorize a TCP service connection. Authenticated human administration remains available through the native dashboard/APIs with its existing session/API-key and CSRF protections; it must not turn into a general network proxy for service credentials.
 
 ## 7. Automation and existing deployments
 
@@ -114,4 +124,4 @@ Before marking this work complete, demonstrate:
 - Restart, container recreation, interrupted setup, response loss and retries preserve data and recover without duplicate associations or leaked credentials. Removal and credential revocation invalidate access correctly.
 - Browser/native URL changes do not silently change service identity or signed audiences. Separate frontend/backend builds remain usable with existing consumers.
 
-At the time of this record, SDK `0.7.1` has been released. Backend adaptation is in progress; the socket transport and automated association have not been applied. Gateway and Yard still require adaptation. SDK test success alone does not validate this installation journey. This document was added after the `0.7.1` release and does not retroactively change its published artifacts.
+SDK `0.7.2` is released and includes the earlier same-host design record. Backend source now implements its side of the channel and automatic setup, with local Go race/vet, frontend unit/type/lint, image/version/healthcheck, native browser regression and local HTTP browser setup/recovery checks passed. That source is not yet a published Backend release. Gateway/Yard/CLI adaptation and the actual installed multi-product journey remain separate work. This status update does not retroactively change published SDK artifacts or claim GitHub CI/production rollout.

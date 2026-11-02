@@ -2,7 +2,7 @@
 
 This records the correction authorized on **November 2, 2026**. It is an implementation record, not a replacement for the owner's original plan. Changes here do not authorize unrelated functionality, consumer edits or publication.
 
-**Current deployment clarification:** participating Suite products must run on the **same host**, not merely on the same LAN. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records that requirement, the proposed Unix-socket channel, automation responsibilities and acceptance criteria. The channel and automated association are not yet implemented. SDK `0.7.1` has been released; the new same-host record is subsequent documentation, not functionality delivered by that release.
+**Current deployment clarification:** participating Suite products must run on the **same host**, not merely on the same LAN. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the channel, automatic pairing delivery, automation responsibilities and acceptance criteria. SDK `0.7.2` is released. The Backend side is implemented and locally validated in its working tree, not yet released; Gateway/Yard adapters and actual Suite end-to-end validation remain pending.
 
 ## Reference and boundaries
 
@@ -32,7 +32,7 @@ The generated TLS fingerprint field becomes optional: TypeScript `tlsPublicKeyFi
 
 | Component | Required correction | Current scope |
 | --- | --- | --- |
-| Backend | Consume SDK 0.7.1; enforce the same-host channel; finish association initiated in the existing dashboard/APIs, including service execution and recovery. Avoid manual protocol JSON/certificate transfer and preserve native/OAuth/client behavior. | Adaptation in progress; local transport and automated association not applied. |
+| Backend | Consume SDK 0.7.2; enforce the same-host channel; finish association initiated in the existing dashboard/APIs, including service execution and recovery. Avoid manual protocol JSON/certificate transfer and preserve native/OAuth/client behavior. | Implemented in consumer source; local race/vet, frontend, image/browser setup/recovery and native regression checks passed. Not released; actual Yard/Gateway adapters not certified by the protocol fixture. |
 | Gateway | Consume the corrected SDK and adapt local transport and pairing persistence to the Backend flow. Continue registry, authorization, discovery and dispatch work without adding deployment/certificate management. | Subsequent point; same-host adaptation not implemented. |
 | Yard | Reuse existing deployment/jobs/configuration/recovery to prepare local channels, associate and request registration, then report lifecycle/removal. Do not replace its existing product behavior. | Separate adaptation; same-host flow not implemented. |
 | Other products and CLI | Implement declaration/admission and generic metadata consumption against the same contracts. No product-specific branches in Gateway/CLI. | Subsequent work; not certified by SDK tests. |
@@ -56,7 +56,7 @@ These are the original task labels from the correction discussion, retained verb
 11. **Implementar a CLI sobre esse percurso.**
 12. **Validar o percurso completo e a entrega.**
 
-Point 3 delivered the HTTP/HTTPS SDK correction in `0.7.1`; it did not implement the subsequently clarified local channel. Point 4 is in progress and depends on the remaining consumer transport work in point 2. Preserve existing Backend behavior throughout, and verify it under point 5. Later points and end-to-end acceptance remain outstanding. Documentation of a design must not be reported as implementation completion.
+Point 3 delivered the HTTP/HTTPS SDK correction in `0.7.1`; `0.7.2` published the shared local-channel design. Point 4 and its Backend transport prerequisite in point 2 are now implemented and locally validated in Backend source, without publication or installed rollout. Point 5 remains the next fixed point; native regression checks already performed for point 4 do not authorize skipping its review. Gateway/Yard transport and later points, including actual end-to-end acceptance, remain outstanding. Documentation or protocol-fixture success must not be reported as completion of the full Suite journey.
 
 ## Acceptance and recorded verification
 

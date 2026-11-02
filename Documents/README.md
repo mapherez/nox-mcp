@@ -1,12 +1,12 @@
 # NoX MCP documentation
 
-**Current work, November 2, 2026:** SDK `0.7.1` is released. [Suite correction scope and migration](SUITE_CORRECTION_STATUS.md) records its corrections, the fixed work sequence and remaining consumer work. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the owner's deployment clarification and proposed local-channel implementation. That service behavior is not yet implemented; it is not supplied by the SDK release.
+**Current work, November 2, 2026:** SDK `0.7.2` is released. [Suite correction scope and migration](SUITE_CORRECTION_STATUS.md) records its corrections, the fixed work sequence and remaining consumer work. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the owner's deployment clarification and proposed local-channel implementation. Backend now implements its side in consumer source, locally validated and not yet released. Gateway/Yard adaptation remains pending; the SDK release itself does not create local channels.
 
 Start with the [project README](../README.md) for installation, the main APIs, and the release process.
 
 Repository documentation is maintained in English, including historical documents.
 
-The Suite wire contract remains `1.0`. The October 30 delivery baseline was SDK `0.7.0`; `0.7.1` adds the shared HTTP/HTTPS correction. Follow the [current correction sequence](SUITE_CORRECTION_STATUS.md#fixed-correction-sequence) for ongoing work. Product adaptations and service implementation are separate from SDK delivery.
+The Suite wire contract remains `1.0`. The October 30 delivery baseline was SDK `0.7.0`; `0.7.1` adds the shared HTTP/HTTPS correction and `0.7.2` publishes the same-host design record. Follow the [current correction sequence](SUITE_CORRECTION_STATUS.md#fixed-correction-sequence) for ongoing work. Product adaptations and service implementation are separate from SDK delivery.
 
 | Current document | Contents |
 | --- | --- |
@@ -14,8 +14,8 @@ The Suite wire contract remains `1.0`. The October 30 delivery baseline was SDK 
 | [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) | Same-machine boundary, proposed local sockets/volume, presence versus membership, automated setup, Yard registration, migration and acceptance |
 | [Suite correction scope and progress](SUITE_CORRECTION_STATUS.md) | Original-plan reference, released SDK correction, fixed 12-point sequence and remaining consumer work |
 | [Product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) | Consolidated product declaration, Backend registration, lifecycle, failure handling, and migration requirements; historical filename retained; shared SDK implementation available |
-| [Gateway and shared integration contract](GATEWAY_CONTRACT.md) | Product-independent normative contract for pairing, service credentials, five-minute delegated authorization, events, aggregation, caches, and execution; Gateway/CLI/Portal do not yet exist |
-| [Suite SDK integration](INTEGRATION.md) | Consuming SDK `0.7.1`, implemented TypeScript/Go/Rust APIs, native runtime admission, examples, verification, and service responsibilities |
+| [Gateway and shared integration contract](GATEWAY_CONTRACT.md) | Product-independent normative contract for pairing, service credentials, five-minute delegated authorization, events, aggregation, caches, and execution; separate Gateway/CLI/Portal implementation responsibilities |
+| [Suite SDK integration](INTEGRATION.md) | Consuming SDK `0.7.2`, implemented TypeScript/Go/Rust APIs, native runtime admission, examples, verification, and service responsibilities |
 | [Compatibility and support](COMPATIBILITY.md) | Supported matrix, dependencies, errors, validation, and known limitations |
 | [CLI metadata and incremental discovery](DISCOVERY.md) | Extension contract, server/client examples, fingerprints, snapshots, and caching |
 | [Contract maintenance](../contracts/README.md) | Authoritative schemas, generation, and conformance tests |
