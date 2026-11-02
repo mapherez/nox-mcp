@@ -86,10 +86,11 @@ function checkJson(value: unknown, depth: number, seen = new Set<object>()): voi
 
 export function normalizeSuiteOrigin(input: string): string {
   if (typeof input !== 'string' || input.length > 2048 || !/^[\x21-\x7e]+$/.test(input)) suiteFail('INVALID_ORIGIN');
-  const match = /^https:\/\/(\[[0-9a-f:.]+\]|[a-z0-9.-]+)(?::([0-9]+))?\/?$/i.exec(input);
+  const match = /^(https?):\/\/(\[[0-9a-f:.]+\]|[a-z0-9.-]+)(?::([0-9]+))?\/?$/i.exec(input);
   if (!match) suiteFail('INVALID_ORIGIN');
-  let host = match[1].toLowerCase();
-  const rawPort = match[2];
+  const scheme = match[1].toLowerCase();
+  let host = match[2].toLowerCase();
+  const rawPort = match[3];
   if (rawPort !== undefined && (!/^[1-9][0-9]*$/.test(rawPort) || Number(rawPort) > 65535)) suiteFail('INVALID_ORIGIN');
   if (host.startsWith('[')) {
     if (isIP(host.slice(1, -1)) !== 6) suiteFail('INVALID_ORIGIN');
@@ -100,7 +101,8 @@ export function normalizeSuiteOrigin(input: string): string {
     const labels = host.split('.');
     if (host.length > 253 || /^[0-9]+$/.test(labels.at(-1)!) || /^0x[0-9a-f]+$/i.test(host) || labels.some(label => label.length > 63 || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(label))) suiteFail('INVALID_ORIGIN');
   }
-  return `https://${host}${rawPort && rawPort !== '443' ? ':' + rawPort : ''}`;
+  const defaultPort = scheme === 'https' ? '443' : '80';
+  return `${scheme}://${host}${rawPort && rawPort !== defaultPort ? ':' + rawPort : ''}`;
 }
 export function normalizeSuitePath(input: string): string {
   if (typeof input !== 'string' || !input.startsWith('/') || input.startsWith('//') || input.length > 2048) suiteFail('INVALID_SUITE_PATH');
@@ -117,7 +119,10 @@ export function normalizeSuitePath(input: string): string {
 }
 export function resolveSuiteEndpoint(origin: string, path: string): string { return normalizeSuiteOrigin(origin) + normalizeSuitePath(path); }
 export function normalizeSuiteResource(resource: string): string {
-  const slash = resource.indexOf('/', 'https://'.length);
+  if (typeof resource !== 'string') suiteFail('INVALID_ORIGIN');
+  const separator = resource.indexOf('://');
+  if (separator < 0) suiteFail('INVALID_ORIGIN');
+  const slash = resource.indexOf('/', separator + 3);
   if (slash < 0) suiteFail('INVALID_ORIGIN');
   return resolveSuiteEndpoint(resource.slice(0, slash), resource.slice(slash));
 }
@@ -153,6 +158,9 @@ function walk(schema: any, value: any, preflight: boolean): void {
   if (preflight) return;
   if (schema.properties?.declaration && schema.properties?.productId && value.productId !== value.declaration?.productId) suiteFail('INVALID_INTEGRATION');
   switch (schema['x-nox-kind']) {
+    case 'pairing-binding':
+      if (normalizeSuiteOrigin(value.baseUrl).startsWith('https://') !== Object.hasOwn(value, 'tlsPublicKeyFingerprint')) suiteFail('INVALID_INTEGRATION');
+      break;
     case 'product-id': if (!suiteProductId(value)) suiteFail('INVALID_INTEGRATION'); break;
     case 'origin': normalizeSuiteOrigin(value); break;
     case 'path': normalizeSuitePath(value); break;

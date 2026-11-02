@@ -197,6 +197,9 @@ func runSuiteCrypto(t *testing.T, corpus, report JSON) {
 			options.Now = time.UnixMilli(int64(now.(float64)))
 		}
 		options.Kind = text(overrides["kind"])
+		if audience, ok := overrides["audience"].(string); ok {
+			options.Audience = audience
+		}
 		key := options.Keys["fixture-es256"]
 		switch example["keyVariant"] {
 		case "private":
@@ -268,6 +271,35 @@ func runSuiteCrypto(t *testing.T, corpus, report JSON) {
 		t.Fatal("partition mismatch")
 	}
 	report["pairing"] = JSON{"proof": proof, "partition": partition}
+	httpPair := object(c["pairingHttp"])
+	httpJSON, _ := json.Marshal(httpPair["binding"])
+	httpBinding, err := LoadSuitePairingBinding(httpJSON)
+	if err != nil {
+		t.Fatal(err)
+	}
+	httpProof, err := CreateSuitePairingProof(secret, httpBinding)
+	if err != nil || httpProof != text(httpPair["proof"]) || !VerifySuitePairingProof(secret, httpBinding, httpProof) {
+		t.Fatal("HTTP pairing proof mismatch", err)
+	}
+	for _, field := range []string{"product", "origin", "declaration", "nonce", "pairing"} {
+		changed := httpBinding
+		switch field {
+		case "product":
+			changed.ProductID = "other"
+		case "origin":
+			changed.BaseUrl = "http://other.internal:9000"
+		case "declaration":
+			changed.DeclarationFingerprint = strings.Repeat("D", 43)
+		case "nonce":
+			changed.Nonce = strings.Repeat("N", 43)
+		case "pairing":
+			changed.PairingID = "other"
+		}
+		if VerifySuitePairingProof(secret, changed, httpProof) {
+			t.Fatalf("HTTP proof accepted changed %s", field)
+		}
+	}
+	report["pairingHttp"] = JSON{"proof": httpProof}
 	report["aliases"] = []any{}
 	for _, item := range array(corpus["aliases"]) {
 		example := object(item)

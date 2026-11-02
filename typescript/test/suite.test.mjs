@@ -40,6 +40,10 @@ test('shared Suite conformance: complete documents and portable addresses',async
  const pair=corpus.crypto.pairing;const secret=Buffer.from(pair.secret,'base64url');
  const proof=createSuitePairingProof(secret,pair.binding);assert.equal(proof,pair.proof);assert.equal(verifySuitePairingProof(secret,pair.binding,proof),true);assert.equal(verifySuitePairingProof(secret,{...pair.binding,productId:'different'},proof),false);
  assert.equal(suiteCredentialPartition('fictional-api-key',secret),pair.partition);report.pairing={proof,partition:pair.partition};
+ const httpPair=corpus.crypto.pairingHttp;const httpProof=createSuitePairingProof(secret,httpPair.binding);
+ assert.equal(httpProof,httpPair.proof);assert.equal(verifySuitePairingProof(secret,httpPair.binding,httpProof),true);
+ for(const [field,value]of Object.entries({productId:'other',baseUrl:'http://other.internal:9000',declarationFingerprint:'D'.repeat(43),nonce:'N'.repeat(43),pairingId:'other'}))assert.equal(verifySuitePairingProof(secret,{...httpPair.binding,[field]:value},httpProof),false);
+ report.pairingHttp={proof:httpProof};
  report.aliases=corpus.aliases.map(example=>{const actual=suiteToolAlias(example.productId,example.toolName);assert.equal(actual,example.expect);return actual;});
  report.gateway=[];
  for(const example of corpus.gatewayCases){

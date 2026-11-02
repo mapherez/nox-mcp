@@ -377,7 +377,7 @@ type SuitePairingBinding struct {
 	ProductID string `json:"productId"`
 	DeclarationFingerprint string `json:"declarationFingerprint"`
 	BaseUrl string `json:"baseUrl"`
-	TlsPublicKeyFingerprint string `json:"tlsPublicKeyFingerprint"`
+	TlsPublicKeyFingerprint *string `json:"tlsPublicKeyFingerprint,omitempty"`
 	Extra map[string]json.RawMessage `json:"-"`
 }
 func (v SuitePairingBinding) MarshalJSON() ([]byte, error) { type plain SuitePairingBinding; return marshalSuiteDTO(plain(v),v.Extra) }

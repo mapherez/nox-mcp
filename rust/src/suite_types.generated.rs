@@ -545,8 +545,8 @@ pub struct SuitePairingBinding {
     pub declaration_fingerprint: String,
     #[serde(rename = "baseUrl")]
     pub base_url: String,
-    #[serde(rename = "tlsPublicKeyFingerprint")]
-    pub tls_public_key_fingerprint: String,
+    #[serde(rename = "tlsPublicKeyFingerprint", default, skip_serializing_if = "Option::is_none")]
+    pub tls_public_key_fingerprint: Option<String>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, serde_json::Value>,
 }

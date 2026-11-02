@@ -162,14 +162,15 @@ pub fn parse_suite_json_with_limit(input: &str, max_bytes: usize) -> SuiteResult
 
 pub fn normalize_suite_origin(input: &str) -> SuiteResult<String> {
     let invalid = || SuiteError("INVALID_ORIGIN");
-    if input.len() > 2048
-        || input.len() < 9
-        || !input.bytes().all(|b| (0x21..=0x7e).contains(&b))
-        || !input[..8].eq_ignore_ascii_case("https://")
-    {
+    if input.len() > 2048 || input.len() < 8 || !input.bytes().all(|b| (0x21..=0x7e).contains(&b)) {
         return Err(invalid());
     }
-    let authority = input[8..].strip_suffix('/').unwrap_or(&input[8..]);
+    let (raw_scheme, authority) = input.split_once("://").ok_or_else(invalid)?;
+    let scheme = raw_scheme.to_ascii_lowercase();
+    if scheme != "http" && scheme != "https" {
+        return Err(invalid());
+    }
+    let authority = authority.strip_suffix('/').unwrap_or(authority);
     let (host, port) = if authority.starts_with('[') {
         let close = authority.find(']').ok_or_else(invalid)?;
         let host = &authority[1..close];
@@ -220,7 +221,7 @@ pub fn normalize_suite_origin(input: &str) -> SuiteResult<String> {
         if number == 0 || number.to_string() != port {
             return Err(invalid());
         }
-        if number == 443 {
+        if (scheme == "https" && number == 443) || (scheme == "http" && number == 80) {
             String::new()
         } else {
             format!(":{number}")
@@ -228,7 +229,7 @@ pub fn normalize_suite_origin(input: &str) -> SuiteResult<String> {
     } else {
         String::new()
     };
-    Ok(format!("https://{host}{suffix}"))
+    Ok(format!("{scheme}://{host}{suffix}"))
 }
 fn suite_ipv6(groups: [u16; 8]) -> String {
     let (mut best_start, mut best_len) = (None, 1);
@@ -302,10 +303,11 @@ pub fn resolve_suite_endpoint(origin: &str, path: &str) -> SuiteResult<String> {
     Ok(normalize_suite_origin(origin)? + &normalize_suite_path(path)?)
 }
 pub fn normalize_suite_resource(resource: &str) -> SuiteResult<String> {
+    let start = resource.find("://").ok_or(SuiteError("INVALID_ORIGIN"))? + 3;
     let offset = resource
-        .get(8..)
+        .get(start..)
         .and_then(|s| s.find('/'))
-        .map(|n| n + 8)
+        .map(|n| n + start)
         .ok_or(SuiteError("INVALID_ORIGIN"))?;
     resolve_suite_endpoint(&resource[..offset], &resource[offset..])
 }
@@ -429,6 +431,16 @@ fn suite_walk(schema: &Value, value: &Value, preflight: bool) -> SuiteResult<()>
         return suite_error("INVALID_INTEGRATION");
     }
     match schema["x-nox-kind"].as_str() {
+        Some("pairing-binding") => {
+            let origin = normalize_suite_origin(
+                value["baseUrl"]
+                    .as_str()
+                    .ok_or(SuiteError("INVALID_INTEGRATION"))?,
+            )?;
+            if origin.starts_with("https://") != value.get("tlsPublicKeyFingerprint").is_some() {
+                return suite_error("INVALID_INTEGRATION");
+            }
+        }
         Some("product-id") => {
             if !value.as_str().is_some_and(valid_suite_product_id) {
                 return suite_error("INVALID_INTEGRATION");

@@ -152,7 +152,9 @@ fn crypto_vectors(corpus: &Value, report: &mut Value) {
         let overrides = &example["options"];
         let options = SuiteVerificationOptions {
             issuer: base["issuer"].as_str().unwrap(),
-            audience: base["audience"].as_str().unwrap(),
+            audience: overrides["audience"]
+                .as_str()
+                .unwrap_or(base["audience"].as_str().unwrap()),
             product_id: base["productId"].as_str().unwrap(),
             association_id: base["associationId"].as_str().unwrap(),
             gateway_service_id: base["gatewayServiceId"].as_str().unwrap(),
@@ -247,6 +249,27 @@ fn crypto_vectors(corpus: &Value, report: &mut Value) {
     let partition = suite_credential_partition("fictional-api-key", &secret).unwrap();
     assert_eq!(partition, pair["partition"]);
     report["pairing"] = json!({"proof":proof,"partition":partition});
+    let http_pair = &c["pairingHttp"];
+    let http_binding = load_suite_pairing_binding(&http_pair["binding"].to_string()).unwrap();
+    let http_proof = create_suite_pairing_proof(&secret, &http_binding).unwrap();
+    assert_eq!(http_proof, http_pair["proof"]);
+    assert!(verify_suite_pairing_proof(
+        &secret,
+        &http_binding,
+        &http_proof
+    ));
+    for field in ["product", "origin", "declaration", "nonce", "pairing"] {
+        let mut changed = http_binding.clone();
+        match field {
+            "product" => changed.product_id = "other".into(),
+            "origin" => changed.base_url = "http://other.internal:9000".into(),
+            "declaration" => changed.declaration_fingerprint = "D".repeat(43),
+            "nonce" => changed.nonce = "N".repeat(43),
+            _ => changed.pairing_id = "other".into(),
+        }
+        assert!(!verify_suite_pairing_proof(&secret, &changed, &http_proof));
+    }
+    report["pairingHttp"] = json!({"proof":http_proof});
     report["aliases"] = json!([]);
     for example in corpus["aliases"].as_array().unwrap() {
         let alias = suite_tool_alias(

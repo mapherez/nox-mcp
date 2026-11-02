@@ -1,5 +1,7 @@
 # NoX Suite SDK integration
 
+**Unreleased correction, November 2, 2026:** local-network integration supports HTTP and HTTPS URLs. This corrects the later HTTPS-only restriction; it does not rewrite the original implementation plan or published release `0.7.0`. See [correction scope and consumer migration](SUITE_CORRECTION_STATUS.md).
+
 NoX MCP `0.7.0` implements the shared Suite `1.0` contracts in TypeScript, Go, and Rust. The [Gateway Contract](GATEWAY_CONTRACT.md) defines the normative behavior; this guide describes the available SDK mechanisms. Product identity is open to any conforming product. No product names, business permissions, menus, or database layouts are built into the SDK.
 
 [Release `0.7.0`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.0) is published and available for explicit consumer migrations. Gateway, CLI, and Portal are separate applications and do not exist in this repository. Backend management routes, token issuance, persistent registry/outbox, enrollment transactions, HTTPS deployment, and product migrations remain service work.
@@ -54,7 +56,11 @@ Existing discovery catalog/bundle envelopes retain their closed property sets; e
 
 The strict JSON entry points reject duplicate keys, malformed UTF-8, isolated surrogates, non-finite numbers, trailing content, and depth over 64. Default document size is 2 MiB; explicit `…WithLimit` / `…_with_limit` overloads and the TypeScript loader's third argument allow a caller-selected bound. Gateway snapshots default to 8 MiB. Times use UTC `YYYY-MM-DDTHH:mm:ss[.SSS]Z`, with one to three fractional digits when present. Observation sequences are canonical decimal **strings**, covering the full unsigned 64-bit range without JavaScript number rounding.
 
-A deployment address is an HTTPS origin, such as `https://192.168.10.10:8443` or `https://product.example.com`. It has no application prefix. A trailing root slash/default port is removed, and DNS names/IPv6 are canonicalized. User information, queries, fragments, ambiguous IPv4 spellings, leading-zero ports, and zone identifiers are rejected. Endpoint paths start with one `/`; no query, fragment, dot traversal, backslash, raw Unicode, control/whitespace, or escaped ASCII bytes are accepted. Non-ASCII path characters may use valid UTF-8 percent encoding, normalized to uppercase escapes. This conservative profile prevents different URL parsers from interpreting the same audience differently.
+A deployment address is an HTTP or HTTPS origin, such as `http://10.72.4.9:8095` or `https://product.internal`. It has no application prefix. A trailing root slash/default port is removed (80 for HTTP, 443 for HTTPS), and DNS names/IPv6 are canonicalized. The scheme is preserved: HTTP and HTTPS are different origins and audiences. User information, queries, fragments, ambiguous IPv4 spellings, leading-zero ports, and zone identifiers are rejected. Endpoint paths start with one `/`; no query, fragment, dot traversal, backslash, raw Unicode, control/whitespace, or escaped ASCII bytes are accepted. Non-ASCII path characters may use valid UTF-8 percent encoding, normalized to uppercase escapes. This conservative profile prevents different URL parsers from interpreting the same audience differently.
+
+`SuitePairingBinding.tlsPublicKeyFingerprint` is required for HTTPS and absent for HTTP, including inside proofs. HMAC still covers the complete binding: product, origin, declaration, pairing ID and nonce. Go represents this optional field as `*string`, Rust as `Option<String>` and TypeScript as an optional property. Update constructors when migrating; existing HTTPS wire documents remain valid.
+
+Adapters execute association from Backend native administration and Yard deployment operations. The SDK does not deliver setup secrets or implement these interfaces. Manual copying of protocol JSON/certificates is not the normal setup workflow. Preserve native URLs, OAuth/client integrations and direct MCP. The published `0.7.0` install commands below describe the historical release; these corrections require a subsequent published SDK update plus explicit consumer migration.
 
 ## Product endpoints
 
@@ -100,7 +106,7 @@ runtime, err := noxmcp.NewSuite(productOptions, noxmcp.SuiteRuntimeOptions{
     IsActive: revocations.IsActive,
 }, productDiscovery)
 if err != nil { return err }
-// Mount runtime.HTTPHandler() at the declared Suite path behind HTTPS.
+// Mount runtime.HTTPHandler() at the declared Suite path on the approved transport.
 ```
 
 `NewSuite` installs protected discovery and method admission, and `HTTPHandler()` verifies bearer credentials before dispatch. An optional `DiscoveryOptions` preserves product descriptors and local visibility. Without it, the SDK supplies a basic private discovery view. Direct calls to `Runtime.Execute` also require verifier-produced authority via `SuiteTokenInfo`, rechecked against the runtime's own pinned verification snapshot; arbitrary `auth.TokenInfo.Scopes` do not grant Suite access. The regular `New`/`Protect` APIs retain their existing independent authentication behavior.

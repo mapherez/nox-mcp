@@ -33,7 +33,7 @@
     },
     "baseUrl": {
       "type": "string",
-      "minLength": 9,
+      "minLength": 8,
       "maxLength": 2048,
       "x-nox-kind": "origin"
     },
@@ -41,7 +41,8 @@
       "type": "string",
       "minLength": 43,
       "maxLength": 43,
-      "pattern": "^[A-Za-z0-9_-]{43}$"
+      "pattern": "^[A-Za-z0-9_-]{43}$",
+      "description": "Required for HTTPS, absent for HTTP. This pins TLS transport; service authorization remains mandatory for both schemes."
     }
   },
   "required": [
@@ -50,8 +51,8 @@
     "nonce",
     "productId",
     "declarationFingerprint",
-    "baseUrl",
-    "tlsPublicKeyFingerprint"
+    "baseUrl"
   ],
-  "additionalProperties": true
+  "additionalProperties": true,
+  "x-nox-kind": "pairing-binding"
 }

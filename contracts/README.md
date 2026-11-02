@@ -116,6 +116,8 @@ The contracts workflow runs these checks; release publication checks approvals f
 
 ## Suite integration contracts
 
+The unreleased November 2 correction supports HTTP and HTTPS origins with distinct audiences and scheme-specific default ports. TLS pairing fingerprints are required for HTTPS and absent for HTTP. Complete loaders enforce these semantics in addition to structural schemas. Authentication and execution permissions remain mandatory. See [scope and migration](../Documents/SUITE_CORRECTION_STATUS.md).
+
 `suite-*.schema.json`, `suite-defaults.json`, and `suite-conformance.json` define the separate Suite `1.0` protocol. Existing manifests, bridge envelopes, and discovery hashes retain their own versions. `sync-contracts.mjs` also generates complete native Suite DTOs and packaged schemas, and TypeScript types/schema data. `npm run test:suite` compares native validation, cryptography, HMAC, aggregation, observation, and registry outputs; the required CI conformance jobs include it.
 
 Suite runtimes derive grants from a cryptographically verified Backend delegation, independently of constructor scopes used by ordinary direct runtimes. Trusted static/dynamic requirements remain additive. See [SDK integration](../Documents/INTEGRATION.md) for API names, address/JSON/time profiles, host trust and event responsibilities, and native HTTP integration. The SDK does not implement the Backend management routes or issue credentials.

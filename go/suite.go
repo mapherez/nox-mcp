@@ -146,7 +146,7 @@ func suiteValidUnicode(data []byte) bool {
 	return true
 }
 
-var suiteOriginPattern = regexp.MustCompile(`(?i)^https://(\[[0-9a-f:.]+\]|[a-z0-9.-]+)(?::([0-9]+))?/?$`)
+var suiteOriginPattern = regexp.MustCompile(`(?i)^(https?)://(\[[0-9a-f:.]+\]|[a-z0-9.-]+)(?::([0-9]+))?/?$`)
 var suiteLabelPattern = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$`)
 var suiteNumericPattern = regexp.MustCompile(`^[0-9.]+$`)
 var suiteDecimalPattern = regexp.MustCompile(`^[0-9]+$`)
@@ -166,8 +166,9 @@ func NormalizeSuiteOrigin(input string) (string, error) {
 	if m == nil {
 		return invalid()
 	}
-	host := strings.ToLower(m[1])
-	port := m[2]
+	scheme := strings.ToLower(m[1])
+	host := strings.ToLower(m[2])
+	port := m[3]
 	if port != "" {
 		n, err := strconv.Atoi(port)
 		if err != nil || n < 1 || n > 65535 || strconv.Itoa(n) != port {
@@ -202,13 +203,13 @@ func NormalizeSuiteOrigin(input string) (string, error) {
 			}
 		}
 	}
-	if port == "443" {
+	if (scheme == "https" && port == "443") || (scheme == "http" && port == "80") {
 		port = ""
 	}
 	if port != "" {
 		port = ":" + port
 	}
-	return "https://" + host + port, nil
+	return scheme + "://" + host + port, nil
 }
 func suiteIPv6(bytes [16]byte) string {
 	groups := make([]string, 8)
@@ -289,14 +290,16 @@ func ResolveSuiteEndpoint(origin, path string) (string, error) {
 	return o + p, nil
 }
 func NormalizeSuiteResource(resource string) (string, error) {
-	if len(resource) < 8 {
+	separator := strings.Index(resource, "://")
+	if separator < 0 {
 		return "", suiteFailure("INVALID_ORIGIN")
 	}
-	i := strings.IndexByte(resource[8:], '/')
+	start := separator + 3
+	i := strings.IndexByte(resource[start:], '/')
 	if i < 0 {
 		return "", suiteFailure("INVALID_ORIGIN")
 	}
-	i += 8
+	i += start
 	return ResolveSuiteEndpoint(resource[:i], resource[i:])
 }
 
@@ -396,6 +399,15 @@ func suiteWalk(schema, value any, preflight bool) error {
 		return suiteFailure("INVALID_INTEGRATION")
 	}
 	switch text(s["x-nox-kind"]) {
+	case "pairing-binding":
+		origin, e := NormalizeSuiteOrigin(text(v["baseUrl"]))
+		if e != nil {
+			return e
+		}
+		_, pinned := v["tlsPublicKeyFingerprint"]
+		if strings.HasPrefix(origin, "https://") != pinned {
+			return suiteFailure("INVALID_INTEGRATION")
+		}
 	case "product-id":
 		if !ValidSuiteProductID(text(value)) {
 			return suiteFailure("INVALID_INTEGRATION")

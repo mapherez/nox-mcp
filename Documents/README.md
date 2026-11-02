@@ -1,5 +1,7 @@
 # NoX MCP documentation
 
+**Current work, November 2, 2026:** [Suite correction scope and migration](SUITE_CORRECTION_STATUS.md) records the original-plan reference, SDK corrections and remaining service work. This work is unreleased; the historical delivery baseline below and published `0.7.0` are unchanged.
+
 Start with the [project README](../README.md) for installation, the main APIs, and the release process.
 
 Repository documentation is maintained in English, including historical documents.

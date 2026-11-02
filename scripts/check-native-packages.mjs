@@ -29,6 +29,7 @@ func main() {
   if _, err := noxmcp.LoadToolManifest([]byte(\x60{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}\x60)); err != nil { panic(err) }
   if !noxmcp.ValidateToolValue(map[string]any{"type":"string"}, "installed policy and meta-schema") { panic("schema validation failed") }
   if _, err := noxmcp.NormalizeSuiteOrigin("https://FUTURE.example.com:443/"); err != nil { panic(err) }
+  if origin, err := noxmcp.NormalizeSuiteOrigin("HTTP://FUTURE.internal:80/"); err != nil || origin != "http://future.internal" { panic("HTTP origin normalization failed") }
   if _, err := noxmcp.LoadSuiteProductDeclaration([]byte(\x60{"contractVersion":"1.0","productId":"future-product","productVersion":"1","displayName":"Future","capabilities":{}}\x60)); err != nil { panic(err) }
   if _, err := noxmcp.New(noxmcp.Options{AppID:"consumer",Name:"consumer",Version:"1"}); err != nil { panic(err) }
 }
@@ -59,6 +60,7 @@ func main() {
   await cp(resolve(root, 'rust/contracts'), resolve(rustConsumer, 'contracts'), { recursive: true });
   await writeFile(resolve(rustConsumer, 'src/main.rs'), `fn main() {
     assert!(nox_mcp::suite::normalize_suite_origin("https://FUTURE.example.com:443/").is_ok());
+    assert_eq!(nox_mcp::suite::normalize_suite_origin("HTTP://FUTURE.internal:80/").unwrap(), "http://future.internal");
     assert!(nox_mcp::suite::load_suite_product_declaration(r#"{"contractVersion":"1.0","productId":"future-product","productVersion":"1","displayName":"Future","capabilities":{}}"#).is_ok());
     assert!(nox_mcp::load_tools(r#"{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}"#).is_ok());
     assert!(nox_mcp::load_manifest(r#"{"schemaVersion":1,"protocolVersion":"2.0","tools":[]}"#).is_ok());

@@ -21,7 +21,7 @@
     },
     "baseUrl": {
       "type": "string",
-      "minLength": 9,
+      "minLength": 8,
       "maxLength": 2048,
       "x-nox-kind": "origin"
     },

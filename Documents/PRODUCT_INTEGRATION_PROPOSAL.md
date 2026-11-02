@@ -1,5 +1,7 @@
 # NoX Suite — Product integration and registration proposal
 
+**Unreleased correction, November 2, 2026:** local-network integration supports HTTP and HTTPS URLs. This corrects the later HTTPS-only restriction; it does not rewrite the original implementation plan or published release `0.7.0`. See [correction scope and consumer migration](SUITE_CORRECTION_STATUS.md).
+
 Status: **consolidated design; shared SDK contracts/helpers published in NoX MCP `0.7.0`; Backend/service integration pending**.
 
 Prepared on **October 24, 2026**; consolidated on **October 29, 2026**; delivery status updated on **October 30, 2026**, against the [general implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md). The historical filename is retained. This design and the [Gateway Contract](GATEWAY_CONTRACT.md) define the documentation baseline for implementation. Routes describe service requirements. The released schema/API implementation and its boundaries are documented in [SDK integration](INTEGRATION.md); Backend management routes and consumer migrations are not supplied by the SDK.
@@ -79,7 +81,7 @@ This declaration does **not** define a Portal bundle URL or loading technology. 
 ### Address and identity rules
 
 - The authorized installer/configuration supplies `baseUrl`, for example `https://example:8080`. The product cannot redirect enrollment to an arbitrary self-advertised host.
-- `baseUrl` is an HTTPS origin: scheme, host, and optional port, without user information, query, fragment, or non-root path. IP/hostname with port and dedicated domains/subdomains are supported. Application prefixes such as `/apps/example` are **not supported**. Use trusted deployment certificates or explicitly provisioned pins; HTTP cannot carry service credentials or delegations or become an active paired Suite origin.
+- `baseUrl` is an HTTP or HTTPS origin: scheme, host, and optional port, without user information, query, fragment, or non-root path. IP/hostname with port and dedicated domains/subdomains are supported. Application prefixes such as `/apps/example` are **not supported**. HTTP is supported for the approved trusted local-network deployment. HTTPS retains certificate/pin verification without fallback to HTTP. Both schemes require authorized association and credentials; preserve the scheme in registry records and delegated audiences.
 - `suiteMcp.path` starts with a single `/`; reject scheme-relative URLs, query/fragment, traversal, and ambiguous encodings that escape the configured origin. URL construction must produce the same target in all three languages.
 - Validate addresses against the administrator-approved local network/deployment policy before fetching. A LAN address or a `nox-*` name is not evidence of trust. Do not follow redirects to an unapproved destination; revalidate resolved targets on reconnect.
 - Validate the fetched declaration, bind it to the intended deployment, and establish the authorized service association before activating membership, following Gateway Contract section 4. The JSON declaration itself is not proof of identity.

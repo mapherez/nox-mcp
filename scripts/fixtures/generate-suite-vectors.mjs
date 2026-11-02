@@ -24,6 +24,12 @@ function add(id,claims=base,config={},overrides={},error='INVALID_DELEGATION',ke
  cases.push({id,token,options:overrides,...(keyVariant?{keyVariant}:{}),expect:expected});return token;
 }
 const userToken=add('valid-user',base,{}, {},null);
+const httpUser=structuredClone(base);httpUser.aud='http://inventory.internal:8095/mcp';
+add('valid-http-user',httpUser,{}, {audience:httpUser.aud},null);
+add('http-user-cannot-switch-to-https',httpUser,{}, {audience:httpUser.aud.replace('http://','https://')});
+add('https-user-cannot-switch-to-http',base,{}, {audience:base.aud.replace('https://','http://')});
+const httpProbe=structuredClone(probe);httpProbe.aud=httpUser.aud;
+add('valid-http-probe',httpProbe,{header:{typ:'nox-service+jwt'}},{kind:'probe',audience:httpProbe.aud},null);
 const admin=structuredClone(base);admin.scope='nox:inspect nox:write nox:sensitive-read';add('valid-admin',admin,{}, {},null);
 const probeToken=add('valid-probe',probe,{header:{typ:'nox-service+jwt'}},{kind:'probe'},null);
 const extra=structuredClone(base);extra.custom={preserve:[null,false]};add('signed-unknown-optional-claims',extra,{}, {},null);
@@ -59,6 +65,8 @@ for(const [id,token]of [['bad-signature',userToken.slice(0,-8)+'AAAAAAAA'],['pad
 const stable=v=>v===null||typeof v!=='object'?JSON.stringify(v):Array.isArray(v)?'['+v.map(stable).join(',')+']':'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';
 const secret=Buffer.from(Array.from({length:32},(_,i)=>i));const binding=corpus.examples['pairing-binding'];
 const proof=createHmac('sha256',secret).update(stable(binding)).digest('base64url');
+const httpBinding={...binding,baseUrl:'http://inventory.example.com'};delete httpBinding.tlsPublicKeyFingerprint;
+const httpProof=createHmac('sha256',secret).update(stable(httpBinding)).digest('base64url');
 const aliasCases=[];
 for(const [productId,toolName]of [['example-inventory','record_list'],['example-calendar','record_list'],['p','x'.repeat(61)],['p','x'.repeat(62)],['a'.repeat(64),'b'.repeat(64)],['example-art','🎨'.repeat(64)]]){
  const readable=productId+'__'+toolName;const expect=readable.length<=64&&/^[A-Za-z0-9_.-]+$/.test(readable)?readable:'_'+createHash('sha256').update(JSON.stringify([productId,toolName])).digest('base64url');aliasCases.push({productId,toolName,expect});
@@ -67,7 +75,7 @@ corpus.examples['signing-key']=key;
 corpus.schemaCases=corpus.schemaCases.filter(v=>v.schema!=='signing-key');
 corpus.schemaCases.push({id:'signing-key-valid',schema:'signing-key',data:key,valid:true},{id:'signing-key-private',schema:'signing-key',data:{...key,d:'A'.repeat(43)},error:'INVALID_INTEGRATION'});
 for(const field of ['kty','crv','x','y']){const data={...key};delete data[field];corpus.schemaCases.push({id:'signing-key-missing-'+field,schema:'signing-key',data,error:'INVALID_INTEGRATION'});}
-corpus.crypto={options,publicKey:key,userToken,probeToken,cases,methods:[{kind:'user',method:'tools/call'},{kind:'probe',method:'ping'},{kind:'probe',method:'server/discover'},{kind:'probe',method:'tools/call',error:'FORBIDDEN'},{kind:'probe',method:'tools/list',error:'FORBIDDEN'},{kind:'probe',method:'nox/tools/catalog',error:'FORBIDDEN'}],pairing:{secret:secret.toString('base64url'),binding,proof,partition:createHmac('sha256',secret).update('nox:credential-partition:1.0\0').update('fictional-api-key').digest('base64url')}};
+corpus.crypto={options,publicKey:key,userToken,probeToken,cases,methods:[{kind:'user',method:'tools/call'},{kind:'probe',method:'ping'},{kind:'probe',method:'server/discover'},{kind:'probe',method:'tools/call',error:'FORBIDDEN'},{kind:'probe',method:'tools/list',error:'FORBIDDEN'},{kind:'probe',method:'nox/tools/catalog',error:'FORBIDDEN'}],pairing:{secret:secret.toString('base64url'),binding,proof,partition:createHmac('sha256',secret).update('nox:credential-partition:1.0\0').update('fictional-api-key').digest('base64url')},pairingHttp:{secret:secret.toString('base64url'),binding:httpBinding,proof:httpProof}};
 corpus.aliases=aliasCases;
 await writeFile(file,JSON.stringify(corpus,null,2)+'\n');
 console.log(`Wrote ${cases.length} signed verification fixtures, method guards, HMAC and alias vectors. No private signing key was stored.`);
