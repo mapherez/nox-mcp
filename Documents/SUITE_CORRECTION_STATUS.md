@@ -2,7 +2,7 @@
 
 This records the correction authorized on **November 2, 2026**. It is an implementation record, not a replacement for the owner's original plan. Changes here do not authorize unrelated functionality, consumer edits or publication.
 
-**Current deployment clarification:** participating Suite products must run on the **same host**, not merely on the same LAN. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the channel, automatic pairing delivery, automation responsibilities and acceptance criteria. SDK `0.7.2` is released. The Backend side is implemented and locally validated in its working tree, not yet released; Gateway/Yard adapters and actual Suite end-to-end validation remain pending.
+**Current deployment clarification:** participating Suite products must run on the **same host**, not merely on the same LAN. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the channel, automatic pairing delivery, automation responsibilities and acceptance criteria. SDK `0.7.2` is released. Backend `v1.1.1` is released and the owner reported successful build/browser validation. Gateway correction points **6 + 9** are implemented and locally validated in the Gateway working tree; Gateway publication, Yard adaptation and the complete installed Suite journey remain outstanding.
 
 ## Reference and boundaries
 
@@ -32,8 +32,8 @@ The generated TLS fingerprint field becomes optional: TypeScript `tlsPublicKeyFi
 
 | Component | Required correction | Current scope |
 | --- | --- | --- |
-| Backend | Consume SDK 0.7.2; enforce the same-host channel; finish association initiated in the existing dashboard/APIs, including service execution and recovery. Avoid manual protocol JSON/certificate transfer and preserve native/OAuth/client behavior. | Implemented in consumer source; local race/vet, frontend, image/browser setup/recovery and native regression checks passed. Not released; actual Yard/Gateway adapters not certified by the protocol fixture. |
-| Gateway | Consume the corrected SDK and adapt local transport and pairing persistence to the Backend flow. Continue registry, authorization, discovery and dispatch work without adding deployment/certificate management. | Subsequent point; same-host adaptation not implemented. |
+| Backend | Consume SDK 0.7.2; enforce the same-host channel; finish association initiated in the existing dashboard/APIs, including service execution and recovery. Avoid manual protocol JSON/certificate transfer and preserve native/OAuth/client behavior. | Released as v1.1.1; owner reported build/browser success. Automatic setup and actual Backend MCP execution also passed against the Gateway adapter in isolated local acceptance. Yard remains unadapted. |
+| Gateway | Consume the corrected SDK and adapt local transport and pairing persistence to the Backend flow. Continue registry, authorization, discovery and dispatch work without adding deployment/certificate management. | Points 6 + 9 implemented in its working tree: local automatic setup, registry/events, private authorization/discovery, generic dispatch/probes, Docker/Compose, checks and release automation. Local source/image and real Backend acceptance passed; no Gateway release or installed rollout was performed by the agent. |
 | Yard | Reuse existing deployment/jobs/configuration/recovery to prepare local channels, associate and request registration, then report lifecycle/removal. Do not replace its existing product behavior. | Separate adaptation; same-host flow not implemented. |
 | Other products and CLI | Implement declaration/admission and generic metadata consumption against the same contracts. No product-specific branches in Gateway/CLI. | Subsequent work; not certified by SDK tests. |
 
@@ -56,7 +56,23 @@ These are the original task labels from the correction discussion, retained verb
 11. **Implementar a CLI sobre esse percurso.**
 12. **Validar o percurso completo e a entrega.**
 
-Point 3 delivered the HTTP/HTTPS SDK correction in `0.7.1`; `0.7.2` published the shared local-channel design. Point 4 and its Backend transport prerequisite in point 2 are now implemented and locally validated in Backend source, without publication or installed rollout. Point 5 remains the next fixed point; native regression checks already performed for point 4 do not authorize skipping its review. Gateway/Yard transport and later points, including actual end-to-end acceptance, remain outstanding. Documentation or protocol-fixture success must not be reported as completion of the full Suite journey.
+Point 3 delivered the HTTP/HTTPS SDK correction in `0.7.1`; `0.7.2` published the shared local-channel design. Point 4 and its Backend transport prerequisite in point 2 are implemented. Point 5, **Preservar os usos existentes do Backend**, completed the native route/authentication/storage/deployment review, removed an accidental Suite field from the native user-status request, and verified migration 7→8 preserving native data and existing trust. The owner subsequently reported successful Backend builds and browser validation.
+
+The owner authorized **6. Adaptar o Gateway ao mesmo processo de configuração.** and **9. Retomar os restantes pontos do Gateway.** together, before returning to Yard. Both are implemented in Gateway source with local verification recorded below. The agreed execution order is **6 + 9 → 7 → 8 → 10 → 11 → 12**, preserving the original names and numbers. The next fixed point is **7. Adaptar o Yard, reutilizando o seu deployment existente.** No Gateway release or installed rollout was performed by the agent. Success against Backend and generic protocol fixtures is not completion of the full Suite journey.
+
+## Gateway points 6 + 9: local verification
+
+Gateway consumes the published SDK `v0.7.2`. Backend-native configuration automatically delivers pairing over the shared same-host Unix channel, with durable provisioning before ACK and resumable recovery. Native client URLs accept HTTP or HTTPS independently; no certificate, pairing file, CIDR or deployment-specific IP is required for service setup. Gateway retains no deployment manager or product allowlist.
+
+The following checks passed locally on November 2, 2026:
+
+- Full Gateway source/process check: dependency lock/module verification, vet, Go race tests, five release-tooling tests, twelve optional certificate-helper tests, binary smoke/signals/crash recovery and sanitized logs.
+- Minimum Go `1.26.0` validation and Linux `amd64`/`arm64` cross-compilation; current installed Go validation used `1.27.3`.
+- Actual independent Backend `v1.1.1` and Gateway binaries with disposable state: dashboard-API save/verify/confirm, automatic local pairing, authenticated empty catalog, private discovery, real Backend tools, administrator/member and vault isolation, service-only readiness observations, restart identity, bounded outage reuse, account invalidation, registration removal and secret-free Gateway state/logs.
+- Generic conforming SDK test participants: alias collisions, private user views, delegation reuse, source failure isolation, cancellation, uncertain writes without retries, stale-definition rejection, cursor expiry/reconciliation, failed persistence, request limits and denial/outage behavior. These are protocol fixtures, not proposed Suite products.
+- Built Gateway Docker image: version, non-root startup, shared local socket, private state preserved across container recreation, healthcheck and rejected anonymous MCP/TCP pairing. Production/development Compose configuration and workflows (`actionlint 1.7.7`) also passed local checks.
+
+Gateway CI requires actual Backend acceptance against commit `4a4b72b4c3a1cfb85c581f42bb3351d8a4880cea` (`v1.1.1`), platform checks and the packaged image. Its release workflow depends on that validation. Remote CI, multiarchitecture image publication and the installed complete Suite flow have not been claimed from these local results. The original implementation-plan file remains unchanged.
 
 ## Acceptance and recorded verification
 
