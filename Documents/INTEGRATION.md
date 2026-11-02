@@ -1,10 +1,10 @@
 # NoX Suite SDK integration
 
-**Unreleased correction, November 2, 2026:** local-network integration supports HTTP and HTTPS URLs. This corrects the later HTTPS-only restriction; it does not rewrite the original implementation plan or published release `0.7.0`. See [correction scope and consumer migration](SUITE_CORRECTION_STATUS.md).
+**Deployment clarification, November 2, 2026:** participating Suite products must run on the **same host**. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the requirement and proposed Unix-socket implementation, superseding earlier LAN-wide transport descriptions. SDK `0.7.1` is released; the local channel and automated service setup are not yet implemented.
 
-NoX MCP `0.7.0` implements the shared Suite `1.0` contracts in TypeScript, Go, and Rust. The [Gateway Contract](GATEWAY_CONTRACT.md) defines the normative behavior; this guide describes the available SDK mechanisms. Product identity is open to any conforming product. No product names, business permissions, menus, or database layouts are built into the SDK.
+NoX MCP `0.7.1` implements the shared Suite `1.0` contracts in TypeScript, Go, and Rust. The [Gateway Contract](GATEWAY_CONTRACT.md) defines the normative behavior; this guide describes the available SDK mechanisms. Product identity is open to any conforming product. No product names, business permissions, menus, or database layouts are built into the SDK.
 
-[Release `0.7.0`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.0) is published and available for explicit consumer migrations. Gateway, CLI, and Portal are separate applications and do not exist in this repository. Backend management routes, token issuance, persistent registry/outbox, enrollment transactions, HTTPS deployment, and product migrations remain service work.
+[Release `0.7.1`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.1) is published and available for explicit consumer migrations. Gateway, CLI, and Portal are separate applications and do not exist in this repository. Backend management routes, token issuance, persistent registry/outbox, enrollment transactions, same-host local transport/deployment, and product migrations remain service work.
 
 ## Consume the released SDK
 
@@ -13,13 +13,13 @@ Pin the published version in the product repository and commit its dependency/lo
 TypeScript:
 
 ```sh
-npm install https://github.com/mapherez/nox-mcp/releases/download/v0.7.0/nox-mcp.tgz
+npm install https://github.com/mapherez/nox-mcp/releases/download/v0.7.1/nox-mcp.tgz
 ```
 
 Go, from the consuming Go module:
 
 ```sh
-go get github.com/mapherez/nox-mcp@v0.7.0
+go get github.com/mapherez/nox-mcp@v0.7.1
 go mod tidy
 ```
 
@@ -27,10 +27,10 @@ Rust, in the consuming `Cargo.toml`:
 
 ```toml
 [dependencies]
-nox-mcp = { git = "https://github.com/mapherez/nox-mcp.git", tag = "v0.7.0" }
+nox-mcp = { git = "https://github.com/mapherez/nox-mcp.git", tag = "v0.7.1" }
 ```
 
-Refresh and commit the consuming Rust lockfile. SDK release `0.7.0` and wire contract `1.0` identify different compatibility boundaries; do not replace document `contractVersion` values with the SDK version.
+Refresh and commit the consuming Rust lockfile. SDK release `0.7.1` and wire contract `1.0` identify different compatibility boundaries; do not replace document `contractVersion` values with the SDK version.
 
 ## Documents and validation
 
@@ -56,11 +56,11 @@ Existing discovery catalog/bundle envelopes retain their closed property sets; e
 
 The strict JSON entry points reject duplicate keys, malformed UTF-8, isolated surrogates, non-finite numbers, trailing content, and depth over 64. Default document size is 2 MiB; explicit `…WithLimit` / `…_with_limit` overloads and the TypeScript loader's third argument allow a caller-selected bound. Gateway snapshots default to 8 MiB. Times use UTC `YYYY-MM-DDTHH:mm:ss[.SSS]Z`, with one to three fractional digits when present. Observation sequences are canonical decimal **strings**, covering the full unsigned 64-bit range without JavaScript number rounding.
 
-A deployment address is an HTTP or HTTPS origin, such as `http://10.72.4.9:8095` or `https://product.internal`. It has no application prefix. A trailing root slash/default port is removed (80 for HTTP, 443 for HTTPS), and DNS names/IPv6 are canonicalized. The scheme is preserved: HTTP and HTTPS are different origins and audiences. User information, queries, fragments, ambiguous IPv4 spellings, leading-zero ports, and zone identifiers are rejected. Endpoint paths start with one `/`; no query, fragment, dot traversal, backslash, raw Unicode, control/whitespace, or escaped ASCII bytes are accepted. Non-ASCII path characters may use valid UTF-8 percent encoding, normalized to uppercase escapes. This conservative profile prevents different URL parsers from interpreting the same audience differently.
+SDK origin validation accepts an HTTP or HTTPS origin, such as `http://10.72.4.9:8095` or `https://product.internal`. It has no application prefix. A trailing root slash/default port is removed (80 for HTTP, 443 for HTTPS), and DNS names/IPv6 are canonicalized. The scheme is preserved: HTTP and HTTPS are different origins and audiences. User information, queries, fragments, ambiguous IPv4 spellings, leading-zero ports, and zone identifiers are rejected. Endpoint paths start with one `/`; no query, fragment, dot traversal, backslash, raw Unicode, control/whitespace, or escaped ASCII bytes are accepted. Non-ASCII path characters may use valid UTF-8 percent encoding, normalized to uppercase escapes. This conservative profile prevents different URL parsers from interpreting the same audience differently.
 
 `SuitePairingBinding.tlsPublicKeyFingerprint` is required for HTTPS and absent for HTTP, including inside proofs. HMAC still covers the complete binding: product, origin, declaration, pairing ID and nonce. Go represents this optional field as `*string`, Rust as `Option<String>` and TypeScript as an optional property. Update constructors when migrating; existing HTTPS wire documents remain valid.
 
-Adapters execute association from Backend native administration and Yard deployment operations. The SDK does not deliver setup secrets or implement these interfaces. Manual copying of protocol JSON/certificates is not the normal setup workflow. Preserve native URLs, OAuth/client integrations and direct MCP. The published `0.7.0` install commands below describe the historical release; these corrections require a subsequent published SDK update plus explicit consumer migration.
+Adapters execute association from Backend native administration and Yard deployment operations. The SDK does not deliver setup secrets or implement these interfaces. Manual copying of protocol JSON/certificates is not the normal setup workflow. Preserve native URLs, OAuth/client integrations and direct MCP. The install commands above select published SDK `0.7.1`. Consumer adaptation is still required; HTTP syntax support does not implement or authorize LAN integration. Follow [the same-host design](SUITE_SAME_HOST_INTEGRATION.md) for local presence, service transport, setup and Yard registration.
 
 ## Product endpoints
 

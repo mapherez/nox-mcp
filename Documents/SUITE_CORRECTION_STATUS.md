@@ -2,6 +2,8 @@
 
 This records the correction authorized on **November 2, 2026**. It is an implementation record, not a replacement for the owner's original plan. Changes here do not authorize unrelated functionality, consumer edits or publication.
 
+**Current deployment clarification:** participating Suite products must run on the **same host**, not merely on the same LAN. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records that requirement, the proposed Unix-socket channel, automation responsibilities and acceptance criteria. The channel and automated association are not yet implemented. SDK `0.7.1` has been released; the new same-host record is subsequent documentation, not functionality delivered by that release.
+
 ## Reference and boundaries
 
 The earliest available original plan is [NOX_SUITE_IMPLEMENTATION_PLAN.md at 3e19feb](https://github.com/mapherez/nox-mcp/blob/3e19febe933ce5d0dccec44012cc3e496976d738/Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md). Its SHA-256 is `5097f7ab165d4160f0e9af445c3ec9e902dbf703a08267ee1fe0fef851c11532`. It defines HTTP examples, Backend-native foundation configuration, Yard installation and registration initiation, and Gateway discovery/routing. A later document is not evidence that every added requirement was approved.
@@ -10,7 +12,7 @@ The current `NOX_SUITE_IMPLEMENTATION_PLAN.md` is left unchanged. Its SHA-256 be
 
 Products remain autonomous. Backend preserves users, API keys, vaults, blobs, synchronization and existing client/frontend integrations. Yard retains Docker/Compose management, configuration editing, previews, workers and recovery. Gateway remains a headless router/aggregator. SDK remains a library; it neither runs a certificate authority nor implements a deployment manager or setup UI. Contracts apply to any conforming present or future product.
 
-## SDK correction in this working tree
+## SDK correction released in 0.7.1
 
 - Origins accept HTTP and HTTPS, preserving the scheme and distinguishing default ports 80/443. Paths, credentials in URLs, ambiguous addresses, redirects and authorization remain separate validation/policy concerns.
 - Resources, provisioning key URLs, registration/snapshot documents, Gateway composition and signed audiences use the same rules. HTTP does not become an alias for HTTPS.
@@ -18,11 +20,11 @@ Products remain autonomous. Backend preserves users, API keys, vaults, blobs, sy
 - Signed ES256 delegations, five-minute reuse bounds, scoped service credentials, role capabilities, invalidation and domain authorization are retained. A local IP or an accepted URL alone grants no authority.
 - Schemas, generated native copies/DTOs and shared conformance cases are synchronized for TypeScript, Go and Rust. Existing required CI already runs the shared Suite, runtime, packaging and consumer checks.
 
-HTTP is supported for the approved trusted deployment network and does not provide transport confidentiality. Host adapters enforce that scope; accepting HTTP syntax in the SDK is not permission to contact arbitrary hosts. HTTPS validation must not be disabled or downgraded after a failure.
+HTTP/HTTPS syntax support in the SDK does not authorize LAN communication or establish host locality. Consumer adapters must enforce the same-host boundary described in the linked local-channel design. Native web/client transport remains separate; where HTTPS is used, its validation must not be disabled or downgraded after a failure.
 
 ## Published-version and API migration
 
-Published **0.7.0 is unchanged** and still has the HTTPS-only restrictions. This source correction must be included in a subsequent release before consumers can depend on it. No release, tag, commit or remote publication is performed by this work. Wire documents retain `contractVersion: "1.0"`; updated readers accept the existing HTTPS documents, while old readers do not support the new HTTP documents. Upgrade participants explicitly; do not send HTTP documents to an unadapted 0.7.0 host or silently convert stored HTTPS associations.
+Published **0.7.1** contains the SDK correction; historical **0.7.0 is unchanged** and still has the HTTPS-only restrictions. Consumers must upgrade explicitly. Wire documents retain `contractVersion: "1.0"`; updated readers accept the existing HTTPS documents, while old readers do not support the new HTTP documents. Do not send HTTP documents to an unadapted 0.7.0 host or silently convert stored HTTPS associations. This documentation update creates no release, tag, commit or remote publication.
 
 The generated TLS fingerprint field becomes optional: TypeScript `tlsPublicKeyFingerprint?: string`, Go `TlsPublicKeyFingerprint *string`, Rust `tls_public_key_fingerprint: Option<String>`. Update native constructors and transport-dependent checks. HTTPS constructors still supply their real fingerprint. HTTP constructors omit it. Both complete loaders and cryptographic helpers enforce the selected scheme's binding rules.
 
@@ -30,12 +32,31 @@ The generated TLS fingerprint field becomes optional: TypeScript `tlsPublicKeyFi
 
 | Component | Required correction | Current scope |
 | --- | --- | --- |
-| Backend | Consume the corrected SDK; accept approved LAN origins; finish association initiated in the existing dashboard/APIs, including service execution and recovery. Avoid manual protocol JSON/certificate transfer and preserve native/OAuth/client behavior. | Subsequent authorized point; not implemented here. |
-| Gateway | Consume the corrected SDK and adapt transport and pairing persistence to the Backend flow. Continue registry, authorization, discovery and dispatch work without adding deployment/certificate management. | Subsequent point; not implemented here. |
-| Yard | Reuse existing deployment/jobs/configuration/recovery to associate and request registration, then report lifecycle/removal. Do not replace its existing product behavior. | Separate adaptation; not implemented here. |
+| Backend | Consume SDK 0.7.1; enforce the same-host channel; finish association initiated in the existing dashboard/APIs, including service execution and recovery. Avoid manual protocol JSON/certificate transfer and preserve native/OAuth/client behavior. | Adaptation in progress; local transport and automated association not applied. |
+| Gateway | Consume the corrected SDK and adapt local transport and pairing persistence to the Backend flow. Continue registry, authorization, discovery and dispatch work without adding deployment/certificate management. | Subsequent point; same-host adaptation not implemented. |
+| Yard | Reuse existing deployment/jobs/configuration/recovery to prepare local channels, associate and request registration, then report lifecycle/removal. Do not replace its existing product behavior. | Separate adaptation; same-host flow not implemented. |
 | Other products and CLI | Implement declaration/admission and generic metadata consumption against the same contracts. No product-specific branches in Gateway/CLI. | Subsequent work; not certified by SDK tests. |
 
 Foundation URLs and confirmation in Backend administration must lead to service-executed association with accurate state. These are adapter responsibilities, not implemented by changing a URL validator. This correction defines no new standalone installer or mandatory first-run wizard.
+
+## Fixed correction sequence
+
+These are the original task labels from the correction discussion, retained verbatim to avoid renaming or renumbering work:
+
+1. **Fixar a referência e delimitar as alterações.**
+2. **Corrigir o transporte e a configuração dos endereços.**
+3. **Adaptar os contratos e os três SDKs a esse funcionamento.**
+4. **Completar a configuração inicial no Backend.**
+5. **Preservar os usos existentes do Backend.**
+6. **Adaptar o Gateway ao mesmo processo de configuração.**
+7. **Adaptar o Yard, reutilizando o seu deployment existente.**
+8. **Ligar o lifecycle do Yard ao registo do Backend.**
+9. **Retomar os restantes pontos do Gateway.**
+10. **Adaptar os produtos participantes.**
+11. **Implementar a CLI sobre esse percurso.**
+12. **Validar o percurso completo e a entrega.**
+
+Point 3 delivered the HTTP/HTTPS SDK correction in `0.7.1`; it did not implement the subsequently clarified local channel. Point 4 is in progress and depends on the remaining consumer transport work in point 2. Preserve existing Backend behavior throughout, and verify it under point 5. Later points and end-to-end acceptance remain outstanding. Documentation of a design must not be reported as implementation completion.
 
 ## Acceptance and recorded verification
 

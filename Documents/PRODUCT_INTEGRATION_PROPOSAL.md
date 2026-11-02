@@ -1,6 +1,6 @@
 # NoX Suite — Product integration and registration proposal
 
-**Unreleased correction, November 2, 2026:** local-network integration supports HTTP and HTTPS URLs. This corrects the later HTTPS-only restriction; it does not rewrite the original implementation plan or published release `0.7.0`. See [correction scope and consumer migration](SUITE_CORRECTION_STATUS.md).
+**Deployment clarification, November 2, 2026:** participating Suite products must run on the **same host**. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the requirement and proposed Unix-socket implementation, superseding earlier LAN-wide transport descriptions. SDK `0.7.1` is released; the local channel and automated service setup are not yet implemented.
 
 Status: **consolidated design; shared SDK contracts/helpers published in NoX MCP `0.7.0`; Backend/service integration pending**.
 
@@ -19,7 +19,7 @@ The repository already supplies tool manifests, CLI descriptors, `nox/discovery`
 
 This design adds a separate contract. Existing schemas, MCP methods, fingerprints, `_meta.cli`, public constructors, and bridge protocols retain their meaning. Suite authentication is specified separately in the Gateway Contract; it does not restore removed SDK identity adapters.
 
-The deployment scope remains one registered product of each type per Backend environment. There is no fixed product catalog: **any present or future conforming product** can integrate without changes specific to it in NoX MCP, Gateway, CLI, or Portal. No application/module/instance hierarchy, distributed registry, remote-network discovery, or Docker dependency is introduced in the shared SDK. Contract version `1.0` is a compatibility identifier, not a temporary first product version.
+The deployment scope is one registered product of each type per Backend installation, with all participating product services on the same host. There is no fixed product catalog: **any present or future conforming product** can integrate without changes specific to it in NoX MCP, Gateway, CLI, or Portal. No application/module/instance hierarchy, distributed registry, remote-network discovery, or Docker dependency is introduced in the shared SDK. Contract version `1.0` is a compatibility identifier, not a temporary first product version.
 
 All existing products require the relevant adaptations to the resulting contracts. Their current implementations are migration context, not templates that constrain this design. Gateway, CLI, and Portal do not exist yet; their implementations follow these contracts. A pilot using unchanged existing products is not a design prerequisite.
 
@@ -81,9 +81,9 @@ This declaration does **not** define a Portal bundle URL or loading technology. 
 ### Address and identity rules
 
 - The authorized installer/configuration supplies `baseUrl`, for example `https://example:8080`. The product cannot redirect enrollment to an arbitrary self-advertised host.
-- `baseUrl` is an HTTP or HTTPS origin: scheme, host, and optional port, without user information, query, fragment, or non-root path. IP/hostname with port and dedicated domains/subdomains are supported. Application prefixes such as `/apps/example` are **not supported**. HTTP is supported for the approved trusted local-network deployment. HTTPS retains certificate/pin verification without fallback to HTTP. Both schemes require authorized association and credentials; preserve the scheme in registry records and delegated audiences.
+- `baseUrl` is an HTTP or HTTPS origin: scheme, host, and optional port, without user information, query, fragment, or non-root path. IP/hostname with port and dedicated domains/subdomains are supported. Application prefixes such as `/apps/example` are **not supported**. Origin syntax alone does not authorize network service communication; the same-host adapter uses the local-channel mapping described in [the deployment record](SUITE_SAME_HOST_INTEGRATION.md#6-urls-identity-and-existing-sdk-contracts). HTTPS retains certificate/pin verification without fallback to HTTP. Both schemes require authorized association and credentials; preserve the scheme in registry records and delegated audiences.
 - `suiteMcp.path` starts with a single `/`; reject scheme-relative URLs, query/fragment, traversal, and ambiguous encodings that escape the configured origin. URL construction must produce the same target in all three languages.
-- Validate addresses against the administrator-approved local network/deployment policy before fetching. A LAN address or a `nox-*` name is not evidence of trust. Do not follow redirects to an unapproved destination; revalidate resolved targets on reconnect.
+- Validate the intended local product and socket before fetching through the same-host channel. A LAN address, local socket or `nox-*` name is not evidence of membership. Keep native web URLs separate from logical service origins; do not follow redirects or fall back to TCP.
 - Validate the fetched declaration, bind it to the intended deployment, and establish the authorized service association before activating membership, following Gateway Contract section 4. The JSON declaration itself is not proof of identity.
 - Product updates and container recreation retain `productId`. A different product cannot overwrite that registration. Address or ownership-of-connection changes require an explicitly authorized update.
 
