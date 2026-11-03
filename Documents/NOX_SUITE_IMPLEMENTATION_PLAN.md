@@ -124,7 +124,7 @@ NoX Auth owns Google credentials and the account allowlist. Each application's *
 - The Backend determines the account's current role; the Gateway applies policy and forwards the authorized context.
 - Products validate integrated communication and retain domain restrictions during execution.
 
-Google remains the upstream identity provider; the authorized NoX Auth service centralizes its integration. Do not introduce a separate NoX username/password account system. No implementation framework/provider library is selected by this update; the earlier exclusion of Better Auth remains unchanged.
+Google remains the upstream identity provider; the authorized NoX Auth service centralizes its integration. Do not introduce a separate NoX username/password account system. The Auth repository records its Go/OIDC implementation choices and exact API profile; the earlier exclusion of Better Auth remains unchanged.
 
 The approved central rule is:
 
@@ -384,7 +384,7 @@ The following design areas are specified. Shared SDK mechanisms are published in
 | --- | --- |
 | Product declaration, identity, registration, conditional updates, removal, and durable idempotency | [Product integration](PRODUCT_INTEGRATION_PROPOSAL.md) |
 | Pairing, service credentials, same-host transport, signed delegated identity, and capability classification | [Gateway Contract](GATEWAY_CONTRACT.md), sections 3–7, with [authorized transport corrections](SUITE_SAME_HOST_INTEGRATION.md) |
-| Shared Google-backed human login and central admission | Section 20 and `nox-auth/NOX_AUTH_CONTRACT.md`; service/client implementation pending; five-minute admission-check interval proposed, not confirmed |
+| Shared Google-backed human login and central admission | Section 20, `nox-auth/NOX_AUTH_CONTRACT.md` and its `docs/integration.md`; Auth service/Go client implemented in source; five-minute admission-check interval confirmed; installed product adapters pending |
 | Five-minute authorization reuse, event invalidation, on-demand renewal, and Backend outages | Gateway Contract, section 6 |
 | Durable events, reconciliation, observation sequences, and availability intervals | Gateway Contract, section 8 |
 | Aggregated names, reference rewriting, original/aggregate fingerprints, and private snapshots | Gateway Contract, sections 9–10 |
@@ -480,7 +480,7 @@ The [product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway C
 
 ## 20. NoX Auth and shared NoX Login
 
-**Owner-authorized decision, November 3, 2026.** The canonical requirements contract is `NOX_AUTH_CONTRACT.md` in the separate `nox-auth` repository. This section records the Suite-wide change; it does not claim that Auth or its product adapters have been implemented, or change the released SDK wire version.
+**Owner-authorized decision, November 3, 2026.** The canonical requirements contract is `NOX_AUTH_CONTRACT.md` in the separate `nox-auth` repository. Its service and reusable Go client are now implemented in source; `docs/integration.md` records the exact profile. This does not claim installed product adapters or a release, or change the released SDK wire version.
 
 ### Responsibilities and user journey
 
@@ -494,11 +494,11 @@ The [product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway C
 - **Decided:** human sessions last one year, renewable with use while still admitted. Applications maintain their own cookies and preserve valid sessions across ordinary updates. Another device/browser has its own session.
 - **Decided:** **Sair** terminates the current app session. **Sair de todas**, shown in Backend's dashboard now and Portal later, requests Auth revocation of the current Auth session and its derived Suite app sessions. No Auth frontend is required. This does not log out Google or remove a Discord integration.
 - **Decided:** after a removed account's updated Auth configuration is applied, new login and existing-session access must be refused. Editing `.env` alone does not update an already running process; applying configuration uses the documented restart/recreate process.
-- **Proposed, awaiting confirmation:** cache a positive Auth admission/session check for at most five minutes. An active application revalidates with local Auth when necessary, without Google account selection or manual approval. Denial stops access; validation failure cannot extend a cached grant after expiry. This proposed interval also bounds derived-session revocation propagation and is separate from the existing five-minute MCP delegation lifetime. Do not compound stale admission and fresh authorization cache intervals into an unbounded delay.
+- **Decided, confirmed by the owner November 3:** cache a positive Auth admission/session check for at most five minutes. An active application revalidates with local Auth when necessary, without Google account selection or manual approval. Denial stops access; validation failure cannot extend a cached grant after expiry. This interval also bounds derived-session revocation propagation and is separate from the existing five-minute MCP delegation lifetime. Do not compound stale admission and fresh authorization cache intervals into an unbounded delay.
 
 ### Adaptation order and preservation
 
-1. Specify the technical protocol/profile and implement/validate the complete Auth service against its requirements. OIDC Authorization Code is the proposed direction, not a selected provider/library or a promise that every library supports private HTTP callbacks.
+1. Implement/validate Auth against its requirements and documented protocol profile. Its Go implementation uses the maintained ZITADEL OIDC provider with confidential web clients, Basic client authentication, PKCE S256 and exact private HTTP/HTTPS callbacks with development mode disabled. Confidential exchanges use the same-host runtime socket; client enrollment uses a separate restricted administration socket. The Auth repository records local acceptance and packaging checks; real Google login with operator credentials and installed product adaptation remain separate acceptance work.
 2. Integrate and test **Yard first**, as requested by the owner, with real login/logout/session/restart and rollback acceptance. Its dashboard becomes NoX Login only; retain installation data and previous-version database compatibility so reverting its image restores the existing login. No new local-password fallback is requested.
 3. After successful Yard acceptance, adapt Backend and the remaining products in their own scoped work. Preserve Backend user/data ownership, personal keys, APIs and native frontend. Voice MLX replaces its separate Google flow. Bot uses NoX Login for dashboard entry and keeps Discord as a persistent settings integration, separate from dashboard session lifetime and from the bot's own Discord token. Future products use the same generic integration.
 
