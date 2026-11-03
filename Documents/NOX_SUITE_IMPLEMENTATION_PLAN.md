@@ -2,11 +2,13 @@
 
 Originally consolidated on **October 23, 2026**; delivery status and Backend/frontend work sequence updated on **October 30, 2026**.
 
+**Authorized update, November 3, 2026:** introduce the headless NoX Auth service and shared NoX Login described in [section 20](#20-nox-auth-and-shared-nox-login). This explicitly requested change moves Google login and account admission out of individual applications. Earlier delivery snapshots remain dated history, not claims about today's implementation. The [correction record](SUITE_CORRECTION_STATUS.md) records published SDK/consumer progress and the fixed correction sequence.
+
 Status: **reference for approved requirements and architectural decisions**. This document does not imply that planned features are implemented, nor does it independently authorize product changes or release publication.
 
 ## 1. Purpose and use of this document
 
-This is the reference for the evolution of NoX Suite. It consolidates decisions about the SDK, Backend, Gateway, CLI, Portal, and product integration without relying on recovering earlier conversations.
+This is the reference for the evolution of NoX Suite. It consolidates decisions about the SDK, Auth, Backend, Gateway, CLI, Portal, and product integration without relying on recovering earlier conversations.
 
 Use three distinctions when planning work:
 
@@ -24,18 +26,18 @@ NoX Suite is a set of autonomous products integrated through common contracts. E
 
 The contracts and NoX MCP apply to **any present or future Suite product**. Product names in this document identify responsibilities or historical examples, not an exhaustive catalog or a list of allowed implementations. Adding a conforming product must not require product-specific code in the SDK, Gateway, CLI, or Portal.
 
-The target is a complete contract for the agreed scope, not a temporary first version or a pilot tied to existing products. All existing integrations must be adapted as necessary to the resulting contracts. Gateway, CLI, and Portal **do not exist yet**; their implementations follow the design established here.
+The target is a complete contract for the agreed scope, not a temporary first version or a pilot tied to existing products. All existing integrations must be adapted as necessary to the resulting contracts. Gateway, CLI, and Portal were unimplemented at the October baseline; subsequent delivery is tracked in the correction record, rather than inferred from this historical statement.
 
 The objective is to let users and AI agents discover and execute functionality without product-specific integrations inside the CLI or Gateway.
 
 Approved deployment scope:
 
-- One environment administered by one NoX Backend, on the same network.
+- One environment administered by one NoX Backend; participating Suite services run on the **same host**, as clarified in [same-host integration](SUITE_SAME_HOST_INTEGRATION.md).
 - One product of each type: one Backend, one Yard, one Gateway, etc.
-- Multiple approved Google accounts in that Backend, each with its own API key.
-- Integration targets applications installed on the environment's host/network.
+- Google accounts admitted centrally by NoX Auth; Backend retains personal API-key management for those identities.
+- Integration targets applications installed on that same host; a shared LAN alone does not establish membership.
 - Products remain individually usable without Gateway, CLI, or Portal.
-- CLI, Gateway, and Portal are future products; do not treat plans or experiments as implemented products.
+- NoX Auth is a separate headless service; CLI and Portal remain separate product work. Do not treat planned authentication changes as implemented in existing releases.
 
 Multiple copies of the same product in an environment, federation between Backends, and tunnels to products on other networks are outside this deployment scope. This does not limit the number or business domains of distinct products. Do not build architecture for excluded deployments, or make unnecessary choices that prevent future evolution.
 
@@ -61,7 +63,8 @@ In this work, the old term **Module Contract** refers to the **product integrati
 | Component | Responsibility |
 | --- | --- |
 | NoX MCP | TypeScript/Go/Rust SDK, contracts, validation, and shared execution, authorization, and discovery mechanisms |
-| NoX Backend | Authority for identity, API keys, roles, permissions, and registration; retains existing data and synchronization services |
+| NoX Auth | Google authentication, central account admission and shared human login/session authority; no management frontend |
+| NoX Backend | API keys, capability/delegation policy, service trust and registration using the Auth identity; retains existing data and synchronization services |
 | NoX Gateway | Consults the registry, discovers MCP servers, aggregates tools, and routes authorized calls |
 | NoX Yard | Installs and manages Docker products; triggers authorized integration and reports lifecycle operations |
 | NoX CLI | Manual navigation and execution; future AI integration and MCP tool exposure |
@@ -76,7 +79,7 @@ The SDKs must provide equivalent contracts and mechanisms for shared functionali
 
 ### NoX Backend
 
-Preserve SQLite, `/data`, blobs, vaults, synchronization, authentication, and existing APIs. Evolution adds integration; it does not rebuild these services without a demonstrated need.
+Preserve SQLite, `/data`, blobs, vaults, synchronization, and existing APIs. The separately authorized NoX Login adaptation changes dashboard authentication while preserving existing account/data relationships and client/API-key operation. Evolution does not rebuild these services without a demonstrated need.
 
 Retain a native administrative UI and independent APIs. Administrators configure essential Yard and Gateway connections in that UI without depending on the Portal.
 
@@ -109,15 +112,19 @@ Current SDK references: [compatibility](COMPATIBILITY.md), [discovery and CLI](D
 
 ## 6. Identity and authorization
 
+### Shared human login
+
+NoX Auth owns Google credentials and the account allowlist. Each application's **NoX Login** button redirects through Auth and returns to that application's registered callback and original page. Auth has no frontend. Approved identities use the same central account authority across applications, including administrative access; applications do not maintain a second admission list. Existing product/domain checks remain required. Session, logout, private-origin compatibility and adaptation requirements are in [section 20](#20-nox-auth-and-shared-nox-login).
+
 ### Central access through the Gateway
 
-- The user authenticates with a Google account approved by the Backend.
+- The user authenticates with a Google account approved by NoX Auth.
 - The Backend issues and manages the API key associated with that account.
 - The CLI uses the API key to access the Gateway.
 - The Backend determines the account's current role; the Gateway applies policy and forwards the authorized context.
 - Products validate integrated communication and retain domain restrictions during execution.
 
-Do not introduce another identity provider. A dedicated NoX Account is only a future possibility, not a requirement for this phase. Do not use Better Auth in the NoX Suite design.
+Google remains the upstream identity provider; the authorized NoX Auth service centralizes its integration. Do not introduce a separate NoX username/password account system. No implementation framework/provider library is selected by this update; the earlier exclusion of Better Auth remains unchanged.
 
 The approved central rule is:
 
@@ -126,7 +133,7 @@ The approved central rule is:
 | Admin | Allowed | Allowed | Allowed |
 | Non-admin | Allowed | Denied | Denied |
 
-Concrete role names must follow those defined in the Backend. The requirement is the distinction above, not an unnecessary new enum named `guest`.
+Concrete capability/role mappings must follow the Backend contract and consume Auth's central human authority when adapted. The requirement is the distinction above, not an unnecessary new enum named `guest`. This update adds no per-app account-approval list or new role-management UI.
 
 Each product classifies its tools during implementation. The Backend maps roles to shared capabilities; no individually configured per-user/per-tool matrix is required.
 
@@ -136,13 +143,13 @@ Classification distinguishes normal reads, writes, and sensitive reads using the
 
 ### Direct product access
 
-The product manages authentication and permissions for this access independently of central policy. Yard is the reference model: its own token, separate inspection/write/sensitive-read permissions, and explicit access-mode configuration.
+The product manages direct **MCP** authentication and permissions independently of integrated MCP policy. Yard is the reference model: its own token, separate inspection/write/sensitive-read permissions, and explicit access-mode configuration. This is distinct from dashboard login, which moves to NoX Login; replacing dashboard login does not remove direct MCP or existing client APIs.
 
 An optional token does not mean NoX authentication protects an anonymous endpoint: when the application explicitly allows that mode, the selected local permissions apply. Default and configuration consistency will be addressed during product adaptation.
 
 ### Consolidated trust and authorization decisions
 
-The Backend manages dedicated, scoped, revocable service credentials. Authorized pairing uses a temporary, single-use secret. Authenticated network communication uses HTTPS. The Gateway validates the personal API key with the Backend and receives a Backend-signed, product-specific delegation; the personal key is not forwarded to products. Products verify the delegation and enforce current domain rules at execution.
+The Backend manages dedicated, scoped, revocable service credentials. Authorized pairing uses a temporary, single-use secret. Suite server-to-server communication uses the approved [same-host local channel](SUITE_SAME_HOST_INTEGRATION.md); native application origins may use HTTP or HTTPS. Auth's Google-facing callback uses HTTPS, without imposing certificates on every internal app. The Gateway validates the personal API key with the Backend and receives a Backend-signed, product-specific delegation; the personal key is not forwarded to products. Products verify the delegation and enforce current domain rules at execution.
 
 Delegations may be reused for up to **five minutes**, never beyond the underlying credential validity. The Gateway validates requests locally while the authorization remains valid, invalidates cached authorizations on Backend events, and renews on demand. Missed revocation events can leave an already issued delegation usable until its original expiry, at most five minutes. During Backend unavailability, valid delegations remain usable until expiry; no fresh authorization or lifetime extension is permitted. A 1–3 hour CLI session does not expire on this schedule and does not repeat Google login.
 
@@ -172,7 +179,7 @@ Existing clients and their URLs must not silently change destination. The Backen
 
 ### Environment foundation
 
-Backend, Yard, and Gateway are installed and connected through administrative configuration in the Backend's native web application. No mandatory first-run wizard or prior Portal installation is required.
+Backend, Yard, and Gateway are installed and connected through administrative configuration in the Backend's native web application. No mandatory first-run wizard or prior Portal installation is required. When NoX Login is implemented, Auth is also installed/configured as their shared login service before adapting their dashboard entry points; it does not replace this foundation configuration or Yard's deployment responsibilities.
 
 These operations must also be available through the appropriate APIs. The Backend remains useful and administrable without Gateway or Portal.
 
@@ -299,8 +306,8 @@ The Portal has the lowest priority among future products and does not block MCP 
 Environment control is local and must not require external services for every request.
 
 - Previously prepared users and API keys continue to allow internal-network operation, including after restarting services.
-- The Backend validates API keys and roles locally; Google authentication is not repeated for every call.
-- New Google login/account verification requires Internet access.
+- The Backend validates API keys and capabilities locally; adapted applications check current human admission through local Auth under the agreed validity bounds. Google authentication is not repeated for every call.
+- New Google login/account verification goes through Auth and requires Internet access; valid existing sessions do not contact Google periodically merely to remain open.
 - Cloud AI and cloud synchronization require Internet access.
 - Product features that inherently contact external services remain subject to those services' availability.
 
@@ -335,7 +342,8 @@ Contract design precedes service implementation and product adaptation. No pilot
 | Repository/product | Planned evolution |
 | --- | --- |
 | `nox-mcp` | Shared contracts, validation and APIs in all three languages, corpus, packages, and CI |
-| `nox-backend` | Persistent registry, administrative configuration, central authorization, integration APIs, own Suite adaptation, and separate frontend/backend builds, images, and containers in the same project while preserving existing services and frontend integrations |
+| `nox-auth` | Headless Google-backed NoX Login service, central admission/session authority, reusable client integration, persistent state and deployment documentation; see section 20 |
+| `nox-backend` | Persistent registry, administrative configuration, central operation authorization, integration APIs, own Suite adaptation, and separate frontend/backend builds, images, and containers in the same project; subsequently consume NoX Login and expose Suite logout while preserving existing services and frontend integrations |
 | `nox-yard` | Authorized post-deployment integration, lifecycle signals, and separation of Suite/direct MCP |
 | NoX Bot and other host products | Integration/registration, capabilities, a Suite path independent of direct access, and optional descriptors |
 | NoteX and other desktop/web products | Adapt relevant integrations to the shared contracts, respecting each product's storage, execution, and independent-access model |
@@ -375,7 +383,8 @@ The following design areas are specified. Shared SDK mechanisms are published in
 | Area | Reference |
 | --- | --- |
 | Product declaration, identity, registration, conditional updates, removal, and durable idempotency | [Product integration](PRODUCT_INTEGRATION_PROPOSAL.md) |
-| Pairing, service credentials, HTTPS, signed delegated identity, and capability classification | [Gateway Contract](GATEWAY_CONTRACT.md), sections 3–7 |
+| Pairing, service credentials, same-host transport, signed delegated identity, and capability classification | [Gateway Contract](GATEWAY_CONTRACT.md), sections 3–7, with [authorized transport corrections](SUITE_SAME_HOST_INTEGRATION.md) |
+| Shared Google-backed human login and central admission | Section 20 and `nox-auth/NOX_AUTH_CONTRACT.md`; service/client implementation pending; five-minute admission-check interval proposed, not confirmed |
 | Five-minute authorization reuse, event invalidation, on-demand renewal, and Backend outages | Gateway Contract, section 6 |
 | Durable events, reconciliation, observation sequences, and availability intervals | Gateway Contract, section 8 |
 | Aggregated names, reference rewriting, original/aggregate fingerprints, and private snapshots | Gateway Contract, sections 9–10 |
@@ -416,6 +425,8 @@ The detailed routes, payloads, and validation rules in the Gateway Contract form
 ## 19. Current delivery and next work: Backend
 
 Delivery baseline as of **October 30, 2026**:
+
+The following tables retain that historical Backend work sequence, including its then-native Google authentication. They are not a new instruction to keep Google credentials/account admission in Backend: the authorized November 3 target in section 20 supersedes that responsibility. Use the correction record for subsequent released work and outstanding tasks.
 
 | Item | State |
 | --- | --- |
@@ -466,3 +477,35 @@ Portal implementation remains separate work: the shared shell and generic produc
 After the Backend scope, implement Gateway and installer/product adapters against the same contracts, then the dependent CLI flows. Complete the Portal as its own product work.
 
 The [product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway Contract](GATEWAY_CONTRACT.md) together define the integration baseline. A contract version such as `1.0` identifies wire compatibility; it does not describe a provisional product release.
+
+## 20. NoX Auth and shared NoX Login
+
+**Owner-authorized decision, November 3, 2026.** The canonical requirements contract is `NOX_AUTH_CONTRACT.md` in the separate `nox-auth` repository. This section records the Suite-wide change; it does not claim that Auth or its product adapters have been implemented, or change the released SDK wire version.
+
+### Responsibilities and user journey
+
+- Run one headless Auth service/container for the installation. It owns Google client ID/secret, the allowed-account email list, stable identity bindings and human login sessions. Applications consume the shared contract rather than copying Google integration and account lists.
+- A product's **NoX Login** button takes the browser through Auth/Google and back to its approved application callback and original page. A valid Auth session avoids repeated Google account selection when entering another app with the same browser/profile.
+- Auth's Google callback has a configurable HTTPS origin, which may use an existing reverse proxy/tunnel. Application callbacks are separate and can be internal addresses. Private HTTP/HTTPS hostnames and IP origins must be addressed explicitly in the protocol specification; do not silently introduce per-app public URLs, manual certificates or disabled validation.
+- Auth has no management frontend. Backend retains its native frontend; Portal remains a future separate UI. Yard still installs products and initiates authorized registration; Backend remains registry/service-trust and operation-delegation authority; Gateway routes MCP. No new deployment manager is introduced.
+
+### Sessions, account removal and logout
+
+- **Decided:** human sessions last one year, renewable with use while still admitted. Applications maintain their own cookies and preserve valid sessions across ordinary updates. Another device/browser has its own session.
+- **Decided:** **Sair** terminates the current app session. **Sair de todas**, shown in Backend's dashboard now and Portal later, requests Auth revocation of the current Auth session and its derived Suite app sessions. No Auth frontend is required. This does not log out Google or remove a Discord integration.
+- **Decided:** after a removed account's updated Auth configuration is applied, new login and existing-session access must be refused. Editing `.env` alone does not update an already running process; applying configuration uses the documented restart/recreate process.
+- **Proposed, awaiting confirmation:** cache a positive Auth admission/session check for at most five minutes. An active application revalidates with local Auth when necessary, without Google account selection or manual approval. Denial stops access; validation failure cannot extend a cached grant after expiry. This proposed interval also bounds derived-session revocation propagation and is separate from the existing five-minute MCP delegation lifetime. Do not compound stale admission and fresh authorization cache intervals into an unbounded delay.
+
+### Adaptation order and preservation
+
+1. Specify the technical protocol/profile and implement/validate the complete Auth service against its requirements. OIDC Authorization Code is the proposed direction, not a selected provider/library or a promise that every library supports private HTTP callbacks.
+2. Integrate and test **Yard first**, as requested by the owner, with real login/logout/session/restart and rollback acceptance. Its dashboard becomes NoX Login only; retain installation data and previous-version database compatibility so reverting its image restores the existing login. No new local-password fallback is requested.
+3. After successful Yard acceptance, adapt Backend and the remaining products in their own scoped work. Preserve Backend user/data ownership, personal keys, APIs and native frontend. Voice MLX replaces its separate Google flow. Bot uses NoX Login for dashboard entry and keeps Discord as a persistent settings integration, separate from dashboard session lifetime and from the bot's own Discord token. Future products use the same generic integration.
+
+There is no separate data-import/migration project in this scope. Necessary technical identity/session adaptations must preserve existing data; backups or quick-command exports are not permission to reset databases. Acceptance and rollback must be verified before claiming them.
+
+### Deployment authorization and correction sequence
+
+Shared Google identity is not permission for Yard's service credential to grant itself administrative deployment rights. The unapproved Backend installer self-authorization is withdrawn; existing administrative checks remain. Before resuming the affected lifecycle adapter, specify how an Auth-authenticated user's deployment action authorizes its intended Backend association without relaying a browser cookie/personal key as a service identity or silently weakening those checks.
+
+The [fixed twelve correction points](SUITE_CORRECTION_STATUS.md#fixed-correction-sequence) keep their existing names and numbers. Yard points **7. Adaptar o Yard, reutilizando o seu deployment existente.** and **8. Ligar o lifecycle do Yard ao registo do Backend.** remain unfinished and paused for this newly agreed authentication work. Auth does not certify those points or the complete installed journey. Product MCP tools and `_meta.cli` menu adaptation remain in point 10; CLI implementation remains in point 11.

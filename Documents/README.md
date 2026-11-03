@@ -1,6 +1,6 @@
 # NoX MCP documentation
 
-**Current work, November 2, 2026:** SDK `0.7.2` is released. [Suite correction scope and migration](SUITE_CORRECTION_STATUS.md) records its corrections, the fixed work sequence and remaining consumer work. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the owner's deployment clarification and proposed local-channel implementation. Backend now implements its side in consumer source, locally validated and not yet released. Gateway/Yard adaptation remains pending; the SDK release itself does not create local channels.
+**Current work, November 3, 2026:** SDK `0.7.2` and Backend `v1.1.1` are released; the owner reported Gateway `v0.0.1` registered in Backend. Yard integration is unfinished and paused for the newly agreed headless NoX Auth service. [Implementation-plan section 20](NOX_SUITE_IMPLEMENTATION_PLAN.md#20-nox-auth-and-shared-nox-login) records shared login responsibilities, session decisions and the Auth → Yard → other-app adaptation order. Its requirements contract is `nox-auth/NOX_AUTH_CONTRACT.md`; the proposed five-minute admission-check interval is not yet approved. [Suite correction scope and progress](SUITE_CORRECTION_STATUS.md) preserves the fixed work sequence and actual remaining work. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) remains the local-channel reference; the SDK release itself does not create local channels.
 
 Start with the [project README](../README.md) for installation, the main APIs, and the release process.
 
@@ -10,7 +10,7 @@ The Suite wire contract remains `1.0`. The October 30 delivery baseline was SDK 
 
 | Current document | Contents |
 | --- | --- |
-| [NoX Suite implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md) | Historical plan with later additions; the correction record identifies the original revision and subsequent owner clarifications |
+| [NoX Suite implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md) | Plan with dated additions, including the owner-authorized November 3 NoX Auth decision in section 20; the correction record identifies the original revision and subsequent clarifications |
 | [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) | Same-machine boundary, proposed local sockets/volume, presence versus membership, automated setup, Yard registration, migration and acceptance |
 | [Suite correction scope and progress](SUITE_CORRECTION_STATUS.md) | Original-plan reference, released SDK correction, fixed 12-point sequence and remaining consumer work |
 | [Product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) | Consolidated product declaration, Backend registration, lifecycle, failure handling, and migration requirements; historical filename retained; shared SDK implementation available |
