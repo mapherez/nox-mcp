@@ -640,6 +640,17 @@ impl<E: Executor> ServerHandler for McpServer<E> {
             } else {
                 self.authorized_tools(&context, "tools/list")?
             };
+            let tools = tools
+                .into_iter()
+                .map(|mut tool| {
+                    if let Some(meta) = tool.meta.as_mut() {
+                        if meta.remove("cli").is_some() && meta.is_empty() {
+                            tool.meta = None;
+                        }
+                    }
+                    tool
+                })
+                .collect();
             Ok(ListToolsResult::with_all_items(tools))
         })())
     }

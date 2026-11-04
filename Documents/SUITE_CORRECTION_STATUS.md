@@ -151,3 +151,38 @@ the default shared CI runtime fixture tests foundation pairing with published
 Backend v1.2.0/Auth v0.0.2. Neither is a claim of remote CI, publication, installed
 product adaptation, CLI behavior, or final point-12 acceptance. See
 `nox-yard/Documentation/Developer/Suite-Integration.md` for commands and boundaries.
+
+## Point 10 — SDK publication boundary, November 4, 2026
+
+Before continuing Backend menu descriptors, the owner explicitly requested that
+human menu information stay out of normal MCP catalogs. Source after SDK 0.7.2
+now projects `_meta.cli` out of standard `tools/list` in TypeScript, Go and Rust,
+including runtimes without discovery. Unrelated metadata, schemas, annotations,
+operations, authentication and results retain their existing behavior.
+
+NoX `nox/tools/definitions` retains the complete canonical tool, its CLI path and
+optional separate interactive descriptor. Manifests/loaders remain lossless;
+canonical fingerprint algorithms and stale-definition guards are unchanged.
+This keeps menus available to the interactive NoX CLI without relying on an AI
+client to discard fields it received. The future CLI's AI-facing MCP surface must
+publish the normal projection rather than its human navigation interface.
+
+This correction is confined to this repository. Existing released consumers,
+including Backend and Gateway, change only after an explicit SDK/publication
+adapter update. Backend menu implementation remains the next separate step of
+point 10; no product, CLI, release or deployed installation is changed here.
+The original implementation-plan file is unchanged.
+
+Local verification of this SDK correction passed: 212 TypeScript tests, complete
+Go race tests and vet, the Rust suite, identical runtime observations in 18 shared
+scenarios, Suite conformance (312 document and 55 signed-token cases), and real
+supported discovery transports (stdio/HTTP JSON in all three languages, SSE in
+TypeScript/Rust). The standalone Go module and packaged Rust crate/independent
+consumer passed. The installed TypeScript tarball passed consumer build and real
+legacy/modern HTTP JSON/SSE with both minimum and latest compatible dependencies.
+Shared publication cases cover absent/empty metadata, CLI-only and mixed metadata,
+null/object CLI values, unrelated nested fields and authorization metadata. Tests
+also verify source immutability, CLI-only fingerprint changes and unchanged normal
+catalogs/calls. Existing required CI/release jobs already run these test categories;
+no workflow was weakened or publication triggered. Remote CI and consumer rollout
+remain separate from these local results. Work stops here before Backend menus.

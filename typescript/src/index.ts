@@ -13,6 +13,7 @@ export * from './suite-http.js';
 export { ExecutionLimiter } from './execution-limit.js';
 import { installDiscovery, type DiscoveryOptions } from './discovery.js';
 import { ExecutionLimiter } from './execution-limit.js';
+import { installStandardToolList } from './tool-publication.js';
 
 export interface ExecutionContext {
   requestId: string; appId: string; userId?: string; scopes: ReadonlySet<string>;
@@ -46,6 +47,7 @@ function createRuntimeServer(options: Omit<ServerOptions,'tools'> & { tools: rea
   if (!options.appId || !options.name || options.tools.some(t => !t.name || [...t.name].length > 64 || t.requiredScopes?.some(s => typeof s !== 'string' || !s)) || new Set(options.tools.map(t => t.name)).size !== options.tools.length) throw new Error('Invalid server identity, tool or scopes.');
   const server = new McpServer({ name: options.name, version: options.version });
   if (options.discovery) installDiscovery(server, options.discovery);
+  else installStandardToolList(server);
   const timeoutMs = options.timeoutMs ?? defaults.requestTimeoutMs;
   const maxBytes = options.maxPayloadBytes ?? defaults.maxPayloadBytes;
   const maxInFlight = options.maxInFlightRequests ?? defaults.maxInFlightRequests;

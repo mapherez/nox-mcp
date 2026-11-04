@@ -343,6 +343,15 @@ The route table binds an alias to product ID, current registration/association, 
 
 Preserve original schemas, annotations, titles, descriptions, content semantics, `_meta.cli`, and unknown metadata. Add `_meta["nox/gateway"]` containing `version: "1.0"`, `productId`, `toolName`, `serverId`, `registrationRevision`, and `sourceFingerprint`. This is generated Gateway origin data; products must not preclaim that reserved field. A conflicting source field invalidates the affected definition instead of being silently overwritten. Do not publish internal addresses, deployment IDs, API keys, service credentials, or delegated tokens in origin metadata.
 
+Publication clarification, November 4, 2026: preserve `_meta.cli` in the canonical
+NoX source/aggregate definition used by discovery and fingerprints. Standard
+`tools/list` is its MCP projection and excludes only that CLI field; separate
+interactive descriptors/presentation are not inserted into the standard catalog.
+The future CLI uses discovery internally and exposes a standard MCP surface to
+AI clients without republishing its human menu interface. Consumers must update
+the SDK/publication adapter to receive this behavior; unchanged released products
+are not silently altered by this contract update.
+
 Gateway does not infer command names from business types or rewrite `_meta.cli` text. Future CLI navigation uses a generic product boundary keyed by `productId`, with its human label and existing descriptor paths below it. Product IDs/labels are data. A node may have an action and children under the existing CLI foundation. Ambiguous action paths within one product disable the affected advanced action with a diagnostic; they do not select an arbitrary tool or hide unrelated conventional tools.
 
 ### 9.3 Auxiliary references

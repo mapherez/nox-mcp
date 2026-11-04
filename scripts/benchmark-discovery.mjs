@@ -15,7 +15,8 @@ for(const count of [10,100,1000]){
  const view={viewId:'authorized-user:policy-1',definitions},service=new DiscoveryService('benchmark-installation'),cache=new DiscoveryCache('benchmark','credential-a');
  let transferred=0,downloaded=0;
  const request=async(method,params)=>{const result=method.endsWith('/catalog')?service.catalog(view,params):service.definitions(view,params);transferred+=exchange(method,params,result);if(result.definitions)downloaded+=result.definitions.length;return result;};
- const conventional=()=>exchange('tools/list',{_meta:{...discoveryMeta(),'io.modelcontextprotocol/clientCapabilities':{}}},{resultType:'complete',tools:view.definitions.map(d=>d.tool)});
+ const publicTools=view.definitions.map(({tool})=>{const projected=structuredClone(tool);delete projected._meta.cli;if(!Object.keys(projected._meta).length)delete projected._meta;return projected;});
+ const conventional=()=>exchange('tools/list',{_meta:{...discoveryMeta(),'io.modelcontextprotocol/clientCapabilities':{}}},{tools:publicTools});
  const baseline=conventional();await cache.sync(request);const cold=transferred;assert.equal(downloaded,count);
  transferred=0;downloaded=0;await cache.sync(request);const unchanged=transferred;assert.equal(downloaded,0);
  view.definitions[0].tool.description+=' Updated definition.';transferred=0;downloaded=0;await cache.sync(request);const oneChanged=transferred;assert.equal(downloaded,1);

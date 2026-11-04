@@ -29,7 +29,7 @@ for(const responseMode of [undefined,'sse']){
  try{
   for(const modern of [false,true]){
    await request(modern?'server/discover':'initialize',modern?{}:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'consumer',version:'0.5.0'}},modern);
-   const listed=await request('tools/list',{},modern),echo=listed.tools.find(t=>t.name==='echo');assert.deepEqual(echo._meta,{package:true,cli:'echo'});
+   const listed=await request('tools/list',{},modern),echo=listed.tools.find(t=>t.name==='echo');assert.deepEqual(echo._meta,{package:true});
    const validators=new Map(listed.tools.map(tool=>[tool.name,new Ajv2020({strict:false}).compile(tool.outputSchema)]));
    for(const [name,args,code]of [['echo',{value:'installed tarball'},null],['restricted',{},'FORBIDDEN'],['domain',{},'CONFLICT']]){
     const result=await request('tools/call',{name,arguments:args},modern);
@@ -42,7 +42,7 @@ for(const responseMode of [undefined,'sse']){
    if(modern){
     let downloads=0;const rpc=async(method,p)=>{const result=await request(method,p);if(method.endsWith('/definitions'))downloads+=result.definitions.length;return result};
     const cache=new DiscoveryCache(url,'credential-a');await cache.sync(rpc);assert.equal(downloads,3);await cache.sync(rpc);assert.equal(downloads,3);
-    const definition=cache.definitions.get('echo');assert.deepEqual(definition.tool,echo);
+    const definition=cache.definitions.get('echo');assert.deepEqual(definition.tool,{...echo,_meta:{...echo._meta,cli:'echo'}});assert.deepEqual((await request('tools/list')).tools,listed.tools);
     await assert.rejects(request('tools/call',{name:'echo',arguments:{value:'stale'},_meta:{'nox/discovery':{expectedFingerprint:'stale'}}}),/STALE_DEFINITION/);
    }
   }

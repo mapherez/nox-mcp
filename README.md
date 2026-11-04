@@ -157,9 +157,11 @@ nox-mcp = { path = "../nox-mcp/rust" }
 
 MCP tools can expose additional metadata through `_meta`.
 
-NoX MCP preserves this metadata across the supported implementations.
+NoX MCP preserves source metadata across the supported implementations. Standard
+`tools/list` responses omit the reserved `_meta.cli` field; other metadata remains
+available under the underlying MCP SDK's serialization rules.
 
-Example:
+Example source metadata, retained in NoX discovery definitions:
 
 ```json
 {
@@ -169,7 +171,14 @@ Example:
 }
 ```
 
-Custom `_meta` values are application-defined and can be ignored by clients that do not understand them.
+`nox/tools/definitions` retains that path and any separate interactive `cli`
+descriptor. Labels, selectors, previews, confirmations and workflows are for the
+interactive NoX CLI; they are not added to the standard AI-facing tool catalog.
+The projection does not change names, descriptions, schemas, annotations, calls,
+permissions or results, and does not remove metadata from source manifests.
+See [discovery](Documents/DISCOVERY.md#compatibility-and-negotiation) for the
+publication boundary and release status. This separation does not depend on a
+client deciding to ignore menu metadata.
 
 This makes it possible to layer additional conventions on top of MCP without changing the canonical MCP tool name or schema.
 

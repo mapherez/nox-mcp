@@ -4,7 +4,27 @@ An optional extension for CLI metadata and incremental discovery. `tools/list` r
 
 ## Compatibility and negotiation
 
-`tools/list` continues returning complete MCP tools. `_meta.cli`, schemas, annotations, and custom metadata remain available to conventional clients. Advanced descriptors are separate documents: they are not inserted into `_meta` and do not duplicate schemas.
+**Source correction after SDK 0.7.2, November 4, 2026:** standard `tools/list`
+omits the reserved `_meta.cli` field. Names, descriptions, input/output schemas,
+annotations and unrelated metadata retain their normal MCP behavior. If removing
+`cli` leaves no metadata, `_meta` is omitted. Otherwise the remaining fields are
+preserved; underlying SDK serialization of an originally empty object is unchanged.
+This also applies to runtimes without NoX discovery, on supported legacy/modern
+protocols and transports. Published 0.7.2 packages retain their earlier behavior;
+consumers receive this correction only after an explicit SDK update.
+
+| Publication | Contents |
+| --- | --- |
+| Standard `tools/list` | Normal MCP definitions, without `_meta.cli` or interactive descriptors |
+| NoX `nox/tools/definitions` | Complete canonical `tool`, including its original `_meta.cli`, and optional separate `cli` descriptor |
+| Source manifests and complete document loaders | Original metadata preserved losslessly |
+
+Advanced descriptors are separate documents: they are not inserted into `_meta`
+and do not duplicate schemas. The projection never mutates the registered source,
+so a normal listing cannot discard a later NoX path, invalidate a cache, or alter
+an execution. Custom nested fields named `cli` outside `_meta.cli` are not removed.
+Clients needing menu paths use the explicitly negotiated NoX definition methods.
+Standard AI clients need not receive and then ignore those paths.
 
 The extension is identified as `nox/discovery`, following the MCP `prefix/name` format. The server advertises it in `server/discover`:
 
@@ -45,7 +65,7 @@ References: [MCP versioning](https://modelcontextprotocol.io/specification/2026-
 
 ## Tools and descriptors
 
-A simple tool only needs the existing contract:
+A simple source tool declaration retains the existing contract. Its `_meta.cli` is available in the canonical NoX definition, not in standard `tools/list`:
 
 ```json
 {
@@ -280,6 +300,12 @@ Services memoize hashes by content, with an internal limit of 4,096 entries. Que
 
 Clients use one cache per configured trusted origin and local credential partition, further separated by `serverId`, `viewId`, and the fixed protocol/extension profile. Do not use only `serverInfo.name`. Servers supply a stable `serverId` per installation and an opaque `viewId` distinguishing users, tenants, and relevant policy revisions. Do not include tokens or API keys in these fields. `sync` always revalidates the catalog; consumers may avoid the call while their cache is fresh, respecting TTL and applicable MCP notifications.
 
+Fingerprints continue to cover the complete NoX definition, including `_meta.cli`
+and the separate descriptor; their algorithm is unchanged. Standard `tools/list`
+is a projection and is intentionally not byte-identical to `definition.tool`.
+A CLI-only source change refreshes the NoX fingerprint while the standard catalog
+stays unchanged. Standard calls without `expectedFingerprint` remain supported.
+
 When supplied in a call's `_meta["nox/discovery"]`, `expectedFingerprint` compares the current definition before executor dispatch. `STALE_DEFINITION` requires refreshing the definition and repeating any review/consent. `FORBIDDEN` hides tools outside the view; `UNAVAILABLE` prevents execution of temporarily unavailable tools. These rejections and parameter validation retain JSON-RPC `-32602` with `data.reason`. A missing required capability uses `-32021`, as described under negotiation. Executor domain errors use `isError: true` and a JSON body in text, without `structuredContent`, to avoid contradicting the success schema. Consumers must treat both as failures without interpreting text as authorization. Clients also verify the complete catalog hash before accepting removals.
 
 ### HTTP errors and SSE responses
@@ -312,10 +338,10 @@ The `Supported / Required compatibility` workflow compares observations across l
 
 | Tools | Full `tools/list` | Initial incremental | Unchanged | One changed | One removed |
 | ---: | ---: | ---: | ---: | ---: | ---: |
-| 10 | 17 799 | 21 173 | 526 | 3 853 | 1 318 |
-| 100 | 175 929 | 203 851 | 526 | 11 863 | 9 328 |
-| 1 000 | 1 758 129 | 2 033 665 | 526 | 91 963 | 89 428 |
+| 10 | 17 555 | 21 173 | 526 | 3 853 | 1 318 |
+| 100 | 173 615 | 203 851 | 526 | 11 863 | 9 328 |
+| 1 000 | 1 734 215 | 2 033 665 | 526 | 91 963 | 89 428 |
 
-One changed tool reduces transfer by 78.4%, 93.3%, and 94.8%, respectively. The first load costs more because it transfers the catalog and descriptors. A fresh conventional MCP cache can also transfer zero bytes. These figures do not measure latency or production products; compression and schema composition change the results.
+One changed tool reduces transfer by 78.1%, 93.2%, and 94.7%, respectively. The first load costs more because it transfers the catalog and descriptors. A fresh conventional MCP cache can also transfer zero bytes. These figures do not measure latency or production products; compression and schema composition change the results.
 
 This implementation includes no terminal renderer, automatic workflow execution, persistent cache storage, cross-server discovery, or CLI/Gateway products. Selection/preview helpers and their authorization belong to the product server. New Rust production dependencies are `sha2`, `base64`, and `ryu-js`, needed for hashing and JCS representation; `axum` is only a development dependency for real HTTP tests. Existing MCP SDKs were not upgraded.

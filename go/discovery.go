@@ -880,5 +880,6 @@ func installDiscovery(server *mcp.Server, options DiscoveryOptions) error {
 			return &discoveryResult{Data: result}, nil
 		}
 	})
+	installStandardToolList(server)
 	return nil
 }

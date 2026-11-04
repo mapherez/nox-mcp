@@ -22,7 +22,7 @@ Support is limited to the tested features and execution paths. It does not certi
 - Rust: Rust 1.88+, `rmcp >=3.5.0, <4`, and the remaining requirements in `rust/Cargo.toml`. Consumers own their resolver/lockfile. For the MSRV, use dependency resolution compatible with the Rust version; minimum-version tests do not inherit the SDK lockfile.
 - The TypeScript package exposes six entry points: `@nox/mcp`, `/contract`, `/bridge`, `/bridge/client`, `/bridge/server`, and `/node`. The build removes old output before compiling.
 - Authentication is supplied by the application through the existing credential, context, and scope APIs. The SDK does not implement product identity flows or issue API keys.
-- `contracts/` is authoritative; generated copies ship with Go/Rust and compile without Node. `_meta.cli`, custom metadata, and existing bridge protocols are preserved.
+- `contracts/` is authoritative; generated copies ship with Go/Rust and compile without Node. Source `_meta.cli`, custom metadata and existing bridge protocols are preserved. In source after 0.7.2, standard `tools/list` excludes `_meta.cli`; canonical NoX discovery definitions retain it. This is the explicit publication correction documented in [discovery](DISCOVERY.md#compatibility-and-negotiation), not a tool-name/schema or bridge-protocol change.
 
 The portable profile and legitimate differences between native APIs are described in [contract maintenance](../contracts/README.md). When updating older installations, also review the [historical migration notes](old/MIGRATION_0_5.md); publishing a version does not migrate consumers automatically.
 

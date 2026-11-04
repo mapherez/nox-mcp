@@ -18,7 +18,7 @@ During structural validation, `schemaVersion` remains `1`, `protocolVersion` is 
 
 In manifest-based discovery, an absent hint retains its MCP meaning: `readOnlyHint` and `idempotentHint` have an effective value of `false`; `destructiveHint` and `openWorldHint` have an effective value of `true`. Some SDKs materialize booleans whose effective value is `false`. The complete document preserves original field presence.
 
-Document loaders preserve `_meta.cli`, custom metadata, extensions, unknown properties, and the distinction between absence and a present value. `_meta` is optional and must be an object when present; `{}` is valid, while `null`, arrays, and scalars are invalid. We do not reinterpret `_meta.cli` as a new command convention.
+Document loaders preserve `_meta.cli`, custom metadata, extensions, unknown properties, and the distinction between absence and a present value. `_meta` is optional and must be an object when present; `{}` is valid, while `null`, arrays, and scalars are invalid. We do not reinterpret `_meta.cli` as a new command convention. Runtime publication now separates that source metadata from standard MCP: `tools/list` omits only `_meta.cli`, while NoX definitions retain the complete canonical tool and optional separate CLI descriptor. This is a response projection, not a manifest/schema mutation or a new path convention. The shared `discovery-conformance.json.publicationCases` and real transport checks cover this boundary.
 
 Validation does not transform data: it does not insert defaults, coerce types, or remove properties. `default` is an annotation. An omitted field remains omitted, including `retryable` in an error document. Unknown properties are accepted in open contract objects; tools follow their schema's `additionalProperties` setting.
 
@@ -70,7 +70,7 @@ These differences remain legitimate:
 
 | API area | Difference and limit |
 | --- | --- |
-| SDK projections | Rust `load_tools`, `parse_server_frame`, and Go/Rust discovery types represent only SDK fields. Use the complete loader to preserve every extension; do not round-trip a manifest through discovery types. Object `_meta` metadata remains advertised. |
+| SDK projections | Rust `load_tools`, `parse_server_frame`, and Go/Rust discovery types represent only SDK fields. Use the complete loader to preserve every extension; do not round-trip a manifest through discovery types. Standard runtime listing omits `_meta.cli`; NoX definitions retain it and other metadata is preserved. |
 | Go errors | `Runtime.Execute` uses the idiomatic `error` return; MCP envelope normalization occurs in the handler. Tests compare that boundary. |
 | Physical cancellation | Go/TypeScript retain capacity while non-cooperating work continues; Rust may abort the future. Universal preemption and effect rollback do not exist. |
 | Transport | The SDK may suppress the response when a connection/request is cancelled. The contract defines the internal result when deliverable; it does not require a response on a closed connection. |

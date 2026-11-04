@@ -143,6 +143,8 @@ func newRuntime(options Options, manifestAnnotations map[string]*mcp.ToolAnnotat
 		if err := installDiscovery(r.Server, *discovery[0]); err != nil {
 			return nil, err
 		}
+	} else {
+		installStandardToolList(r.Server)
 	}
 	return r, nil
 }

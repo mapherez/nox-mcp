@@ -4,6 +4,7 @@ import { Ajv } from 'ajv';
 import { z } from 'zod';
 import { MissingRequiredClientCapabilityError, UnsupportedProtocolVersionError, SUPPORTED_PROTOCOL_VERSIONS, ProtocolError, ProtocolErrorCode, type McpServer, type ServerContext, type Tool } from '@modelcontextprotocol/server';
 import { discoverySchemas } from './discovery-contracts.generated.js';
+import { standardTool } from './tool-publication.js';
 
 export const DISCOVERY_EXTENSION = 'nox/discovery';
 export const DISCOVERY_VERSION = '1.0';
@@ -240,7 +241,7 @@ export function installDiscovery(server: McpServer, options: DiscoveryOptions): 
   server.server.registerCapabilities({extensions:{[DISCOVERY_EXTENSION]:discoveryCapability}});
   server.server.setRequestHandler('nox/tools/catalog',{params:z.record(z.string(),z.unknown())},(params,ctx)=>boundary(async()=>{negotiated(ctx);return service.catalog(await view(ctx),params);}));
   server.server.setRequestHandler('nox/tools/definitions',{params:z.record(z.string(),z.unknown())},(params,ctx)=>boundary(async()=>{negotiated(ctx);return service.definitions(await view(ctx),params as never);}));
-  const listAuthorized=async(request:unknown,ctx:ServerContext)=>boundary(async()=>{const result=await listTools(request,ctx);return {...result,tools:(await view(ctx,result.tools)).definitions.map(d=>d.tool)};});
+  const listAuthorized=async(request:unknown,ctx:ServerContext)=>boundary(async()=>{const result=await listTools(request,ctx);return {...result,tools:(await view(ctx,result.tools)).definitions.map(d=>standardTool(d.tool))};});
   server.registerTool = ((name:string,config:Record<string,unknown>,handler:(input:unknown,ctx:ServerContext)=>unknown) => {
     // Capture the SDK's public list handler during registration. Its own registry
     // remains authoritative, including schema conversion, icons and future fields.

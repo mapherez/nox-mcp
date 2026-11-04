@@ -68,7 +68,7 @@ for (const mode of ['json', 'sse']) for (const modern of [false, true]) {
       assert.equal(discovered.result._meta[SERVER_INFO_META_KEY].name, 'test');
     }
     const listed = await result(await post('tools/list', {}, headers), mode);
-    assert.deepEqual(listed.result.tools[0]._meta, echo._meta);
+    assert.deepEqual(listed.result.tools[0]._meta, { custom: echo._meta.custom });
     assert.equal(listed.result.tools[0].inputSchema.properties.value.type, 'string');
     assert.equal(listed.result.tools[0].outputSchema.properties.value.type, 'string');
     assert.equal(listed.result.tools[0].annotations.readOnlyHint, true);
@@ -273,7 +273,7 @@ for (const mode of ['json', 'sse']) for (const era of ['legacy', 'modern']) {
     await client.connect(transport);
     assert.equal(client.getProtocolEra(), era);
     const listed = await client.listTools();
-    assert.deepEqual(listed.tools[0]._meta, echo._meta);
+    assert.deepEqual(listed.tools[0]._meta, { custom: echo._meta.custom });
     const called = await client.callTool(call);
     assert.deepEqual(called.structuredContent, { value: 'hello' });
     const invalid = await client.callTool({ name: 'echo', arguments: {} });

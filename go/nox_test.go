@@ -14,20 +14,29 @@ import (
 )
 
 func TestToolMetadata(t *testing.T) {
-	metadata := map[string]any{
-		"cli":    "resource create",
-		"custom": map[string]any{"flags": []any{"one", "two"}, "enabled": true, "count": float64(2), "value": nil},
+	var corpus struct {
+		PublicationCases []struct {
+			ID               string         `json:"id"`
+			Metadata         map[string]any `json:"metadata"`
+			ExpectedMetadata map[string]any `json:"expectedMetadata"`
+		} `json:"publicationCases"`
 	}
-	for _, tc := range []struct {
-		name string
-		meta map[string]any
-	}{{"with metadata", metadata}, {"without metadata", nil}} {
-		t.Run(tc.name, func(t *testing.T) {
+	raw, err := Contracts.ReadFile("contracts/discovery-conformance.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(raw, &corpus); err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range corpus.PublicationCases {
+		name, meta, expectedMeta := tc.ID, tc.Metadata, tc.ExpectedMetadata
+		originalMeta, _ := json.Marshal(meta)
+		t.Run(name, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			schema := &jsonschema.Schema{Type: "object", Properties: map[string]*jsonschema.Schema{"value": {Type: "string"}}, Required: []string{"value"}}
 			tool := Tool{
-				Name: "create_something", Title: "Test tool", Description: "Test description", Meta: tc.meta,
+				Name: "create_something", Title: "Test tool", Description: "Test description", Meta: meta,
 				InputSchema: schema, OutputSchema: schema, ReadOnly: true, Idempotent: true,
 				Execute: func(execution ExecutionContext, input map[string]any) (map[string]any, error) {
 					if execution.AppID != "test" || execution.RequestID == "" || execution.Err() != nil {
@@ -75,8 +84,8 @@ func TestToolMetadata(t *testing.T) {
 			if got == nil {
 				t.Fatal("tool missing from tools/list")
 			}
-			if !reflect.DeepEqual(map[string]any(got.Meta), tc.meta) {
-				t.Fatalf("metadata = %#v, want %#v", got.Meta, tc.meta)
+			if !reflect.DeepEqual(map[string]any(got.Meta), expectedMeta) && !(len(expectedMeta) == 0 && len(got.Meta) == 0) {
+				t.Fatalf("metadata = %#v, want %#v", got.Meta, expectedMeta)
 			}
 			// Check the public JSON field as well as the client's decoded metadata.
 			data, err := json.Marshal(got)
@@ -87,12 +96,16 @@ func TestToolMetadata(t *testing.T) {
 			if err := json.Unmarshal(data, &wire); err != nil {
 				t.Fatal(err)
 			}
-			if tc.meta != nil {
-				if !reflect.DeepEqual(wire["_meta"], tc.meta) || got.Meta["cli"] != "resource create" {
-					t.Fatalf("_meta not preserved: %s", data)
+			if len(expectedMeta) > 0 {
+				if !reflect.DeepEqual(wire["_meta"], expectedMeta) {
+					t.Fatalf("non-CLI metadata not preserved: %s", data)
 				}
-			} else if _, exists := wire["_meta"]; exists {
+			} else if expectedMeta == nil && wire["_meta"] != nil {
 				t.Fatal("_meta should be omitted for tools without metadata")
+			}
+			afterMeta, _ := json.Marshal(tool.Meta)
+			if string(afterMeta) != string(originalMeta) {
+				t.Fatal("source metadata mutated")
 			}
 			want := &mcp.Tool{Name: tool.Name, Title: tool.Title, Description: tool.Description, InputSchema: schema, OutputSchema: schema,
 				Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true, DestructiveHint: &tool.Destructive, IdempotentHint: true}}

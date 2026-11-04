@@ -37,7 +37,7 @@ impl Executor for Echo {
     }
 }
 
-async fn check_tool_metadata(metadata: Option<Value>) {
+async fn check_tool_metadata(metadata: Option<Value>, expected_metadata: Option<Value>) {
     let schema = json!({"type": "object", "properties": {"value": {"type": "string"}}, "required": ["value"]});
     let mut entry = json!({
         "name": "create_something", "title": "Test tool", "description": "Test description",
@@ -72,12 +72,18 @@ async fn check_tool_metadata(metadata: Option<Value>) {
         let listed = client.list_tools(None).await.unwrap();
         assert_eq!(listed.tools.len(), 1);
         let wire = serde_json::to_value(&listed).unwrap();
-        assert_eq!(wire["tools"][0], entry);
-        if let Some(metadata) = metadata.as_ref() {
-            assert_eq!(&wire["tools"][0]["_meta"], metadata);
+        let mut expected = entry.clone();
+        if let Some(meta) = expected_metadata.as_ref() {
+            expected["_meta"] = meta.clone();
         } else {
-            assert!(wire["tools"][0].get("_meta").is_none());
+            expected.as_object_mut().unwrap().remove("_meta");
         }
+        assert_eq!(wire["tools"][0], expected);
+        assert_eq!(
+            serde_json::to_value(&tools[0]).unwrap(),
+            entry,
+            "source metadata mutated"
+        );
         let input = json!({"value": "hello"});
         let result = client
             .call_tool(
@@ -125,10 +131,13 @@ async fn check_tool_metadata(metadata: Option<Value>) {
 async fn tools_list_preserves_arbitrary_metadata() {
     tokio::time::timeout(
         Duration::from_secs(5),
-        check_tool_metadata(Some(json!({
-            "cli": "resource create",
-            "custom": {"flags": ["one", "two"], "enabled": true, "count": 2, "value": null}
-        }))),
+        check_tool_metadata(
+            Some(json!({
+                "cli": "resource create",
+                "custom": {"flags": ["one", "two"], "enabled": true, "count": 2, "value": null}
+            })),
+            Some(json!({"custom":{"flags":["one","two"],"enabled":true,"count":2,"value":null}})),
+        ),
     )
     .await
     .unwrap();
@@ -136,14 +145,34 @@ async fn tools_list_preserves_arbitrary_metadata() {
 
 #[tokio::test]
 async fn tools_without_metadata_work_normally() {
-    tokio::time::timeout(Duration::from_secs(5), check_tool_metadata(None))
+    tokio::time::timeout(Duration::from_secs(5), check_tool_metadata(None, None))
         .await
         .unwrap();
 }
 
 #[tokio::test]
 async fn tools_list_preserves_empty_metadata() {
-    tokio::time::timeout(Duration::from_secs(5), check_tool_metadata(Some(json!({}))))
+    tokio::time::timeout(
+        Duration::from_secs(5),
+        check_tool_metadata(Some(json!({})), Some(json!({}))),
+    )
+    .await
+    .unwrap();
+}
+
+#[tokio::test]
+async fn shared_standard_publication_cases() {
+    let corpus: Value =
+        serde_json::from_str(include_str!("../contracts/discovery-conformance.json")).unwrap();
+    for case in corpus["publicationCases"].as_array().unwrap() {
+        tokio::time::timeout(
+            Duration::from_secs(5),
+            check_tool_metadata(
+                case.get("metadata").cloned(),
+                case.get("expectedMetadata").cloned(),
+            ),
+        )
         .await
         .unwrap();
+    }
 }

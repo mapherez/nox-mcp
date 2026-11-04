@@ -121,7 +121,14 @@ async fn shared_runtime_conformance() {
         let connection = connection.unwrap();
         let listed = client.list_tools(None).await.unwrap();
         let listed = serde_json::to_value(&listed.tools[0]).unwrap();
-        for key in ["_meta", "inputSchema", "outputSchema"] {
+        let mut expected_meta = manifest["tools"][0]["_meta"].clone();
+        expected_meta.as_object_mut().unwrap().remove("cli");
+        if expected_meta.as_object().unwrap().is_empty() {
+            assert!(listed.get("_meta").is_none());
+        } else {
+            assert_eq!(listed["_meta"], expected_meta);
+        }
+        for key in ["inputSchema", "outputSchema"] {
             assert_eq!(listed[key], manifest["tools"][0][key], "discovery: {key}");
         }
         for (hint, fallback) in [

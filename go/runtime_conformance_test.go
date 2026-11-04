@@ -114,7 +114,19 @@ func TestSharedRuntimeConformance(t *testing.T) {
 			listedJSON, _ := json.Marshal(listed.Tools[0])
 			var listedTool map[string]any
 			json.Unmarshal(listedJSON, &listedTool)
-			for _, key := range []string{"_meta", "inputSchema", "outputSchema"} {
+			expectedMeta := map[string]any{}
+			for key, value := range tool["_meta"].(map[string]any) {
+				if key != "cli" {
+					expectedMeta[key] = value
+				}
+			}
+			if len(expectedMeta) > 0 && !reflect.DeepEqual(listedTool["_meta"], expectedMeta) {
+				t.Fatal("non-CLI metadata changed")
+			}
+			if len(expectedMeta) == 0 && listedTool["_meta"] != nil {
+				t.Fatal("CLI metadata leaked into tools/list")
+			}
+			for _, key := range []string{"inputSchema", "outputSchema"} {
 				if !reflect.DeepEqual(listedTool[key], tool[key]) {
 					t.Fatalf("discovery changed %s: %#v", key, listedTool[key])
 				}

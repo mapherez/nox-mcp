@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { readFile } from 'node:fs/promises';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { createServer } from '../dist/index.js';
@@ -42,14 +43,19 @@ function tool(name) {
   };
 }
 
-test('tools/list preserves custom metadata unchanged', { timeout: 5000 }, async t => {
-  const metadata = { cli: 'resource create', custom: { flags: ['one', 'two'], enabled: true, count: 2, value: null } };
-  const request = await connect(t, [{ ...tool('create_something'), _meta: metadata }]);
-  const { tools } = await request('tools/list');
-  assert.equal(tools.length, 1);
-  assert.equal(tools[0].name, 'create_something');
-  assert.equal(tools[0]._meta?.cli, 'resource create');
-  assert.deepEqual(tools[0]._meta, metadata);
+test('shared publication cases: standard list omits CLI without mutating source or calls', { timeout: 10000 }, async t => {
+  const corpus = JSON.parse(await readFile(new URL('../../contracts/discovery-conformance.json', import.meta.url), 'utf8'));
+  for (const fixture of corpus.publicationCases) {
+    const metadata = fixture.metadata && structuredClone(fixture.metadata);
+    if (metadata) Object.freeze(metadata);
+    const request = await connect(t, [{ ...tool('create_something'), ...(metadata ? { _meta: metadata } : {}) }]);
+    const first = await request('tools/list');
+    assert.deepEqual(first.tools[0]._meta, fixture.expectedMetadata, fixture.id);
+    assert.deepEqual((await request('tools/list')), first, fixture.id + ': repeated listing');
+    assert.deepEqual(metadata, fixture.metadata, fixture.id + ': source mutation');
+    const called = await request('tools/call', { name: 'create_something', arguments: { value: fixture.id } });
+    assert.deepEqual(called.structuredContent, { value: fixture.id });
+  }
 });
 
 test('tools without metadata are listed and execute normally', { timeout: 5000 }, async t => {

@@ -51,13 +51,13 @@ export async function exerciseDiscoveryFixtures(fixtures,{suite='supported'}={})
    if(legacy){
     const init=await rpc('initialize',{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'legacy-fixture',version:'0.5.0'}});assert.equal(init.protocolVersion,'2025-11-25');
     if(!http)child.stdin.write(JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized',params:{}})+'\n');
-    const listed=await rpc('tools/list');assert.equal(listed.tools[0]._meta.cli,'item show');assert.deepEqual(listed.tools[0]._meta.custom,corpus.tool._meta.custom);
+    const listed=await rpc('tools/list');assert.equal(Object.hasOwn(listed.tools[0]._meta,'cli'),false);assert.deepEqual(listed.tools[0]._meta.custom,corpus.tool._meta.custom);
     const called=await rpc('tools/call',{name:listed.tools[0].name,arguments:{id:'legacy'}});assert.equal(called.isError??false,false);assert.deepEqual(called.structuredContent,{name:'legacy'});
     for(const method of ['nox/tools/catalog','nox/tools/definitions']){const rejected=await rpc(method,{},false,true);assert.equal(rejected.message.error?.code,-32602);assert.equal(rejected.message.error.data.reason,'EXTENSION_NOT_NEGOTIATED');}
     console.log(`${language}: real ${transport} initialize, standard tools/list, metadata and tools/call passed.`);continue;
    }
    const discover=await rpc('server/discover');assert.deepEqual(discover.capabilities.extensions[DISCOVERY_EXTENSION].versions,['1.0']);
-   const standard=await rpc('tools/list',{_meta:{'io.modelcontextprotocol/clientCapabilities':{}}});assert.equal(standard.tools[0]._meta.cli,'item show');assert.deepEqual(standard.tools[0]._meta.custom.preserve,[1,null,'á']);
+   const standard=await rpc('tools/list',{_meta:{'io.modelcontextprotocol/clientCapabilities':{}}});assert.equal(Object.hasOwn(standard.tools[0]._meta,'cli'),false);assert.deepEqual(standard.tools[0]._meta.custom.preserve,[1,null,'á']);
    const initial=await rpc('nox/tools/catalog');
    for(const fixture of corpus.negotiationCases)for(const method of ['nox/tools/catalog','nox/tools/definitions']){
     const params=method.endsWith('/catalog')?{}:{catalog:initial.catalog,tools:initial.tools};
@@ -94,7 +94,7 @@ export async function exerciseDiscoveryFixtures(fixtures,{suite='supported'}={})
    }
    await assert.rejects(rpc('nox/tools/catalog',{unexpected:true}),/INVALID_DISCOVERY|[Ii]nvalid/);
    let downloaded=0;const request=async(method,p)=>{const result=await rpc(method,p);if(method.endsWith('/definitions'))downloaded+=result.definitions.length;return result;};const cache=new DiscoveryCache(`${language}:${transport}`,'credential-a');await cache.sync(request);assert.equal(downloaded,1);await cache.sync(request);assert.equal(downloaded,1);
-   const definition=[...cache.definitions.values()][0];assert.deepEqual(definition.tool,standard.tools[0]);assert.equal(definition.cli.version,'1.0');
+   const definition=[...cache.definitions.values()][0];assert.deepEqual(definition.tool,{...standard.tools[0],_meta:{...standard.tools[0]._meta,cli:corpus.tool._meta.cli}});assert.deepEqual((await rpc('tools/list')).tools,standard.tools);assert.equal(definition.cli.version,'1.0');
    const before=(await rpc('test/executions')).count;
    const call={name:definition.tool.name,arguments:{id:'42'},_meta:{[DISCOVERY_EXTENSION]:{expectedFingerprint:definition.fingerprint}}};assert.ok(await rpc('tools/call',call));await assert.rejects(rpc('tools/call',{...call,_meta:{[DISCOVERY_EXTENSION]:{expectedFingerprint:'old'}}}),/STALE_DEFINITION/);
    await assert.rejects(rpc('tools/call',{...call,_meta:{...call._meta,'test/policy':'unavailable'}}),/UNAVAILABLE/);

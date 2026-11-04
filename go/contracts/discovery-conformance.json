@@ -671,5 +671,107 @@
       },
       "valid": false
     }
+  ],
+  "publicationCases": [
+    {
+      "id": "absent-metadata"
+    },
+    {
+      "id": "empty-metadata",
+      "metadata": {},
+      "expectedMetadata": {}
+    },
+    {
+      "id": "cli-only",
+      "metadata": {
+        "cli": "resource create"
+      }
+    },
+    {
+      "id": "cli-with-custom",
+      "metadata": {
+        "cli": "resource create",
+        "custom": {
+          "flags": [
+            "one",
+            "two"
+          ],
+          "enabled": true,
+          "count": 2,
+          "value": null
+        }
+      },
+      "expectedMetadata": {
+        "custom": {
+          "flags": [
+            "one",
+            "two"
+          ],
+          "enabled": true,
+          "count": 2,
+          "value": null
+        }
+      }
+    },
+    {
+      "id": "null-cli",
+      "metadata": {
+        "cli": null
+      }
+    },
+    {
+      "id": "object-cli",
+      "metadata": {
+        "cli": {
+          "navigation": {
+            "label": "Private menu"
+          },
+          "workflow": [
+            {
+              "id": "human",
+              "type": "confirm"
+            }
+          ]
+        },
+        "other": [
+          "unchanged",
+          2,
+          null
+        ]
+      },
+      "expectedMetadata": {
+        "other": [
+          "unchanged",
+          2,
+          null
+        ]
+      }
+    },
+    {
+      "id": "nested-custom-cli-is-not-navigation",
+      "metadata": {
+        "cli": "resource create",
+        "vendor": {
+          "cli": "domain data"
+        },
+        "nox/authorization": {
+          "version": "1.0",
+          "requiredScopes": [
+            "nox:inspect"
+          ]
+        }
+      },
+      "expectedMetadata": {
+        "vendor": {
+          "cli": "domain data"
+        },
+        "nox/authorization": {
+          "version": "1.0",
+          "requiredScopes": [
+            "nox:inspect"
+          ]
+        }
+      }
+    }
   ]
 }

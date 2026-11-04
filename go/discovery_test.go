@@ -48,6 +48,19 @@ func TestDiscoveryOfficialClient(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer cs.Close()
+	standard, e := cs.ListTools(ctx, nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(standard.Tools) != 1 {
+		t.Fatal("missing standard tool")
+	}
+	if _, leaked := standard.Tools[0].Meta["cli"]; leaked {
+		t.Fatal("CLI path leaked into standard listing")
+	}
+	if !reflect.DeepEqual(standard.Tools[0].Meta["custom"], tool.Meta["custom"]) {
+		t.Fatal("custom metadata changed")
+	}
 	cache, _ := NewDiscoveryCache("memory-test", "credential-a")
 	if e := cache.Sync(ctx, DiscoverySessionRequest(cs)); e != nil {
 		t.Fatal(e)
@@ -55,8 +68,26 @@ func TestDiscoveryOfficialClient(t *testing.T) {
 	if len(cache.Definitions()) != 1 {
 		t.Fatal("missing definition")
 	}
+	definition := cache.Definitions()[tool.Name]
+	if !reflect.DeepEqual(object(definition["tool"])["_meta"], map[string]any(tool.Meta)) || !reflect.DeepEqual(definition["cli"], c["cli"]) {
+		t.Fatal("standard listing mutated discovery metadata")
+	}
+	firstFingerprint := definition["fingerprint"]
+	updated := tool
+	updated.Meta = mcp.Meta{"cli": "item display", "custom": tool.Meta["custom"]}
+	server.AddTool(&updated, func(context.Context, *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		return &mcp.CallToolResult{StructuredContent: JSON{"name": "ok"}}, nil
+	})
+	listed, e := cs.ListTools(ctx, nil)
+	if e != nil || !reflect.DeepEqual(listed.Tools, standard.Tools) {
+		t.Fatal("CLI-only update changed standard catalog", e)
+	}
 	if e := cache.Sync(ctx, DiscoverySessionRequest(cs)); e != nil {
 		t.Fatal(e)
+	}
+	updatedDefinition := cache.Definitions()[tool.Name]
+	if updatedDefinition["fingerprint"] == firstFingerprint || object(object(updatedDefinition["tool"])["_meta"])["cli"] != "item display" {
+		t.Fatal("CLI-only update did not refresh NoX discovery")
 	}
 }
 

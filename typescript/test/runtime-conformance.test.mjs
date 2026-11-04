@@ -70,7 +70,8 @@ test('shared runtime semantics, including authorization and cancellation', { tim
             McpServer.prototype.registerTool = register;
         }
         const { tool: listed, request } = await discover(server);
-        assert.deepEqual(listed._meta, tool._meta);
+        const expectedMeta = { ...tool._meta }; delete expectedMeta.cli;
+        assert.deepEqual(listed._meta, Object.keys(expectedMeta).length ? expectedMeta : undefined);
         assert.deepEqual(listed.inputSchema, tool.inputSchema);
         assert.deepEqual(listed.outputSchema, tool.outputSchema);
         for (const [hint, fallback] of Object.entries({ readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true })) {
