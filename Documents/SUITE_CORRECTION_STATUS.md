@@ -2,7 +2,7 @@
 
 This records the correction authorized on **November 2, 2026**. It is an implementation record, not a replacement for the owner's original plan. Changes here do not authorize unrelated functionality, consumer edits or publication.
 
-**Current progress, November 3, 2026:** participating Suite products must run on the **same host**, not merely on the same LAN. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the channel, automatic pairing delivery, automation responsibilities and acceptance criteria. SDK `0.7.2` and Backend `v1.1.1` are released; the owner reported successful Backend build/browser validation. Gateway points **6 + 9** were implemented and locally validated; the owner subsequently reported Gateway `v0.0.1` registered through Backend. Yard points **7 + 8** have partial, unfinished working-tree changes and are paused for the newly agreed NoX Auth work. Complete installed Suite acceptance remains outstanding.
+**Current progress, November 4, 2026:** participating Suite products run on the **same host**, through the [shared local channel](SUITE_SAME_HOST_INTEGRATION.md). SDK `0.7.2`, Backend `v1.2.0`, Auth `v0.0.2` and Yard `v1.4.0` form the published baseline; the owner accepted installed Backend/Yard Google login and global logout. Gateway points **6 + 9** were implemented and the owner reported Gateway `v0.0.1` registered in Backend. Yard points **7 + 8** are now implemented in source with corresponding scoped Backend deployment management and local real-service verification. Those new changes are not published or accepted on the installed host yet. Product adaptation, CLI and complete installed Suite acceptance remain subsequent work.
 
 **Authorized authentication change, November 3:** [implementation-plan section 20](NOX_SUITE_IMPLEMENTATION_PLAN.md#20-nox-auth-and-shared-nox-login) records the new headless Auth service, central Google admission and the order Auth → Yard acceptance → Backend/other apps. The canonical requirements contract is `nox-auth/NOX_AUTH_CONTRACT.md`; the owner has confirmed the five-minute admission-check interval. Auth `v0.0.1` is published/running and the owner accepted Yard NoX Login with real Google login. Backend adaptation is now in source; its published/installed acceptance remains separate. Backend requires the subsequent private admission capability in Auth, so Auth must be updated first.
 
@@ -36,9 +36,9 @@ The generated TLS fingerprint field becomes optional: TypeScript `tlsPublicKeyFi
 
 | Component | Required correction | Current scope |
 | --- | --- | --- |
-| Backend | Consume SDK 0.7.2; enforce the same-host channel; finish association initiated in the existing dashboard/APIs, including service execution and recovery. Avoid manual protocol JSON/certificate transfer and preserve native/OAuth/client behavior. | Released as v1.1.1; owner reported build/browser success. Automatic setup and actual Backend MCP execution also passed against the Gateway adapter in isolated local acceptance. Yard remains unadapted. |
+| Backend | Consume SDK 0.7.2; enforce the same-host channel; finish association initiated in the existing dashboard/APIs, including service execution and recovery. Avoid manual protocol JSON/certificate transfer and preserve native/OAuth/client behavior. | Published baseline v1.2.0 includes owner-accepted NoX Login/global logout. New scoped installer deployment management is implemented and locally tested in source; publish/update Backend before the corresponding Yard release. |
 | Gateway | Consume the corrected SDK and adapt local transport and pairing persistence to the Backend flow. Continue registry, authorization, discovery and dispatch work without adding deployment/certificate management. | Points 6 + 9 implemented: local automatic setup, registry/events, private authorization/discovery, generic dispatch/probes, Docker/Compose, checks and release automation. Local source/image and real Backend acceptance passed; the owner subsequently reported v0.0.1 registered in Backend. This is not full Yard/product/CLI acceptance. |
-| Yard | Reuse existing deployment/jobs/configuration/recovery to prepare local channels, associate and request registration, then report lifecycle/removal. Do not replace its existing product behavior. | Points 7 + 8 started but remain incomplete and unvalidated as a Suite lifecycle integration. Paused for the approved Auth work. No completed Suite lifecycle is claimed. Yard NoX Login was subsequently implemented and accepted; that does not complete lifecycle points 7 + 8. |
+| Yard | Reuse existing deployment/jobs/configuration/recovery to prepare local channels, associate and request registration, then report lifecycle/removal. Do not replace its existing product behavior. | Points 7 + 8 implemented in source: local automatic pairing; existing-job-driven registration, lifecycle/removal and recovery; safe status/retry in Settings. Real isolated Backend/Auth/worker acceptance passed. Publication, installed rollout and point-12 full-product acceptance remain separate. |
 | Other products and CLI | Implement declaration/admission and generic metadata consumption against the same contracts. No product-specific branches in Gateway/CLI. | Subsequent work; not certified by SDK tests. |
 
 Foundation URLs and confirmation in Backend administration must lead to service-executed association with accurate state. These are adapter responsibilities, not implemented by changing a URL validator. This correction defines no new standalone installer or mandatory first-run wizard.
@@ -62,7 +62,7 @@ These are the original task labels from the correction discussion, retained verb
 
 Point 3 delivered the HTTP/HTTPS SDK correction in `0.7.1`; `0.7.2` published the shared local-channel design. Point 4 and its Backend transport prerequisite in point 2 are implemented. Point 5, **Preservar os usos existentes do Backend**, completed the native route/authentication/storage/deployment review, removed an accidental Suite field from the native user-status request, and verified migration 7→8 preserving native data and existing trust. The owner subsequently reported successful Backend builds and browser validation.
 
-The owner authorized **6. Adaptar o Gateway ao mesmo processo de configuração.** and **9. Retomar os restantes pontos do Gateway.** together, before returning to Yard. Both are implemented in Gateway source with local verification recorded below. The correction order remains **6 + 9 → 7 + 8 → 10 → 11 → 12**, preserving the original names and numbers. Points 7 + 8 started and remain incomplete. The owner has now inserted Auth implementation and Yard login acceptance before resuming them; this does not renumber or complete those points. Gateway publication/registration was subsequently reported by the owner. Success against Backend and generic protocol fixtures is not completion of the full Suite journey.
+The owner authorized **6. Adaptar o Gateway ao mesmo processo de configuração.** and **9. Retomar os restantes pontos do Gateway.** together, before returning to Yard. Both are implemented in Gateway source with local verification recorded below. The correction order remains **6 + 9 → 7 + 8 → 10 → 11 → 12**, preserving the original names and numbers. Auth implementation and installed Yard/Backend login acceptance preceded resumption of points 7 + 8. Those points now have a source implementation and isolated lifecycle acceptance; this does not renumber them or complete points 10–12. Gateway publication/registration was subsequently reported by the owner. Success against Backend and generic protocol fixtures is not completion of the full Suite journey.
 
 ## Authentication decision and withdrawn authorization change
 
@@ -70,7 +70,7 @@ The owner requested the NoX Auth requirements contract in its newly initialized 
 
 An unapproved local Backend change would have let an installer service grant itself deployment associations. It was **reverted**, restoring `SuiteSetDeployment` to the existing `suiteAdmin` authorization and leaving that source file identical to its committed baseline. The existing `TestSuiteInstallerMayPairOnlyAuthorizedDeployment` passed after the rollback: service self-grant remains forbidden; an administrative grant remains accepted. No security test was weakened. No additional Backend implementation or Yard fixes were performed in this documentation/rollback task.
 
-NoX Login alone does not resolve service-to-service deployment authorization. Before resuming lifecycle integration, the adapter must specify the binding between the authenticated human deployment action and the scoped Backend operation; it must not grant administrator authority to a Yard service token. Pending Yard code is preserved, not presented as a finished integration. Tool metadata and `_meta.cli` menu work remain deferred to point 10.
+The subsequent owner clarification supersedes the pending per-action identity proposal: the normal application login already identifies the admitted user, and administrative installer pairing delegates management of its own local deployments. No personal Auth token is forwarded and no second account approval is requested per installation. Backend checks the enrolled service, private channel, canonical local target and exact deployment ownership. It does not grant global administration to that service. The earlier unapproved broad change remains a withdrawn historical attempt; the implemented policy is the bounded delegation documented in [Installer deployment authority](SUITE_SAME_HOST_INTEGRATION.md#installer-deployment-authority--clarified-model-november-4-2026). This dated clarification also supersedes the pending per-human-deployment-proof language added in implementation-plan section 20, without rewriting the owner's original plan. Tool metadata and `_meta.cli` menu work remain deferred to point 10.
 
 ## Gateway points 6 + 9: local verification
 
@@ -118,3 +118,36 @@ Auth `v0.0.1` must be updated to the service release with this capability before
 Backend rollout. The owner subsequently confirmed installed Google login, cross-app
 global logout and successful re-login on November 4, as recorded above. No SDK
 wire change or completion of Yard lifecycle points 7 + 8 is claimed.
+
+## Yard points 7 + 8 — implementation and verification, November 4
+
+The existing manager/worker is retained. Marked participating services receive the
+shared local channel automatically through the existing preview/source path;
+ordinary companion containers remain unchanged. A transactional outbox records
+job outcomes and binding candidates. The local controller pairs/registers actual
+products, reports stopped/running and operation states, refreshes changed
+registrations, and retires its own registration/grant on removal. Retries use
+private durable journals and never rerun Docker installation jobs. Active
+replacement/recovery jobs protect temporary container absence from deregistration.
+
+Backend accepts only a current enrolled installer's own deployment path and
+canonical same-host product. Concurrent/foreign claims, target substitutions,
+foundation/standalone takeovers and native account/key administration remain
+forbidden. Product proof, acknowledgement, revisions, conditional/idempotent
+mutations and exact managedBy remain required. SDK and Auth need no code/release
+change for this work; Backend must be published/updated before Yard rollout.
+
+Local real-service acceptance covers automatic foundation pairing, actual
+Yard-managed deployment and volume isolation, registration/observations,
+stop/start, declaration refresh, controller restart, removal/reinstall, and
+Backend outage with registration recovery without replaying Docker jobs. Separate
+source tests cover transaction persistence, companion-removal scope, competing
+installers, private HTTP routes and active-replacement protection. Yard Settings
+shows safe integration state and revision/session/CSRF-protected retry.
+
+The real Google login/global logout acceptance remains the owner's prior installed
+verification. The full lifecycle test uses an updated Backend candidate image;
+the default shared CI runtime fixture tests foundation pairing with published
+Backend v1.2.0/Auth v0.0.2. Neither is a claim of remote CI, publication, installed
+product adaptation, CLI behavior, or final point-12 acceptance. See
+`nox-yard/Documentation/Developer/Suite-Integration.md` for commands and boundaries.
