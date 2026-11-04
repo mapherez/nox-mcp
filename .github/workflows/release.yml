@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Verify approved SHA and 17 jobs, package and publish last
+      - name: Verify approved SHA and 16 jobs, package and publish last
         run: node scripts/publish-release.mjs
         env:
           GITHUB_TOKEN: ${{ github.token }}

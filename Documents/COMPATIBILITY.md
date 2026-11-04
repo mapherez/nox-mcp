@@ -51,7 +51,7 @@ Runtime conformance uses the same test-only timing policy in all three languages
 
 ## Required validation and releases
 
-The `Supported / Required compatibility` workflow (`.github/workflows/contracts.yml`) contains 17 blocking jobs: Windows/Linux conformance, minimum/recent consumers for each language on those systems, recent Rust on macOS, and additional Node selectors. Failure of a supported requirement blocks publication.
+The `Supported / Required compatibility` workflow (`.github/workflows/contracts.yml`) contains 16 blocking jobs: Windows/Linux conformance, minimum/recent consumers for each language on those systems, and additional Node selectors. Failure of a supported requirement blocks publication. The Rust/macOS consumer job has been removed; macOS is no longer automatically checked by this workflow.
 
 Main commands, run from the repository root:
 
@@ -68,7 +68,7 @@ npm run benchmark:discovery
 
 External consumers are tested with independent resolution. In CI, `node scripts/check-consumers.mjs` receives `NOX_CONSUMER_LANGUAGE=go|rust` and `NOX_CONSUMER_PROFILE=minimum|latest`. The TypeScript tarball uses `npm run package:check` with `NOX_CONSUMER_PROFILE`. Also select `GOTOOLCHAIN` or `RUSTUP_TOOLCHAIN` to exercise the minimum toolchain.
 
-`npm run release` prepares and pushes only the release-intent commit to master. After the matrix passes, `workflow_run` verifies the SHA, all 17 approvals, versions, and absence of a tag/release; it packages without repeating the suites and publishes as the final operation. The procedure and failure recovery are in the [README](../README.md#releases).
+`npm run release` prepares and pushes only the release-intent commit to master. After the matrix passes, `workflow_run` verifies the SHA, all 16 approvals, versions, and absence of a tag/release; it packages without repeating the suites and publishes as the final operation. The procedure and failure recovery are in the [README](../README.md#releases).
 
 The [historical report](old/COMPATIBILITY_AUDIT.md#e-review-after-v060-single-release-pipeline-and-identity-integration-removal) distinguishes the 198 local tests for that revision from the 17 remote jobs for an earlier SHA. Do not treat those counts as results for the current revision; consult the logs for the relevant commit.
 
@@ -88,4 +88,4 @@ Published SDK `0.7.0` provides Suite `1.0` schemas and complete native DTOs, pin
 
 `npm run test:suite` compares Suite outputs across all three SDKs inside the existing required conformance jobs. Ordinary tests and independent package/consumer checks also exercise the new APIs. The checks preserve existing transport, manifest, bridge, discovery, and release gates.
 
-Each minimum/latest consumer graph also executes Suite behavior tests. Go runs the complete SDK test package from the consumer module, so dependency resolution comes from the consumer rather than the SDK's `go.mod`. Rust runs the copied integration tests against the independently resolved dependency. TypeScript runs all `suite*.test.mjs` through the installed tarball's public exports, including shared conformance/cache tests and HTTP admission. Standalone native package checks also run the Go and Rust SDK tests outside the checkout. Linux conformance additionally runs Go's race detector. These checks remain within the same 17 required jobs.
+Each minimum/latest consumer graph also executes Suite behavior tests. Go runs the complete SDK test package from the consumer module, so dependency resolution comes from the consumer rather than the SDK's `go.mod`. Rust runs the copied integration tests against the independently resolved dependency. TypeScript runs all `suite*.test.mjs` through the installed tarball's public exports, including shared conformance/cache tests and HTTP admission. Standalone native package checks also run the Go and Rust SDK tests outside the checkout. Linux conformance additionally runs Go's race detector. These checks remain within the same 16 required jobs.

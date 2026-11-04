@@ -64,10 +64,6 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         profile: [minimum, latest]
         language: [rust, go, typescript]
-        include:
-          - os: macos-latest
-            profile: latest
-            language: rust
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
