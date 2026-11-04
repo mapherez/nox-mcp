@@ -480,7 +480,7 @@ The [product integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway C
 
 ## 20. NoX Auth and shared NoX Login
 
-**Owner-authorized decision, November 3, 2026.** The canonical requirements contract is `NOX_AUTH_CONTRACT.md` in the separate `nox-auth` repository. Its service and reusable Go client are now implemented in source; `docs/integration.md` records the exact profile. This does not claim installed product adapters or a release, or change the released SDK wire version.
+**Owner-authorized decision, November 3, 2026.** The canonical requirements contract is `NOX_AUTH_CONTRACT.md` in the separate `nox-auth` repository. Its service and reusable Go client were published as Auth `v0.0.1`; the owner subsequently accepted Yard NoX Login with real Google login. `docs/integration.md` records the exact profile. Further product adaptations retain their own acceptance and do not change the released SDK wire version.
 
 ### Responsibilities and user journey
 
@@ -509,3 +509,41 @@ There is no separate data-import/migration project in this scope. Necessary tech
 Shared Google identity is not permission for Yard's service credential to grant itself administrative deployment rights. The unapproved Backend installer self-authorization is withdrawn; existing administrative checks remain. Before resuming the affected lifecycle adapter, specify how an Auth-authenticated user's deployment action authorizes its intended Backend association without relaying a browser cookie/personal key as a service identity or silently weakening those checks.
 
 The [fixed twelve correction points](SUITE_CORRECTION_STATUS.md#fixed-correction-sequence) keep their existing names and numbers. Yard points **7. Adaptar o Yard, reutilizando o seu deployment existente.** and **8. Ligar o lifecycle do Yard ao registo do Backend.** remain unfinished and paused for this newly agreed authentication work. Auth does not certify those points or the complete installed journey. Product MCP tools and `_meta.cli` menu adaptation remain in point 10; CLI implementation remains in point 11.
+
+### Auth adaptation progress — November 3, 2026
+
+The owner confirmed Yard login both with an existing Google session and in an
+incognito browser. Backend adaptation follows that acceptance, as authorized.
+Backend consumes NoX Login, preserves existing identity/data/key ownership and
+local roles, and provides the agreed Suite logout action in its native dashboard.
+Google client credentials and account admission belong only to Auth. Backend
+adds no parallel account-admission environment list. Private HTTP app origins
+remain supported; no per-app certificates or new deployment manager are required.
+
+Independent personal API keys are checked against central account admission
+after Backend verifies the key and local account. A private authenticated Auth
+`/v1/admission` service capability supports this without making API keys depend
+on a browser session. This capability is added after Auth `v0.0.1`: publish/update
+Auth before installing the Backend adapter. Positive reuse stays within five
+minutes; a new operation delegation cannot restart that interval from a stale
+admission result. Browser/Suite logout does not revoke independent API keys.
+
+Backend source/packaging checks and actual installed Google/SSO/global-logout
+acceptance are separate evidence. The latter follows publication of compatible
+Auth, Backend and frontend images. Yard lifecycle points 7 + 8 retain their
+existing names and remain unfinished; this login work does not authorize a Yard
+service to grant itself administrative deployment associations.
+
+### Installed login acceptance — November 4, 2026
+
+After updating Auth, Backend and Yard, the owner confirmed Google login in both
+Backend and Yard. Invoking **Logout all** in Backend also logged out the Yard
+session when switching to its browser tab. Both applications accepted a new
+login afterwards. This records owner-reported acceptance of those installed
+login, shared-session revocation and re-login flows.
+
+The authentication work that paused the Yard correction sequence now has that
+installed acceptance. The next scoped work remains **7. Adaptar o Yard,
+reutilizando o seu deployment existente.** and **8. Ligar o lifecycle do Yard ao
+registo do Backend.** Neither point is completed by login acceptance, and this
+record does not resume implementation or change deployment/service permissions.
