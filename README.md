@@ -316,12 +316,12 @@ absence of local/remote tags, synchronizes the four version files and creates a
 commit with an explicit `NoX-Release: X.Y.Z` trailer. It pushes only that SHA to
 `origin/master`, without tags or local test suites.
 
-1. `contracts.yml` runs the 16 required jobs once for the master push. Pull
+1. `contracts.yml` runs the 17 required jobs once for the master push. Pull
    requests targeting master use the same matrix; feature pushes do not launch
    another duplicate matrix.
 2. After success, `release.yml` receives `workflow_run`. It accepts only a
    successful master push from this repository with explicit release intent.
-3. The publisher checks workflow identity, all 16 latest job approvals across
+3. The publisher checks workflow identity, all 17 latest job approvals across
    attempts, SHA, current master head, all SDK versions and absence of a tag or
    release. PRs, forks, manual runs, unmarked commits and superseded SHAs cannot
    publish. The checkout is the approved SHA, not the publisher's default SHA.

@@ -7,6 +7,7 @@ export const workflowPath='.github/workflows/contracts.yml';
 export const requiredJobs=[
   ...['ubuntu-latest','windows-latest'].map(os=>`Supported / Required conformance / ${os}`),
   ...['ubuntu-latest','windows-latest'].flatMap(os=>['minimum','latest'].flatMap(profile=>['rust','go','typescript'].map(language=>`Supported / Required consumer / ${language} / ${profile} / ${os}`))),
+  'Supported / Required consumer / rust / latest / macos-latest',
   ...['26','node'].map(node=>`Supported / Required Node / ${node}`),
 ];
 export function releaseVersion(message) {
