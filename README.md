@@ -1,74 +1,65 @@
 # NoX MCP
 
-Shared building blocks for connecting applications to AI tools and NoX Suite.
+The shared MCP library behind NoX app integrations.
 
-NoX MCP is a library for developers building integrations with the Model Context Protocol (MCP). MCP lets an application expose useful operations as tools that an AI client can discover and call. NoX MCP provides the common infrastructure around those tools, so each application can focus on its own functionality.
+NoX MCP lets applications publish tools that an AI assistant can discover and use through the Model Context Protocol (MCP). It also provides the shared definitions that let NoX CLI present those tools as interactive menus.
 
-Native libraries are available for **TypeScript, Go and Rust**, backed by shared contracts. NoX MCP runs inside the application that uses it; it is not a separate service to install or manage.
+**You do not install or run NoX MCP as a separate app.** It is included in products that use it. If you want to use those products, install the app itself or [NoX CLI](https://github.com/mapherez/nox-cli); if you want to connect an AI client to your Suite, use [NoX Gateway](https://github.com/mapherez/nox-gateway).
 
 ## What it provides
 
-| Capability | What it does |
-| --- | --- |
-| Tool registration | Describe an application's operations, inputs and outputs using a consistent interface. |
-| Validation | Check arguments, results and shared documents against their schemas. |
-| Execution controls | Apply timeouts, cancellation, concurrency and payload limits. |
-| Authorization | Enforce trusted identities, scopes and product-specific access rules. |
-| Discovery | Let clients find available tools and retrieve their definitions without repeatedly loading the entire catalog. |
-| Human interaction metadata | Publish labels, selections, previews and workflows separately from the ordinary AI-facing tool catalog. |
-| Desktop integration | Provide bridges and request brokers for operations owned by a desktop application. |
-| Suite integration | Supply shared enrollment, delegation, registry and aggregation contracts for participating products. |
+For developers adding MCP or Suite support to an application:
 
-The language implementations share their public contracts while retaining native APIs and execution models. Supported transports and language-specific limitations are documented in [compatibility and support](Documents/COMPATIBILITY.md).
+- Native libraries for TypeScript, Go and Rust.
+- Tool definitions and input/output validation.
+- Timeouts, cancellation, concurrency and payload limits.
+- Authentication and authorization integration points.
+- Tool discovery and separate human-facing menu metadata.
+- Shared product registration, delegation and Gateway contracts.
+- Desktop bridges for operations owned by a desktop app.
 
-## How it fits into NoX Suite
-
-Each product defines and executes its own tools. NoX MCP supplies the reusable contracts and mechanisms; it does not contain a catalog of product-specific commands.
-
-Backend owns Suite membership and authorization, Yard manages deployments, Gateway discovers and routes tools, and CLI presents the human interface. Those applications implement their own adapters using the shared contracts. Adding a conforming product does not require a new routing branch or command implementation in the SDK, Gateway or CLI.
+Each app defines and runs its own operations. NoX MCP supplies common building blocks; it does not contain a fixed catalog of NoX products or their commands.
 
 ## Documentation
 
-- [Documentation index](Documents/README.md)
-- [SDK integration](Documents/INTEGRATION.md)
-- [Discovery and interaction metadata](Documents/DISCOVERY.md)
-- [Product integration](Documents/PRODUCT_INTEGRATION_PROPOSAL.md)
-- [Gateway and shared trust contract](Documents/GATEWAY_CONTRACT.md)
-- [Same-host integration](Documents/SUITE_SAME_HOST_INTEGRATION.md)
-- [Schema and contract maintenance](contracts/README.md)
+[SDK integration](Documents/INTEGRATION.md) · [Discovery and menus](Documents/DISCOVERY.md) · [Language support](Documents/COMPATIBILITY.md) · [Documentation index](Documents/README.md)
+
+For products joining Suite: [product integration](Documents/PRODUCT_INTEGRATION_PROPOSAL.md) · [same-host communication](Documents/SUITE_SAME_HOST_INTEGRATION.md) · [Gateway contract](Documents/GATEWAY_CONTRACT.md).
 
 ## Usage
 
-Add NoX MCP to the application that will expose or consume tools. Choose the native library for that application's language.
+This section is for application developers. App users do not need these steps.
 
-For TypeScript, install the published package asset:
+### TypeScript
+
+From the application you are developing:
 
 ```sh
 npm install https://github.com/mapherez/nox-mcp/releases/latest/download/nox-mcp.tgz
 ```
 
-Import the server API with:
-
 ```ts
 import { createServer } from '@nox/mcp';
 ```
 
-For Go, add the module from your application's Go module directory:
+### Go
+
+From your application's Go module directory:
 
 ```sh
 go get github.com/mapherez/nox-mcp
 go mod tidy
 ```
 
-Import the native package with:
-
 ```go
 import noxmcp "github.com/mapherez/nox-mcp/go"
 ```
 
-For Rust, use the crate in [`rust/`](rust/) through a Git dependency, following the [integration guide](Documents/INTEGRATION.md#consume-the-released-sdk). Dependency requirements and compatibility details belong in the [support reference](Documents/COMPATIBILITY.md).
+### Rust
 
-Define the tools, bind them to the application's existing operations, and connect the appropriate transport. Authentication, domain permissions and persistent application data remain the host application's responsibility. See the [integration guide](Documents/INTEGRATION.md) for Suite adapters and [discovery examples](Documents/DISCOVERY.md) for server/client setup.
+Add the crate as a Git dependency in your application's `Cargo.toml`. The [integration guide](Documents/INTEGRATION.md#consume-the-released-sdk) provides the dependency declaration and release-pinning instructions.
+
+Follow the [integration guide](Documents/INTEGRATION.md) to define tools, connect them to existing app functionality and select a transport. Application data and domain permissions stay with the application that uses the library. See [language support](Documents/COMPATIBILITY.md) for supported transports and limitations.
 
 ## License & Attribution
 
