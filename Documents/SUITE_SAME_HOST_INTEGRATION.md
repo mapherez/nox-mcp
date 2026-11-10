@@ -1,16 +1,24 @@
 # NoX Suite — same-host presence, communication and registration
 
-Recorded **November 2, 2026**. This document captures the owner's same-host clarification and the local-channel design discussed afterwards. It applies to every present or future Suite product, independently of its business domain or implementation language.
+This reference applies to every present or future Suite product, independently of its business domain or implementation language. Backend, Yard and Gateway implement this local-channel model; SDK `0.7.3` supplies shared contracts and helpers. The SDK does not create sockets or deploy services.
 
-**Status, updated November 2, 2026:** the same-host requirement and local-channel target are recorded here. SDK `0.7.2` is released. Backend `v1.2.0` and Auth `v0.0.2` form the published login baseline; installed Google login and global logout were owner-accepted. Gateway source adaptation and owner-reported registration precede Yard's current points 7 + 8. Yard's same-host adapter and bounded installer deployment management are now implemented in Yard/Backend source with local verification. New publication/installed rollout and the product/CLI journey remain separate. Use the [current correction status](SUITE_CORRECTION_STATUS.md) for evidence and release boundaries.
+## Local channel and logical origins
+
+Participating services run on one host. Container deployments share the named local volume `nox-suite-local`, optionally selected through `NOX_SUITE_LOCAL_VOLUME_NAME`, at `/run/nox-suite`. Each product owns its `<productId>.sock` Unix listener. Native frontend containers and unrelated companion services do not receive this mount.
+
+A canonical logical origin such as `http://nox-backend` identifies the local product; the adapter maps it to that product's socket. It is not a DNS destination or the address a user opens. The HTTP protocol is carried over the Unix socket, with scoped credentials and signed delegations. There is no service TCP fallback, LAN-wide discovery, certificate-copying requirement or public service enrollment.
+
+Native browser URLs are configured separately and may use HTTP or HTTPS. CLI clients connect to Gateway over the installation's private LAN/VPN access path. Native HTTPS certificate validation remains required when that scheme is used. A hostname, local socket or Compose label alone does not establish membership.
+
+## Setup and registration
+
+Backend's native dashboard verifies and connects foundation services through the local channel, delivering pairing credentials automatically. Products persist provisioning before acknowledgement. Backend owns membership and permissions; Gateway consumes the registry and discovers authorized tools.
+
+For subsequent participating deployments, Yard prepares the shared mount through its existing deployment path and initiates enrollment/registration after the actual product is available. The product image must implement the local adapter and declare its integration capability. Installing an arbitrary image or adding a label does not implement that adapter.
 
 ## Installer deployment authority — clarified model, November 4, 2026
 
-The owner clarified that the same admitted user operates the applications and
-that pairing the installer is the administrative act that delegates management
-of its own deployments. Installing a product does not require another account
-approval. The proposed forwarding of a personal Auth token was withdrawn and
-was not implemented. There is no `X-Nox-User-Authorization` protocol.
+Pairing the installer is the administrative act that delegates management of its own deployments. The existing NoX Login session identifies the admitted user; installing a product does not require another account approval or forwarding a personal Auth token. There is no `X-Nox-User-Authorization` protocol.
 
 The responsibilities are distinct:
 

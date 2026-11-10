@@ -1,6 +1,6 @@
 # Compatibility and support
 
-This document describes the SDK's supported scope. Manifests and lockfiles are the reference for declared versions; earlier test results are in the [archived report](old/COMPATIBILITY_AUDIT.md). Approval of an earlier SHA does not certify a later revision.
+This document describes the SDK's supported scope. Manifests and lockfiles are the reference for declared versions. CI results apply to their exact source revision; approval of an earlier SHA does not certify a later revision.
 
 ## Supported matrix
 
@@ -24,7 +24,7 @@ Support is limited to the tested features and execution paths. It does not certi
 - Authentication is supplied by the application through the existing credential, context, and scope APIs. The SDK does not implement product identity flows or issue API keys.
 - `contracts/` is authoritative; generated copies ship with Go/Rust and compile without Node. Source `_meta.cli`, custom metadata and existing bridge protocols are preserved. Published SDK 0.7.3 excludes `_meta.cli` from standard `tools/list`; canonical NoX discovery definitions retain it. This is the explicit publication correction documented in [discovery](DISCOVERY.md#compatibility-and-negotiation), not a tool-name/schema or bridge-protocol change.
 
-The portable profile and legitimate differences between native APIs are described in [contract maintenance](../contracts/README.md). When updating older installations, also review the [historical migration notes](old/MIGRATION_0_5.md); publishing a version does not migrate consumers automatically.
+The portable profile and legitimate differences between native APIs are described in [contract maintenance](../contracts/README.md). Consumer dependency updates are explicit changes in the consuming repository; publishing the SDK does not migrate applications automatically.
 
 ## Results and errors
 
@@ -68,9 +68,21 @@ npm run benchmark:discovery
 
 External consumers are tested with independent resolution. In CI, `node scripts/check-consumers.mjs` receives `NOX_CONSUMER_LANGUAGE=go|rust` and `NOX_CONSUMER_PROFILE=minimum|latest`. The TypeScript tarball uses `npm run package:check` with `NOX_CONSUMER_PROFILE`. Also select `GOTOOLCHAIN` or `RUSTUP_TOOLCHAIN` to exercise the minimum toolchain.
 
-`npm run release` prepares and pushes only the release-intent commit to master. After the matrix passes, `workflow_run` verifies the SHA, all 17 approvals, versions, and absence of a tag/release; it packages without repeating the suites and publishes as the final operation. The procedure and failure recovery are in the [README](../README.md#releases).
+`npm run release` prepares and pushes only the release-intent commit to master. After the matrix passes, `workflow_run` verifies the SHA, all 17 approvals, versions, and absence of a tag/release; it packages without repeating the suites and publishes as the final operation. The procedure and failure recovery are documented under [release maintenance](#release-maintenance).
 
-The [historical report](old/COMPATIBILITY_AUDIT.md#e-review-after-v060-single-release-pipeline-and-identity-integration-removal) distinguishes the 198 local tests for that revision from the 17 remote jobs for an earlier SHA. Do not treat those counts as results for the current revision; consult the logs for the relevant commit.
+## Release maintenance
+
+From a clean, committed `master` checkout, run:
+
+```sh
+npm run release
+```
+
+The helper displays the current package metadata and asks what to publish. It validates the input, synchronizes the package metadata, creates an explicit release-intent commit and pushes that commit to `origin/master`. It does not create the release tag locally or repeat local test suites. `npm run version:update` only prepares local metadata; it does not request publication.
+
+After the required CI succeeds, the release workflow verifies the approved commit, current branch head, job results and package consistency. It builds the distribution without repeating the approved suites, creates an annotated tag and draft, uploads the package asset, then publishes. Existing tags and releases are never overwritten. The workflow must be installed on the default branch, with the documented repository permissions, before release requests can be handled.
+
+If CI fails, use **Re-run failed jobs** for that commit; successful jobs from earlier attempts remain usable. An unchanged push does not start a new CI event. A packaging failure creates no tag. An upload/API failure may leave an unpublished draft/tag; inspect that attempt before recovery. No automatic rollback deletes release objects. The separate Go SSE investigation is not a publication gate.
 
 ## Investigating / Future Support: Go SSE
 

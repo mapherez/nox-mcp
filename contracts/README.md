@@ -1,6 +1,6 @@
 # Shared contracts
 
-`contracts/` is the authoritative source for the six protocol schemas, defaults, tool schema profile, and conformance corpus. The supported scope is described in [compatibility and support](../Documents/COMPATIBILITY.md). Earlier audits and migration notes are in the [historical archive](../Documents/old/README.md).
+`contracts/` is the authoritative source for the six protocol schemas, defaults, tool schema profile, and conformance corpus. The supported scope is described in [compatibility and support](../Documents/COMPATIBILITY.md).
 
 ## Responsibilities
 
@@ -116,7 +116,7 @@ The contracts workflow runs these checks; release publication checks approvals f
 
 ## Suite integration contracts
 
-The unreleased November 2 correction supports HTTP and HTTPS origins with distinct audiences and scheme-specific default ports. TLS pairing fingerprints are required for HTTPS and absent for HTTP. Complete loaders enforce these semantics in addition to structural schemas. Authentication and execution permissions remain mandatory. See [scope and migration](../Documents/SUITE_CORRECTION_STATUS.md).
+Since SDK `0.7.1`, Suite origin validation supports HTTP and HTTPS origins with distinct audiences and scheme-specific default ports. TLS pairing fingerprints are required for HTTPS and absent for HTTP. Complete loaders enforce these semantics in addition to structural schemas. Authentication and execution permissions remain mandatory. See [same-host integration](../Documents/SUITE_SAME_HOST_INTEGRATION.md) for the service transport boundary.
 
 `suite-*.schema.json`, `suite-defaults.json`, and `suite-conformance.json` define the separate Suite `1.0` protocol. Existing manifests, bridge envelopes, and discovery hashes retain their own versions. `sync-contracts.mjs` also generates complete native Suite DTOs and packaged schemas, and TypeScript types/schema data. `npm run test:suite` compares native validation, cryptography, HMAC, aggregation, observation, and registry outputs; the required CI conformance jobs include it.
 

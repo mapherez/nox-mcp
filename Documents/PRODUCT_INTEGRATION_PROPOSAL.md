@@ -1,10 +1,10 @@
 # NoX Suite — Product integration and registration proposal
 
-**Deployment clarification, November 2, 2026:** participating Suite products must run on the **same host**. [Same-host presence, communication and registration](SUITE_SAME_HOST_INTEGRATION.md) records the local-channel target, adapter delivery and validation boundaries, superseding earlier LAN-wide transport descriptions. SDK `0.7.2` is released; [current consumer progress](SUITE_CORRECTION_STATUS.md) distinguishes implemented Backend source from pending Gateway/Yard adaptation.
+Contract version **`1.0`**. Updated **November 10, 2026**.
 
-Status: **consolidated design; shared SDK contracts/helpers published in NoX MCP `0.7.0`; Backend/service integration pending**.
+This is the current product integration and registration reference; the historical filename is retained. Participating services run on the **same host**, using [the local-channel model](SUITE_SAME_HOST_INTEGRATION.md). NoX MCP `0.7.3` supplies shared schemas and helpers. Backend, Yard and Gateway implement their respective management, deployment and routing responsibilities in their own repositories. The CLI consumes the resulting catalogs and definitions. A new product implements this contract without adding product-specific branches to those components.
 
-Prepared on **October 24, 2026**; consolidated on **October 29, 2026**; delivery status updated on **October 30, 2026**, against the [general implementation plan](NOX_SUITE_IMPLEMENTATION_PLAN.md). The historical filename is retained. This design and the [Gateway Contract](GATEWAY_CONTRACT.md) define the documentation baseline for implementation. Routes describe service requirements. The released schema/API implementation and its boundaries are documented in [SDK integration](INTEGRATION.md); Backend management routes and consumer migrations are not supplied by the SDK.
+The [Gateway Contract](GATEWAY_CONTRACT.md) specifies shared trust and authorization. [SDK integration](INTEGRATION.md) documents the released API and the boundary between SDK mechanisms and service implementations.
 
 ## 1. Scope and existing foundation
 
@@ -21,7 +21,7 @@ This design adds a separate contract. Existing schemas, MCP methods, fingerprint
 
 The deployment scope is one registered product of each type per Backend installation, with all participating product services on the same host. There is no fixed product catalog: **any present or future conforming product** can integrate without changes specific to it in NoX MCP, Gateway, CLI, or Portal. No application/module/instance hierarchy, distributed registry, remote-network discovery, or Docker dependency is introduced in the shared SDK. Contract version `1.0` is a compatibility identifier, not a temporary first product version.
 
-All existing products require the relevant adaptations to the resulting contracts. Their current implementations are migration context, not templates that constrain this design. Gateway, CLI, and Portal do not exist yet; their implementations follow these contracts. A pilot using unchanged existing products is not a design prerequisite.
+Participating products implement the relevant shared contracts in their own repositories. Backend, Yard, Gateway and CLI already provide their respective authority, deployment, routing and client implementations. Portal remains a future application. Existing product internals do not constrain the common contract, and adding a conforming product requires no product-specific routing or commands in Gateway or CLI.
 
 ## 2. Responsibilities and sources of truth
 
@@ -81,7 +81,7 @@ This declaration does **not** define a Portal bundle URL or loading technology. 
 ### Address and identity rules
 
 - The authorized installer/configuration supplies `baseUrl`, for example `https://example:8080`. The product cannot redirect enrollment to an arbitrary self-advertised host.
-- `baseUrl` is an HTTP or HTTPS origin: scheme, host, and optional port, without user information, query, fragment, or non-root path. IP/hostname with port and dedicated domains/subdomains are supported. Application prefixes such as `/apps/example` are **not supported**. Origin syntax alone does not authorize network service communication; the same-host adapter uses the local-channel mapping described in [the deployment record](SUITE_SAME_HOST_INTEGRATION.md#6-urls-identity-and-existing-sdk-contracts). HTTPS retains certificate/pin verification without fallback to HTTP. Both schemes require authorized association and credentials; preserve the scheme in registry records and delegated audiences.
+- `baseUrl` is an HTTP or HTTPS origin: scheme, host, and optional port, without user information, query, fragment, or non-root path. IP/hostname with port and dedicated domains/subdomains are supported. Application prefixes such as `/apps/example` are **not supported**. Origin syntax alone does not authorize network service communication; the same-host adapter uses the local-channel mapping described in [the deployment record](SUITE_SAME_HOST_INTEGRATION.md#local-channel-and-logical-origins). HTTPS retains certificate/pin verification without fallback to HTTP. Both schemes require authorized association and credentials; preserve the scheme in registry records and delegated audiences.
 - `suiteMcp.path` starts with a single `/`; reject scheme-relative URLs, query/fragment, traversal, and ambiguous encodings that escape the configured origin. URL construction must produce the same target in all three languages.
 - Validate the intended local product and socket before fetching through the same-host channel. A LAN address, local socket or `nox-*` name is not evidence of membership. Keep native web URLs separate from logical service origins; do not follow redirects or fall back to TCP.
 - Validate the fetched declaration, bind it to the intended deployment, and establish the authorized service association before activating membership, following Gateway Contract section 4. The JSON declaration itself is not proof of identity.
@@ -292,4 +292,4 @@ The consolidated integration baseline consists of these choices:
 
 The [Gateway Contract](GATEWAY_CONTRACT.md) completes service credentials, delegated identity, classification, five-minute authorization reuse/invalidation, registry propagation, routing, cache isolation, and Backend outage behavior. These mechanisms are explicit contract rules, not consequences inferred from MCP annotations.
 
-The shared SDK implementation is published as [NoX MCP `0.7.0`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.0) and described in [SDK integration](INTEGRATION.md). The next scope is the [Backend implementation and frontend/backend deployment separation](NOX_SUITE_IMPLEMENTATION_PLAN.md#19-current-delivery-and-next-work-backend), followed by the dependent services and adaptation of participating products. The SDK release does not migrate consumers automatically.
+The shared SDK implementation is published as [NoX MCP `0.7.3`](https://github.com/mapherez/nox-mcp/releases/tag/v0.7.3) and described in [SDK integration](INTEGRATION.md). Backend already provides the authority and separate native frontend/backend delivery. Yard and Gateway implement deployment integration and routing. Other products implement the same registration and execution contracts in their own repositories; SDK updates do not migrate consumers automatically.

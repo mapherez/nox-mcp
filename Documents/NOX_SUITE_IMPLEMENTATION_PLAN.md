@@ -2,7 +2,7 @@
 
 Originally consolidated on **October 23, 2026**; delivery status and Backend/frontend work sequence updated on **October 30, 2026**.
 
-**Authorized update, November 3, 2026:** introduce the headless NoX Auth service and shared NoX Login described in [section 20](#20-nox-auth-and-shared-nox-login). This explicitly requested change moves Google login and account admission out of individual applications. Earlier delivery snapshots remain dated history, not claims about today's implementation. The [correction record](SUITE_CORRECTION_STATUS.md) records published SDK/consumer progress and the fixed correction sequence.
+**Authorized update, November 3, 2026:** introduce the headless NoX Auth service and shared NoX Login described in [section 20](#20-nox-auth-and-shared-nox-login). This explicitly requested change moves Google login and account admission out of individual applications. Earlier delivery snapshots remain dated history, not claims about today's implementation. The [current implementation checkpoint](#21-current-implementation-status-and-continuation--november-10-2026) records the current implementation and continuation scope.
 
 Status: **reference for approved requirements and architectural decisions**. This document does not imply that planned features are implemented, nor does it independently authorize product changes or release publication.
 
@@ -16,7 +16,7 @@ Use three distinctions when planning work:
 - **Decided:** intended and approved behavior, even if not implemented yet.
 - **To be defined:** a technical choice requiring an explicit proposal before implementation.
 
-Initial plans and reports in [old/](old/README.md) provide historical context. Where they conflict with the future direction, the decisions consolidated here take precedence. Published contracts and versions are not changed retroactively by this documentation.
+Superseded reports remain available in Git history. The maintained contracts and the current checkpoint govern ongoing work; published contracts and versions are not changed retroactively by this documentation.
 
 When a new decision is made, update this document and the affected technical contracts/documents. Do not silently turn old suggestions or illustrative examples into requirements.
 
@@ -506,9 +506,9 @@ There is no separate data-import/migration project in this scope. Necessary tech
 
 ### Deployment authorization and correction sequence
 
-Shared Google identity is not permission for Yard's service credential to grant itself administrative deployment rights. The unapproved Backend installer self-authorization is withdrawn; existing administrative checks remain. Before resuming the affected lifecycle adapter, specify how an Auth-authenticated user's deployment action authorizes its intended Backend association without relaying a browser cookie/personal key as a service identity or silently weakening those checks.
+Backend's administrative installer pairing delegates authority over the installer's own local deployments. Subsequent registration uses the enrolled service credential, canonical local target and exact deployment ownership; it neither forwards personal Auth tokens nor grants account/key administration. The current model is specified in [same-host integration](SUITE_SAME_HOST_INTEGRATION.md).
 
-The [fixed twelve correction points](SUITE_CORRECTION_STATUS.md#fixed-correction-sequence) keep their existing names and numbers. Yard points **7. Adaptar o Yard, reutilizando o seu deployment existente.** and **8. Ligar o lifecycle do Yard ao registo do Backend.** remain unfinished and paused for this newly agreed authentication work. Auth does not certify those points or the complete installed journey. Product MCP tools and `_meta.cli` menu adaptation remain in point 10; CLI implementation remains in point 11.
+The numbered references below describe the earlier authentication checkpoint. Current component implementation and the remaining product/CLI scope are recorded in [section 21](#21-current-implementation-status-and-continuation--november-10-2026); they must not be inferred from these dated progress statements.
 
 ### Auth adaptation progress — November 3, 2026
 
@@ -547,3 +547,41 @@ installed acceptance. The next scoped work remains **7. Adaptar o Yard,
 reutilizando o seu deployment existente.** and **8. Ligar o lifecycle do Yard ao
 registo do Backend.** Neither point is completed by login acceptance, and this
 record does not resume implementation or change deployment/service permissions.
+
+## 21. Current implementation status and continuation — November 10, 2026
+
+This checkpoint is the current handoff for continuing Suite work. It supersedes older progress statements and CLI scope descriptions earlier in this document. Those dated sections describe their original checkpoints, not tasks that must be repeated. This section records implementation and known delivery evidence; it does not authorize new work or claim unreported release results.
+
+### Implemented foundation
+
+| Component | Current implementation and evidence |
+| --- | --- |
+| NoX MCP | SDK 0.7.3 is released. Shared contracts and native TypeScript/Go/Rust helpers are implemented. Conventional MCP tool listing excludes human CLI metadata; NoX discovery retains the canonical definitions. |
+| NoX Auth | Service 0.0.2 provides shared Google-backed NoX Login, automatic client-enrollment APIs, private account admission and session revocation. The reusable Go client is consumed at 0.0.1. Installed Backend/Yard login and shared-session logout initiated in Backend were confirmed. |
+| NoX Backend | Authority, service pairing, deployment delegation, durable registry/events, authorization issuance and its own MCP publication are implemented. Its native frontend is retained in the same project with independent frontend/backend images. Installed Backend 1.2.2 service-status execution through Gateway/CLI was confirmed. |
+| NoX Gateway | Same-host enrollment, private discovery/aggregation, authorization, routing, probes and lifecycle observation are implemented. Gateway 0.0.2 was reported by the CLI. It preserves exact structured-result numbers and MCP error semantics. |
+| NoX Yard | NoX Login, same-host pairing and registration, participating deployment preparation and job-driven registration/lifecycle recovery are implemented. Installed Yard registration was confirmed; source is tagged 1.4.2. A source tag alone does not establish the installed image. |
+| NoX CLI | The six implementation stages have source implementations: foundation, configuration/installation, interactive interface, discovery/execution, real Backend connectivity and update/uninstall. The owner exercised Yard and Backend tools. The release helper, packages and installer-hosting workflow exist; publication and hosted installation have not been reported as completed. |
+| NoX Portal | Not implemented. It remains a separate future application and does not replace Backend's native frontend. |
+
+### Position in the existing work sequence
+
+The original twelve task names and numbers are unchanged. The foundation work through points 1–9 has implementation; do not restart Backend, Gateway or Yard foundation development merely because earlier sections call it pending.
+
+- **Point 10 — participating product adaptation:** remains the scope for other products selected by the owner. Each product implements the shared adapter, declaration, trust, discovery and relevant login integration in its own repository. A conforming new product must not require product-specific changes to CLI, Gateway, Backend or Yard.
+- **Point 11 — CLI implementation:** source functionality is implemented. The remaining delivery activity is owner-controlled commit/push, existing CI, release publication and installer-endpoint publication. The owner accepted the current CLI behavior for now. Do not introduce another CLI feature stage from the old plan.
+- **Point 12 — delivery/validation:** completion remains an owner decision. Existing repository checks and reported installed results are evidence for their actual scopes; no additional mandatory all-products test campaign or new CI gate is authorized by this checkpoint.
+
+The current task is documentation consolidation. Resume product implementation or publication only as directed by the owner. Portal and additional product adaptations must not be presented as already delivered.
+
+### Decisions to preserve when continuing
+
+Suite services run on the same host and communicate through the private local Unix channel. Native application URLs may use HTTP or HTTPS; local Suite integration requires no manually distributed certificates. CLI may run on another computer with private LAN/VPN access to Gateway; public Gateway destinations are outside its supported policy.
+
+Auth owns Google credentials and central account admission. Backend owns personal API keys, membership and delegated authority. Administrative installer pairing delegates management of the installer's own deployments; no personal Auth token or repeated account approval is required per installation. Products retain their native domain and data-ownership checks.
+
+AI MCP clients connect directly to Gateway. CLI is the human client: it has no incoming MCP server, embedded agent/chat or external MCP aggregation in the implemented scope. All product UI text and documentation use EN-US. The project READMEs and project LICENSE files use the Yard attribution/license policy.
+
+### Maintained references
+
+Use the [Gateway contract](GATEWAY_CONTRACT.md), [product integration reference](PRODUCT_INTEGRATION_PROPOSAL.md), [same-host channel](SUITE_SAME_HOST_INTEGRATION.md) and [SDK integration guide](INTEGRATION.md) for the current shared behavior. Product operation belongs in each repository's current guides. CLI's maintained technical reference is `nox-cli/TECHNICAL.md`; Yard's is `nox-yard/Documentation/Developer/Architecture.md`. Superseded implementation logs are not installation instructions or a source of additional requirements.
