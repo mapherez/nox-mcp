@@ -67,7 +67,7 @@ In this work, the old term **Module Contract** refers to the **product integrati
 | NoX Backend | API keys, capability/delegation policy, service trust and registration using the Auth identity; retains existing data and synchronization services |
 | NoX Gateway | Consults the registry, discovers MCP servers, aggregates tools, and routes authorized calls |
 | NoX Yard | Installs and manages Docker products; triggers authorized integration and reports lifecycle operations |
-| NoX CLI | Manual navigation and execution; future AI integration and MCP tool exposure |
+| NoX CLI | Interactive navigation and execution of Suite tools through Gateway |
 | NoX Portal | Aggregates management interfaces supplied by products |
 | Each product | Executes functionality, owns its data, and enforces effective operation restrictions |
 
@@ -260,26 +260,13 @@ Terminal experience, breadcrumbs, search, keyboard interaction, form state, and 
 
 Product boundaries, aliases, auxiliary references, and ambiguous action-path handling follow the Gateway Contract and existing CLI foundation. Terminal interaction is implemented in the CLI without redesigning the shared contract around a product-specific feature.
 
-### AI and the CLI's MCP server
+### AI access
 
-Two additional modes are planned:
-
-1. A local/cloud model integrated into the CLI receives requests and uses available tools.
-2. The CLI exposes an MCP server to clients such as Codex Desktop or LM Studio.
-
-Both are objectives, not existing features. Manual use takes priority; model integration may be postponed. Do not assume the second mode is technically trivial or necessarily faster to implement.
-
-The CLI's MCP server may expose both NoX tools obtained through the Gateway and external MCP servers configured in the CLI. NoX calls use that profile's account/API key and retain its restrictions.
-
-Transport, caller authentication for the CLI's MCP server, operation without an interactive session, persistence, and process lifecycle remain to be defined. The CLI does not become a central account or registry authority.
+AI MCP clients connect directly to Gateway using their configured authorization. The CLI is the interactive human client and does not expose an MCP server, embed an AI agent, or relay tools to AI clients in the agreed scope. These modes are not unfinished requirements of stage 6.
 
 ### MCP servers outside the Suite
 
-Conventional servers, such as third-party tool servers, may be configured in the CLI for basic use, primarily by AI. NoX integration, special menus, Portal contributions, or Backend/Yard lifecycle management are not required.
-
-These connections are distinct from NoX products accessed through the Gateway. They use the external server's own configuration and credentials. Agents can also use them directly without the CLI.
-
-Basic manual requests may be available, but they are not the objective of the product-specific NoX interactive experience.
+Third-party MCP servers are configured in the client that uses them. External MCP aggregation in the CLI is outside the agreed scope.
 
 ## 12. NoX Portal and product frontends
 
@@ -332,7 +319,7 @@ Future integration must respect the web version's actual storage and execution m
 | 3. Define the Gateway Contract | Routing, trust, authorization, catalogs, fingerprints, and availability | [Complete contract](GATEWAY_CONTRACT.md) consistent with stage 2 and existing contracts |
 | 4. Implement SDK contracts | Authoritative schemas, TypeScript/Go/Rust APIs/validation, generation, documentation, and conformance | Tested equivalence, working external packages, and regression verification |
 | 5. Adapt products incrementally | Backend registry, Yard integration/lifecycle, two MCP access paths, product classification and descriptors | Real integrations validated, including failures and independent operation |
-| 6. Build Gateway and CLI | Gateway service; manual CLI and additional modes in increments | Real end-to-end execution and conventional MCP compatibility |
+| 6. Build Gateway and CLI | Gateway service and interactive CLI; AI MCP clients connect directly to Gateway | Complete: real Backend/Yard tool execution through Gateway/CLI, conventional MCP catalog tests, and owner-confirmed CLI installation and use on Windows and macOS |
 | 7. Build Portal | Shared structure and dynamic loading of contributions | Product integration without rebuilding and consistent authorization |
 
 Contract design precedes service implementation and product adaptation. No pilot using the current Backend/Yard implementations is a prerequisite for completing it. Shared fixtures validate SDK implementation against the contract; end-to-end tests follow once services and products have been implemented/adapted. Integrated CLI AI and the Portal are not prerequisites for validating the SDK.
@@ -348,7 +335,7 @@ Contract design precedes service implementation and product adaptation. No pilot
 | NoX Bot and other host products | Integration/registration, capabilities, a Suite path independent of direct access, and optional descriptors |
 | NoteX and other desktop/web products | Adapt relevant integrations to the shared contracts, respecting each product's storage, execution, and independent-access model |
 | Future Gateway | Aggregation and routing according to approved contracts |
-| Future CLI | Generic navigation, manual execution, external connections, and MCP/AI modes |
+| NoX CLI | Generic navigation and manual execution through Gateway |
 | Future Portal | Aggregation of UI contributions supplied by products |
 
 Do not update consumers automatically merely because a new SDK version was published. Migrations must be explicit and tested.
@@ -371,7 +358,7 @@ Acceptance cases for this evolution:
 - Conventional MCP clients and preservation of schemas, `_meta.cli`, results, and errors.
 - Local operation without Internet using a previously issued API key, including after restart.
 - Portal absence without blocking operation; future tab addition/removal without rebuilding.
-- The CLI MCP server preserving NoX authorization and distinguishing external tools.
+- AI MCP clients using Gateway directly with the applicable NoX authorization.
 - Real consumers and packages in all three languages without inheriting SDK dependency resolution.
 
 Tests must not replace authorization checks with hidden UI options. Visual confirmation does not replace product validation.
@@ -391,7 +378,7 @@ The following design areas are specified. Shared SDK mechanisms are published in
 | Deadlines, cancellation, limits, error propagation, and conventional MCP compatibility | Gateway Contract, sections 11–12 |
 | Origin-only deployment addresses and preservation of direct/Suite access during migration | Product integration and Gateway Contract, sections 3 and 13 |
 
-Separate product work still includes the CLI's own MCP-server transport/authentication/process lifecycle and AI integration, the Portal UI contribution/loading contract, and each product's storage/execution adapters. These do not reopen the completed integration/Gateway design or imply that those products already exist. CLI presentation must retain `_meta.cli`; no `_meta.nox` hierarchy is introduced.
+Separate product work still includes the Portal UI contribution/loading contract and each product's storage/execution adapters. These do not reopen the completed integration/Gateway design or imply that those products already exist. CLI presentation must retain `_meta.cli`; no `_meta.nox` hierarchy is introduced.
 
 The detailed routes, payloads, and validation rules in the Gateway Contract formalize the consolidated choices for implementation. Product-specific business decisions remain with their products. Implementation findings must identify a concrete incompatibility before changing this baseline.
 
@@ -416,7 +403,7 @@ The detailed routes, payloads, and validation rules in the Gateway Contract form
 | Autonomous registry in the Gateway | Registry in the Backend; Gateway holds cache and operational state |
 | Modules and instances as a formal hierarchy | Registered products; no such hierarchy in the agreed scope |
 | Gateway outbound channels to products on other networks | Gateway reaches products on the environment's network |
-| CLI connects directly to NoX products | CLI uses Gateway; external MCP connections follow a distinct path |
+| CLI connects directly to NoX products | CLI uses Gateway; AI MCP clients also connect directly to Gateway |
 | Portal must replace all frontends | Products retain frontends; Portal aggregates dedicated contributions |
 | Adding any Compose service registers it automatically | Yard initiates authorized integration for prepared products; Compose alone does not register them |
 | Disabling MCP in the application also disables Suite access | The switch controls only direct MCP |
@@ -561,18 +548,20 @@ This checkpoint is the current handoff for continuing Suite work. It supersedes 
 | NoX Backend | Authority, service pairing, deployment delegation, durable registry/events, authorization issuance and its own MCP publication are implemented. Its native frontend is retained in the same project with independent frontend/backend images. Installed Backend 1.2.2 service-status execution through Gateway/CLI was confirmed. |
 | NoX Gateway | Same-host enrollment, private discovery/aggregation, authorization, routing, probes and lifecycle observation are implemented. Gateway 0.0.2 was reported by the CLI. It preserves exact structured-result numbers and MCP error semantics. |
 | NoX Yard | NoX Login, same-host pairing and registration, participating deployment preparation and job-driven registration/lifecycle recovery are implemented. Installed Yard registration was confirmed; source is tagged 1.4.2. A source tag alone does not establish the installed image. |
-| NoX CLI | The six implementation stages have source implementations: foundation, configuration/installation, interactive interface, discovery/execution, real Backend connectivity and update/uninstall. The owner exercised Yard and Backend tools. The release helper, packages and installer-hosting workflow exist; publication and hosted installation have not been reported as completed. |
+| NoX CLI | The six implementation stages are implemented. The owner executed Yard and Backend tools through Gateway/CLI and confirmed that the published CLI installs and works on Windows and macOS. The optional custom installer domain has not been reported as published. |
 | NoX Portal | Not implemented. It remains a separate future application and does not replace Backend's native frontend. |
 
 ### Position in the existing work sequence
 
+**Section 15, stage 6 — Build Gateway and CLI — is complete** for the agreed scope. Gateway's conventional MCP catalog has regression tests; the owner exercised real Backend and Yard tools through Gateway/CLI and confirmed CLI installation and use on Windows and macOS. The earlier reference to additional CLI MCP/AI modes is superseded by the decision that AI MCP clients connect directly to Gateway.
+
 The original twelve task names and numbers are unchanged. The foundation work through points 1–9 has implementation; do not restart Backend, Gateway or Yard foundation development merely because earlier sections call it pending.
 
 - **Point 10 — participating product adaptation:** remains the scope for other products selected by the owner. Each product implements the shared adapter, declaration, trust, discovery and relevant login integration in its own repository. A conforming new product must not require product-specific changes to CLI, Gateway, Backend or Yard.
-- **Point 11 — CLI implementation:** source functionality is implemented. The remaining delivery activity is owner-controlled commit/push, existing CI, release publication and installer-endpoint publication. The owner accepted the current CLI behavior for now. Do not introduce another CLI feature stage from the old plan.
+- **Point 11 — CLI implementation:** implemented and delivered for the agreed scope, with installation and use confirmed by the owner on Windows and macOS. Publication of an optional custom installer domain is separate. Do not introduce another CLI feature stage from the old plan.
 - **Point 12 — delivery/validation:** completion remains an owner decision. Existing repository checks and reported installed results are evidence for their actual scopes; no additional mandatory all-products test campaign or new CI gate is authorized by this checkpoint.
 
-The current task is documentation consolidation. Resume product implementation or publication only as directed by the owner. Portal and additional product adaptations must not be presented as already delivered.
+Portal and additional product adaptations must not be presented as already delivered.
 
 ### Decisions to preserve when continuing
 
