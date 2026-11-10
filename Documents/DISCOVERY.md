@@ -4,14 +4,14 @@ An optional extension for CLI metadata and incremental discovery. `tools/list` r
 
 ## Compatibility and negotiation
 
-**Source correction after SDK 0.7.2, November 4, 2026:** standard `tools/list`
+**Published in SDK 0.7.3:** standard `tools/list`
 omits the reserved `_meta.cli` field. Names, descriptions, input/output schemas,
 annotations and unrelated metadata retain their normal MCP behavior. If removing
 `cli` leaves no metadata, `_meta` is omitted. Otherwise the remaining fields are
 preserved; underlying SDK serialization of an originally empty object is unchanged.
 This also applies to runtimes without NoX discovery, on supported legacy/modern
 protocols and transports. Published 0.7.2 packages retain their earlier behavior;
-consumers receive this correction only after an explicit SDK update.
+consumers receive this correction by explicitly updating to 0.7.3 or later.
 
 | Publication | Contents |
 | --- | --- |

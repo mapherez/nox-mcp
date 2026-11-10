@@ -2,7 +2,41 @@
 
 This records the correction authorized on **November 2, 2026**. It is an implementation record, not a replacement for the owner's original plan. Changes here do not authorize unrelated functionality, consumer edits or publication.
 
-**Current progress, November 4, 2026:** participating Suite products run on the **same host**, through the [shared local channel](SUITE_SAME_HOST_INTEGRATION.md). SDK `0.7.2`, Backend `v1.2.0`, Auth `v0.0.2` and Yard `v1.4.0` form the published baseline; the owner accepted installed Backend/Yard Google login and global logout. Gateway points **6 + 9** were implemented and the owner reported Gateway `v0.0.1` registered in Backend. Yard points **7 + 8** are now implemented in source with corresponding scoped Backend deployment management and local real-service verification. Those new changes are not published or accepted on the installed host yet. Product adaptation, CLI and complete installed Suite acceptance remain subsequent work.
+## Current status — November 10, 2026
+
+- SDK **0.7.3** is released. Normal `tools/list` omits `_meta.cli`; canonical
+  NoX definitions retain paths and separate interactive descriptors.
+- Backend, Gateway and Yard source pin SDK 0.7.3. Backend automatically publishes
+  its existing tools when Suite MCP is enabled and an authorized administrator
+  opens its dashboard. The owner confirmed `backend_health` through Gateway/CLI
+  from installed Backend **v1.2.2**.
+- The owner confirmed installed Backend/Yard Google login and global logout,
+  Yard **v1.4.1** registration and Gateway **v0.0.1** registration. Registration
+  is distinct from MCP availability and does not certify every operation.
+- Gateway response precision, error envelopes and discovery corrections were
+  locally verified. Its existing CI integration baseline remains Backend v1.1.1.
+- Yard publishes descriptors for its 38 existing tools without changing their
+  contracts. Local source, image and routed interaction checks passed. The owner
+  rejected the current human interaction design: manual IDs/action strings and
+  JSON remain in some flows. Yard menu work is deferred at the owner's direction;
+  it is not recorded as accepted.
+- The CLI exists and can discover, navigate and execute tools. The owner reported
+  Yard status and subsequently Backend service-status execution. This is evidence
+  for those operations, not completion of every CLI stage or product adaptation.
+
+This documentation update adds no CI/release gates or mandatory full-Suite test
+round. The additional CI expansion and joint-validation items proposed during the
+November audit were declined and are not pending deliverables. Existing checks
+remain unchanged. The owner determines which work is resumed and closed.
+
+The dated entries below preserve their original evidence and scope. Earlier
+versions, unpublished-source statements and pending acceptance refer to those
+checkpoints, not the current status above. The original twelve task labels remain
+unchanged; they are separate from the later audit discussion.
+
+## Historical progress — November 3–4, 2026
+
+**Progress recorded November 4, 2026:** participating Suite products run on the **same host**, through the [shared local channel](SUITE_SAME_HOST_INTEGRATION.md). SDK `0.7.2`, Backend `v1.2.0`, Auth `v0.0.2` and Yard `v1.4.0` form the published baseline; the owner accepted installed Backend/Yard Google login and global logout. Gateway points **6 + 9** were implemented and the owner reported Gateway `v0.0.1` registered in Backend. Yard points **7 + 8** are now implemented in source with corresponding scoped Backend deployment management and local real-service verification. Those new changes are not published or accepted on the installed host yet. Product adaptation, CLI and complete installed Suite acceptance remain subsequent work.
 
 **Authorized authentication change, November 3:** [implementation-plan section 20](NOX_SUITE_IMPLEMENTATION_PLAN.md#20-nox-auth-and-shared-nox-login) records the new headless Auth service, central Google admission and the order Auth → Yard acceptance → Backend/other apps. The canonical requirements contract is `nox-auth/NOX_AUTH_CONTRACT.md`; the owner has confirmed the five-minute admission-check interval. Auth `v0.0.1` is published/running and the owner accepted Yard NoX Login with real Google login. Backend adaptation is now in source; its published/installed acceptance remains separate. Backend requires the subsequent private admission capability in Auth, so Auth must be updated first.
 
@@ -32,7 +66,7 @@ Published **0.7.1** contains the SDK correction; historical **0.7.0 is unchanged
 
 The generated TLS fingerprint field becomes optional: TypeScript `tlsPublicKeyFingerprint?: string`, Go `TlsPublicKeyFingerprint *string`, Rust `tls_public_key_fingerprint: Option<String>`. Update native constructors and transport-dependent checks. HTTPS constructors still supply their real fingerprint. HTTP constructors omit it. Both complete loaders and cryptographic helpers enforce the selected scheme's binding rules.
 
-## Consumer work still required
+## Consumer work recorded November 4, 2026
 
 | Component | Required correction | Current scope |
 | --- | --- | --- |
@@ -90,7 +124,7 @@ Gateway CI requires actual Backend acceptance against commit `4a4b72b4c3a1cfb85c
 
 Shared tests cover HTTP/HTTPS IPs and hostnames, scheme-specific ports, IPv6 and malformed origins; complete HTTP registration/provisioning/snapshot documents; HTTP and HTTPS pairing; rejection of TLS fingerprint omissions for HTTPS and fake TLS fields for HTTP; HMAC binding substitutions; and signed user/probe grants with cross-scheme audience rejection. Existing permissions, deadlines, cache, cancellation, runtime and packaging tests remain required.
 
-SDK verification does not certify installed Backend/Gateway/Yard integration. The eventual acceptance must demonstrate foundation setup in the Backend, Yard deployment and registration, Gateway discovery and CLI execution on an isolated installation with different addresses, plus failures/restart/removal and existing-product regression checks.
+SDK verification does not certify installed Backend/Gateway/Yard integration. The November 2 verification scope described foundation setup, Yard deployment/registration, Gateway discovery and CLI execution with isolated state. It is historical scope, not authorization for an additional test round; current work follows the owner decisions recorded above.
 
 Local verification on November 2, 2026 passed:
 
@@ -164,8 +198,8 @@ NoX `nox/tools/definitions` retains the complete canonical tool, its CLI path an
 optional separate interactive descriptor. Manifests/loaders remain lossless;
 canonical fingerprint algorithms and stale-definition guards are unchanged.
 This keeps menus available to the interactive NoX CLI without relying on an AI
-client to discard fields it received. The future CLI's AI-facing MCP surface must
-publish the normal projection rather than its human navigation interface.
+client to discard fields it received. AI clients use the normal Gateway MCP catalog. The CLI is a human client; an
+incoming CLI MCP server is outside its current scope.
 
 This correction is confined to this repository. Existing released consumers,
 including Backend and Gateway, change only after an explicit SDK/publication
