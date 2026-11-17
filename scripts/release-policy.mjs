@@ -8,6 +8,7 @@ export const requiredJobs = [
   "Select CI work",
   "CI reuse policy tests",
   "CI approved",
+  "Formatting",
   ...["ubuntu-latest", "windows-latest"].map((os) => `Supported / Required conformance / ${os}`),
   ...["ubuntu-latest", "windows-latest"].flatMap((os) =>
     ["minimum", "latest"].flatMap((profile) =>

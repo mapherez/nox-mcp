@@ -24,8 +24,5 @@
       "additionalProperties": {}
     }
   },
-  "required": [
-    "code",
-    "message"
-  ]
+  "required": ["code", "message"]
 }

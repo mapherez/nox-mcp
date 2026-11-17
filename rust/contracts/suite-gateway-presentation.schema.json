@@ -46,21 +46,11 @@
             "pattern": "^[A-Za-z0-9_-]{43}$"
           }
         },
-        "required": [
-          "productId",
-          "registrationRevision",
-          "serverId",
-          "viewId",
-          "catalog"
-        ],
+        "required": ["productId", "registrationRevision", "serverId", "viewId", "catalog"],
         "additionalProperties": true
       }
     }
   },
-  "required": [
-    "version",
-    "registryRevision",
-    "products"
-  ],
+  "required": ["version", "registryRevision", "products"],
   "additionalProperties": true
 }

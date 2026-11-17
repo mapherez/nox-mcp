@@ -30,10 +30,7 @@
           "additionalProperties": true
         }
       },
-      "required": [
-        "name",
-        "inputSchema"
-      ],
+      "required": ["name", "inputSchema"],
       "additionalProperties": true
     },
     "cli": {
@@ -48,14 +45,9 @@
     },
     "availability": {
       "type": "string",
-      "enum": [
-        "available",
-        "unavailable"
-      ]
+      "enum": ["available", "unavailable"]
     }
   },
-  "required": [
-    "tool"
-  ],
+  "required": ["tool"],
   "additionalProperties": false
 }

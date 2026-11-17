@@ -29,6 +29,9 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
       - run: npm ci --ignore-scripts
       - name: Reproduce invalid terminal SSE framing (not supported conformance)
         run: npm run diagnose:go-sse

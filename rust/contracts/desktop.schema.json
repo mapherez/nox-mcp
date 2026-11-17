@@ -15,10 +15,7 @@
           "pattern": "^[A-Za-z0-9_-]+$"
         }
       },
-      "required": [
-        "type",
-        "ticket"
-      ]
+      "required": ["type", "ticket"]
     },
     {
       "type": "object",
@@ -29,10 +26,7 @@
         },
         "protocolVersion": {
           "type": "string",
-          "enum": [
-            "2.0",
-            "1.0"
-          ]
+          "enum": ["2.0", "1.0"]
         },
         "appVersion": {
           "type": "string",
@@ -40,11 +34,7 @@
           "maxLength": 64
         }
       },
-      "required": [
-        "type",
-        "protocolVersion",
-        "appVersion"
-      ]
+      "required": ["type", "protocolVersion", "appVersion"]
     },
     {
       "oneOf": [
@@ -66,12 +56,7 @@
             },
             "result": {}
           },
-          "required": [
-            "type",
-            "requestId",
-            "ok",
-            "result"
-          ]
+          "required": ["type", "requestId", "ok", "result"]
         },
         {
           "type": "object",
@@ -114,18 +99,10 @@
                   "additionalProperties": {}
                 }
               },
-              "required": [
-                "code",
-                "message"
-              ]
+              "required": ["code", "message"]
             }
           },
-          "required": [
-            "type",
-            "requestId",
-            "ok",
-            "error"
-          ]
+          "required": ["type", "requestId", "ok", "error"]
         }
       ]
     }

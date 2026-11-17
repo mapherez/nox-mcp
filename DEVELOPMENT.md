@@ -21,7 +21,7 @@ A aprovação pertence ao commit de origem exato; não basta existir outro CI ve
 
 Instalação inicial: executa `npm run hooks:install`. Este SDK não instala hooks por lifecycle npm para manter o contrato dos consumidores do tarball sem scripts de instalação.
 
-- Antes do commit: whitespace do stage e gofmt nos ficheiros Go do stage; os projetos com Vite+ usam vp staged, que isola e formata o stage. NoteX mantém as verificações SCSS; voice usa Ruff; PC Configurator usa as regras migradas para Vite+ e preserva os testes impactados.
+- Antes do commit: formatação automática do conteúdo preparado para commit, com Vite+ e os formatadores nativos; as correções entram automaticamente no stage. NoteX mantém as verificações SCSS; voice usa Ruff; PC Configurator usa as regras migradas para Vite+ e preserva os testes impactados.
 - Antes do push: `npm run prepush`, com as verificações próprias da stack. Um push composto apenas pelo pedido de release é reconhecido e deixa a aprovação para o GitHub, sem repetir os checks locais.
 - `npm run check`: `node scripts/git-hooks.mjs check`.
 - `NOX_SKIP_HOOKS=1` permite desativar os hooks num processo local; a aprovação obrigatória no GitHub continua ativa.
@@ -34,16 +34,39 @@ Envia um pedido para `master`; o publisher verifica a matriz completa do commit 
 
 Os builds de publicação continuam necessários para incorporar a nova versão, plataformas e assinatura. Smoke checks do artefacto final não equivalem a repetir a suite de testes de origem.
 
-
 ## Vite+ e formatação
 
-Vite+ 1.6.0 para formato/lint/tipos; o build próprio do SDK, node:test, Go e Rust mantêm os seus runners. Os contratos e fontes gerados ficam fora do formatter e foram regenerados/verificados. O verificador do tarball aceita os dois estilos de aspas nos testes copiados para o consumidor, mantendo a proibição de imports internos. Os 217 testes Node e os testes de consumo do pacote passaram.
+Vite+ 1.6.0 para formato/lint/tipos; o build próprio do SDK, node:test, Go e Rust mantêm os seus runners. Os contratos e fontes gerados passam pela mesma formatação durante a geração; contracts:check verifica o resultado canónico. O verificador do tarball aceita os dois estilos de aspas nos testes copiados para o consumidor, mantendo a proibição de imports internos. Os 217 testes Node e os testes de consumo do pacote passaram.
 
 - Formatar: `npm run format`.
 - Verificar formato/lint/tipos JS/TS: `npm run check:code`.
-- O stage usa `vp staged` com `vp check --fix`, incluindo CSS/SCSS; o CI executa os mesmos checks.
+- O hook formata o stage com Vite+ e as ferramentas nativas, incluindo CSS/SCSS e Go; push e CI verificam a mesma configuração.
 - Oxfmt usa espaços, LF e `insertFinalNewline: true`. Ficheiros gerados, dependências e outputs ficam excluídos.
 - A configuração VS Code na pasta `.` recomenda o Vite Plus Extension Pack e ativa formatação ao guardar. Instalar a extensão recomendada permite usar essa integração; os hooks funcionam pela CLI.
 - Go/Rust/Python continuam com as ferramentas próprias onde se aplicam.
 
 Os checks bloqueiam erros e problemas de formatação. Alguns projetos têm avisos de lint em código anterior, mantidos visíveis sem alterar silenciosamente o comportamento da aplicação. Documentação: [Vite+](https://viteplus.dev/guide/) · [Hooks](https://viteplus.dev/guide/commit-hooks).
+
+## Automatic formatting
+
+`npm run format` formats all tracked source and text files. `npm run format:check`
+checks the same files with the same configuration, without changing them.
+The pre-commit hook formats staged contents and updates the index automatically,
+including native languages. Unstaged edits stay unstaged; overlapping edits cause
+an explicit error before any file or index change. Push reads the committed blobs (uncommitted fixes cannot mask an invalid commit).
+Source CI verifies the same formatting; the push hook never rewrites an existing commit.
+
+Vite+ formats JS/TS, JSX/TSX, CSS/SCSS/Less, HTML, JSON, YAML, TOML, Markdown and
+Svelte where used. Go uses gofmt and go mod edit -fmt, Rust uses rustfmt, Python uses pinned Ruff via
+uv, Prisma uses its CLI, and complementary formatters cover shell/Dockerfile,
+PowerShell, SQL, XML/SVG and nginx configuration. Other UTF-8 text receives LF,
+trailing-space cleanup and a final newline (Makefile tabs are preserved).
+Install Node dependencies before committing, plus Go/Rust/uv for the native
+languages present in the repository. Missing formatters fail with an error.
+
+Binary assets, vendored code, licenses, machine-generated lockfiles and historical
+SQL migrations are preserved. The exact immutable migration list is documented
+in `format-policy.json` next to the formatter; new migration files are formatted.
+Generated source must be formatted by its generator. Formatting options are shared
+between Vite+ and the hooks through `format-options.json`. For standalone frontend
+builds this JSON lives inside frontend/web and format-policy.json selects its path.

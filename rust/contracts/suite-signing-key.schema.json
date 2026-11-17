@@ -33,16 +33,9 @@
       "const": "sig"
     }
   },
-  "required": [
-    "kty",
-    "crv",
-    "x",
-    "y"
-  ],
+  "required": ["kty", "crv", "x", "y"],
   "additionalProperties": true,
   "not": {
-    "required": [
-      "d"
-    ]
+    "required": ["d"]
   }
 }

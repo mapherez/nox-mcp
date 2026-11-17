@@ -4,14 +4,14 @@ This document describes the SDK's supported scope. Manifests and lockfiles are t
 
 ## Supported matrix
 
-| Feature | TypeScript | Go | Rust |
-| --- | --- | --- | --- |
-| stdio and HTTP JSON, including legacy MCP clients | Supported / Required | Supported / Required | Supported / Required |
-| SSE, including terminal errors after progress | Supported / Required | Investigating / Future Support | Supported / Required |
-| `tools/list`, incremental discovery, and MCP 2026-07-28 negotiation | Supported / Required | Supported / Required | Supported / Required |
-| `_meta.cli`, optional CLI descriptors, JCS/SHA-256, snapshots, and caching | Supported / Required | Supported / Required | Supported / Required |
-| Authorization, input/output schemas, errors, and rejection before execution | Supported / Required | Supported / Required | Supported / Required |
-| Installable packages, public APIs, and consumers with independent dependency resolution | Supported / Required | Supported / Required | Supported / Required |
+| Feature                                                                                 | TypeScript           | Go                             | Rust                 |
+| --------------------------------------------------------------------------------------- | -------------------- | ------------------------------ | -------------------- |
+| stdio and HTTP JSON, including legacy MCP clients                                       | Supported / Required | Supported / Required           | Supported / Required |
+| SSE, including terminal errors after progress                                           | Supported / Required | Investigating / Future Support | Supported / Required |
+| `tools/list`, incremental discovery, and MCP 2026-07-28 negotiation                     | Supported / Required | Supported / Required           | Supported / Required |
+| `_meta.cli`, optional CLI descriptors, JCS/SHA-256, snapshots, and caching              | Supported / Required | Supported / Required           | Supported / Required |
+| Authorization, input/output schemas, errors, and rejection before execution             | Supported / Required | Supported / Required           | Supported / Required |
+| Installable packages, public APIs, and consumers with independent dependency resolution | Supported / Required | Supported / Required           | Supported / Required |
 
 Support is limited to the tested features and execution paths. It does not certify every MCP option or NoX product integration, which has its own versions and test suites.
 
@@ -30,14 +30,14 @@ The portable profile and legitimate differences between native APIs are describe
 
 Successes include `structuredContent` matching the `outputSchema`. Tool errors use `isError: true` and a JSON body in `content[].text`, without `structuredContent`. Clients that previously read that field for errors must read the JSON text instead. Domain codes, `retryable`, details, and valid extensions are preserved.
 
-| Modern scenario | JSON-RPC | HTTP JSON |
-| --- | --- | --- |
-| Required extension missing or incompatible extension version | `-32021`, with `requiredCapabilities` | 400 |
-| Unknown protocol version | `-32022`, with `requested` and `supported` | 400 |
-| Required `protocolVersion` or `clientCapabilities` missing | `-32602` | 400 |
-| Invalid parameters inside the NoX handler | `-32602` | TS: 200; Go/rmcp 3.5.x: 400; rmcp >=3.6, <4: 200 |
-| Stale definition or snapshot | `-32602`, `STALE_DEFINITION` or `STALE_CATALOG` | SDK mapping |
-| Runtime authorization/domain error | MCP result with `isError: true` | 200 |
+| Modern scenario                                              | JSON-RPC                                        | HTTP JSON                                        |
+| ------------------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------ |
+| Required extension missing or incompatible extension version | `-32021`, with `requiredCapabilities`           | 400                                              |
+| Unknown protocol version                                     | `-32022`, with `requested` and `supported`      | 400                                              |
+| Required `protocolVersion` or `clientCapabilities` missing   | `-32602`                                        | 400                                              |
+| Invalid parameters inside the NoX handler                    | `-32602`                                        | TS: 200; Go/rmcp 3.5.x: 400; rmcp >=3.6, <4: 200 |
+| Stale definition or snapshot                                 | `-32602`, `STALE_DEFINITION` or `STALE_CATALOG` | SDK mapping                                      |
+| Runtime authorization/domain error                           | MCP result with `isError: true`                 | 200                                              |
 
 On supported SSE transports, an error after streaming starts retains HTTP 200 and arrives as the terminal event for the same request. Stdio uses the same JSON-RPC envelope, without an HTTP status. Legacy clients continue using `initialize`, `tools/list`, and `tools/call`; modern negotiation does not apply to their requests. See [discovery](DISCOVERY.md) for details.
 

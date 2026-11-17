@@ -25,14 +25,7 @@
     "catalog": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
-      "required": [
-        "resultType",
-        "serverId",
-        "viewId",
-        "catalog",
-        "ttlMs",
-        "cacheScope"
-      ],
+      "required": ["resultType", "serverId", "viewId", "catalog", "ttlMs", "cacheScope"],
       "properties": {
         "_meta": {
           "type": "object"
@@ -69,10 +62,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": [
-              "name",
-              "fingerprint"
-            ],
+            "required": ["name", "fingerprint"],
             "properties": {
               "name": {
                 "type": "string",
@@ -83,10 +73,7 @@
                 "pattern": "^[A-Za-z0-9_-]{43}$"
               },
               "availability": {
-                "enum": [
-                  "available",
-                  "unavailable"
-                ]
+                "enum": ["available", "unavailable"]
               }
             },
             "additionalProperties": false
@@ -99,23 +86,15 @@
       },
       "oneOf": [
         {
-          "required": [
-            "notModified"
-          ],
+          "required": ["notModified"],
           "not": {
-            "required": [
-              "tools"
-            ]
+            "required": ["tools"]
           }
         },
         {
-          "required": [
-            "tools"
-          ],
+          "required": ["tools"],
           "not": {
-            "required": [
-              "notModified"
-            ]
+            "required": ["notModified"]
           }
         }
       ],
@@ -153,10 +132,7 @@
                 "additionalProperties": true
               }
             },
-            "required": [
-              "name",
-              "inputSchema"
-            ],
+            "required": ["name", "inputSchema"],
             "additionalProperties": true
           },
           "cli": {
@@ -171,16 +147,10 @@
           },
           "availability": {
             "type": "string",
-            "enum": [
-              "available",
-              "unavailable"
-            ]
+            "enum": ["available", "unavailable"]
           }
         },
-        "required": [
-          "tool",
-          "fingerprint"
-        ],
+        "required": ["tool", "fingerprint"],
         "additionalProperties": false
       }
     },
@@ -241,10 +211,7 @@
           },
           "availability": {
             "type": "string",
-            "enum": [
-              "available",
-              "unavailable"
-            ]
+            "enum": ["available", "unavailable"]
           }
         },
         "required": [
@@ -286,11 +253,7 @@
             "maxLength": 256
           }
         },
-        "required": [
-          "productId",
-          "toolName",
-          "code"
-        ],
+        "required": ["productId", "toolName", "code"],
         "additionalProperties": true
       }
     }

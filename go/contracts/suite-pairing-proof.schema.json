@@ -70,10 +70,6 @@
       "pattern": "^[A-Za-z0-9_-]{43}$"
     }
   },
-  "required": [
-    "contractVersion",
-    "binding",
-    "proof"
-  ],
+  "required": ["contractVersion", "binding", "proof"],
   "additionalProperties": true
 }

@@ -39,7 +39,7 @@ npm install https://github.com/mapherez/nox-mcp/releases/latest/download/nox-mcp
 ```
 
 ```ts
-import { createServer } from '@nox/mcp';
+import { createServer } from "@nox/mcp";
 ```
 
 ### Go
@@ -74,7 +74,7 @@ If you use, fork, or modify this code, you **must** provide attribution by linki
 
 ---
 
-*For more details on what you can and cannot do, please refer to the [LICENSE](LICENSE) file in this repository.*
+_For more details on what you can and cannot do, please refer to the [LICENSE](LICENSE) file in this repository._
 
 ## Disclaimer of Warranty
 

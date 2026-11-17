@@ -25,11 +25,6 @@
       "maxLength": 256
     }
   },
-  "required": [
-    "contractVersion",
-    "apiKey",
-    "productId",
-    "registrationRevision"
-  ],
+  "required": ["contractVersion", "apiKey", "productId", "registrationRevision"],
   "additionalProperties": true
 }

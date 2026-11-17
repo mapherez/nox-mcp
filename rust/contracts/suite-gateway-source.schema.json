@@ -70,9 +70,7 @@
                       "x-nox-kind": "path"
                     }
                   },
-                  "required": [
-                    "path"
-                  ],
+                  "required": ["path"],
                   "additionalProperties": true
                 }
               },
@@ -108,9 +106,7 @@
               "x-nox-kind": "origin"
             }
           },
-          "required": [
-            "baseUrl"
-          ],
+          "required": ["baseUrl"],
           "additionalProperties": true
         },
         "managedBy": {
@@ -129,10 +125,7 @@
               "maxLength": 256
             }
           },
-          "required": [
-            "productId",
-            "deploymentId"
-          ],
+          "required": ["productId", "deploymentId"],
           "additionalProperties": true
         }
       },
@@ -188,10 +181,7 @@
                 "additionalProperties": true
               }
             },
-            "required": [
-              "name",
-              "inputSchema"
-            ],
+            "required": ["name", "inputSchema"],
             "additionalProperties": true
           },
           "cli": {
@@ -206,15 +196,10 @@
           },
           "availability": {
             "type": "string",
-            "enum": [
-              "available",
-              "unavailable"
-            ]
+            "enum": ["available", "unavailable"]
           }
         },
-        "required": [
-          "tool"
-        ],
+        "required": ["tool"],
         "additionalProperties": false
       }
     },
@@ -234,12 +219,6 @@
       "maximum": 9007199254740991
     }
   },
-  "required": [
-    "contractVersion",
-    "registration",
-    "serverId",
-    "viewId",
-    "definitions"
-  ],
+  "required": ["contractVersion", "registration", "serverId", "viewId", "definitions"],
   "additionalProperties": true
 }

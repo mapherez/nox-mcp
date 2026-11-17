@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { cp, mkdtemp, readFile, rm, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
@@ -49,7 +50,7 @@ void test("canonical changes reach all generated schemas, constants and TypeScri
   }
   assert.match(
     await readFile(resolve(directory, "typescript/src/contracts.generated.ts"), "utf8"),
-    /"custom": z.string\(\).optional\(\)/,
+    /["']?custom["']?: z.string\(\).optional\(\)/,
   );
   for (const file of ["go/defaults.go", "rust/src/defaults.rs", "typescript/src/defaults.json"])
     assert.match(await readFile(resolve(directory, file), "utf8"), /23456/);
@@ -89,8 +90,13 @@ void test("a standalone schema cannot diverge from its definition inside a bridg
 void test("Suite generation preserves metadata identifiers, includes native documents, and detects DTO drift", async (t) => {
   const directory = await fixture(t);
   const go = await readFile(resolve(directory, "go/suite_types.generated.go"), "utf8");
-  assert.match(go, /Meta \*map\[string\]json.RawMessage `json:"_meta,omitempty"`/);
+  assert.match(go, /Meta\s+\*map\[string\]json.RawMessage `json:"_meta,omitempty"`/);
   assert.doesNotMatch(go, /undefinedMeta/);
+  assert.equal(
+    execFileSync("gofmt", [], { input: go, encoding: "utf8" }),
+    go,
+    "The generator must emit gofmt-clean DTOs",
+  );
   for (const path of [
     "typescript/src/suite-types.generated.ts",
     "go/suite_types.generated.go",

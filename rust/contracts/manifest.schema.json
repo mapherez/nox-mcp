@@ -74,20 +74,9 @@
             }
           }
         },
-        "required": [
-          "name",
-          "title",
-          "description",
-          "inputSchema",
-          "outputSchema",
-          "annotations"
-        ]
+        "required": ["name", "title", "description", "inputSchema", "outputSchema", "annotations"]
       }
     }
   },
-  "required": [
-    "schemaVersion",
-    "protocolVersion",
-    "tools"
-  ]
+  "required": ["schemaVersion", "protocolVersion", "tools"]
 }

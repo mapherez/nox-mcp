@@ -19,12 +19,7 @@
         },
         "result": {}
       },
-      "required": [
-        "type",
-        "requestId",
-        "ok",
-        "result"
-      ]
+      "required": ["type", "requestId", "ok", "result"]
     },
     {
       "type": "object",
@@ -67,18 +62,10 @@
               "additionalProperties": {}
             }
           },
-          "required": [
-            "code",
-            "message"
-          ]
+          "required": ["code", "message"]
         }
       },
-      "required": [
-        "type",
-        "requestId",
-        "ok",
-        "error"
-      ]
+      "required": ["type", "requestId", "ok", "error"]
     }
   ]
 }

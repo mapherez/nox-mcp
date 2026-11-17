@@ -61,9 +61,7 @@
                   "x-nox-kind": "path"
                 }
               },
-              "required": [
-                "path"
-              ],
+              "required": ["path"],
               "additionalProperties": true
             }
           },
@@ -80,13 +78,7 @@
           "uniqueItems": true
         }
       },
-      "required": [
-        "contractVersion",
-        "productId",
-        "productVersion",
-        "displayName",
-        "capabilities"
-      ],
+      "required": ["contractVersion", "productId", "productVersion", "displayName", "capabilities"],
       "additionalProperties": true
     },
     "connection": {
@@ -99,9 +91,7 @@
           "x-nox-kind": "origin"
         }
       },
-      "required": [
-        "baseUrl"
-      ],
+      "required": ["baseUrl"],
       "additionalProperties": true
     },
     "managedBy": {
@@ -120,10 +110,7 @@
           "maxLength": 256
         }
       },
-      "required": [
-        "productId",
-        "deploymentId"
-      ],
+      "required": ["productId", "deploymentId"],
       "additionalProperties": true
     }
   },

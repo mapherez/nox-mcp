@@ -53,11 +53,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": [
-          "nox:inspect",
-          "nox:write",
-          "nox:sensitive-read"
-        ]
+        "enum": ["nox:inspect", "nox:write", "nox:sensitive-read"]
       },
       "minItems": 1,
       "uniqueItems": true,

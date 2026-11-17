@@ -25,15 +25,15 @@ Participating products implement the relevant shared contracts in their own repo
 
 ## 2. Responsibilities and sources of truth
 
-| Information or action | Authority |
-| --- | --- |
-| Product identity and advertised integration support | Product declaration, verified during authorized enrollment |
-| Accepted membership, configured address, connection association, registration revision | Backend |
-| Account, API key, current role, and central permissions | Backend |
-| Deployment identity and known deployment operations | Yard |
-| Actual MCP reachability and readiness | Gateway observation |
-| Tool definitions, schemas, descriptors, and domain rules | Product |
-| Aggregated presentation and execution | Future CLI; future Portal for UI contributions |
+| Information or action                                                                  | Authority                                                  |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Product identity and advertised integration support                                    | Product declaration, verified during authorized enrollment |
+| Accepted membership, configured address, connection association, registration revision | Backend                                                    |
+| Account, API key, current role, and central permissions                                | Backend                                                    |
+| Deployment identity and known deployment operations                                    | Yard                                                       |
+| Actual MCP reachability and readiness                                                  | Gateway observation                                        |
+| Tool definitions, schemas, descriptors, and domain rules                               | Product                                                    |
+| Aggregated presentation and execution                                                  | Future CLI; future Portal for UI contributions             |
 
 Yard initiates integration; it does not become a second registry. Gateway receives reconstructible registry data and reports observations; it cannot independently enroll products. Product announcements are data, not proof of trust.
 
@@ -61,14 +61,14 @@ Minimal example:
 }
 ```
 
-| Field | Contract rule |
-| --- | --- |
-| `contractVersion` | Exact supported integration contract version, `1.0`; independent of SDK, MCP, bridge, and product versions |
-| `productId` | Stable product identifier, 1–64 ASCII characters, pattern `^[a-z0-9]+(?:-[a-z0-9]+)*$`; unique within this Backend |
-| `productVersion` | Non-empty display/diagnostic string, up to 64 characters; not used to infer contract or tool compatibility |
-| `displayName` | Non-empty human label, up to 120 Unicode code points; never an identity or routing key |
-| `capabilities` | Object; absence of a capability means it is not advertised |
-| `capabilities.suiteMcp.path` | Origin-relative path for the protected Suite MCP endpoint on the main listener |
+| Field                        | Contract rule                                                                                                      |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `contractVersion`            | Exact supported integration contract version, `1.0`; independent of SDK, MCP, bridge, and product versions         |
+| `productId`                  | Stable product identifier, 1–64 ASCII characters, pattern `^[a-z0-9]+(?:-[a-z0-9]+)*$`; unique within this Backend |
+| `productVersion`             | Non-empty display/diagnostic string, up to 64 characters; not used to infer contract or tool compatibility         |
+| `displayName`                | Non-empty human label, up to 120 Unicode code points; never an identity or routing key                             |
+| `capabilities`               | Object; absence of a capability means it is not advertised                                                         |
+| `capabilities.suiteMcp.path` | Origin-relative path for the protected Suite MCP endpoint on the main listener                                     |
 
 All five top-level fields are required. `capabilities: {}` is valid for registration, but makes no tools available. Do not advertise `suiteMcp` until the product implements the Suite access path. The contract defines one Suite MCP endpoint per registered product. Multiple internal tenants, workspaces, or accounts are product domain contexts handled through its tools and authorization, not additional registry products or endpoints.
 
@@ -127,13 +127,13 @@ Do not require the current MCP discovery `serverId` to equal `productId`. The Ga
 
 Use an authenticated Backend management API, separate from standard MCP tool discovery. The SDK defines portable payloads and validation; Backend adapters own HTTP routes, persistence, and transactions.
 
-| Operation | Backend route | Preconditions and result |
-| --- | --- | --- |
-| Read registry | `GET /api/nox/products` | Authorized, role-filtered view; complete snapshot with a consistent registry revision |
-| Read registration | `GET /api/nox/products/{productId}` | Authorized representation and its revision |
-| Create | `PUT /api/nox/products/{productId}` | `If-None-Match: *`; authorized admin/Yard enrollment; `201` after durable acceptance |
-| Update | Same `PUT` route | `If-Match: "<revision>"`; `200` on accepted update or identical configuration |
-| Remove | `DELETE /api/nox/products/{productId}` | `If-Match: "<revision>"`; explicit authorized removal; `204` after durable removal |
+| Operation         | Backend route                          | Preconditions and result                                                              |
+| ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------- |
+| Read registry     | `GET /api/nox/products`                | Authorized, role-filtered view; complete snapshot with a consistent registry revision |
+| Read registration | `GET /api/nox/products/{productId}`    | Authorized representation and its revision                                            |
+| Create            | `PUT /api/nox/products/{productId}`    | `If-None-Match: *`; authorized admin/Yard enrollment; `201` after durable acceptance  |
+| Update            | Same `PUT` route                       | `If-Match: "<revision>"`; `200` on accepted update or identical configuration         |
+| Remove            | `DELETE /api/nox/products/{productId}` | `If-Match: "<revision>"`; explicit authorized removal; `204` after durable removal    |
 
 The read-list `registryRevision` is an opaque Backend token changed by registration changes. Availability has separate observations. It is not a JCS hash and must not be confused with an MCP discovery snapshot. Privileged synchronization snapshots include an event cursor captured consistently with the records. Gateway Contract section 8 defines delivery, tombstones, and reconciliation; no second incremental tool-discovery protocol is introduced.
 
@@ -199,10 +199,10 @@ An administrator can explicitly remove a registration without deleting applicati
 
 Keep source observations separate instead of letting the last message overwrite a single authoritative `online` flag.
 
-| Source | Proposed values | Meaning |
-| --- | --- | --- |
-| Yard lifecycle | `starting`, `running`, `stopping`, `stopped`, `restarting`, `recreating`, `updating`, `unknown` | Deployment state/intent, not MCP readiness |
-| Gateway MCP observation | `ready`, `unreachable`, `notReady`, `incompatible`, `unknown` | Effective MCP connection/protocol state, not membership |
+| Source                  | Proposed values                                                                                 | Meaning                                                 |
+| ----------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Yard lifecycle          | `starting`, `running`, `stopping`, `stopped`, `restarting`, `recreating`, `updating`, `unknown` | Deployment state/intent, not MCP readiness              |
+| Gateway MCP observation | `ready`, `unreachable`, `notReady`, `incompatible`, `unknown`                                   | Effective MCP connection/protocol state, not membership |
 
 Each observation carries its source, product/deployment association, observation time, and a source-local increasing sequence. The producer persists its sequence; a lost/reset sequence requires explicit re-association and reconciliation rather than accepting arbitrary older events. Timestamps explain age, but clock ordering does not resolve conflicts between sources.
 
@@ -226,18 +226,18 @@ Use a management error body independent of tool errors and JSON-RPC:
 }
 ```
 
-| Situation | HTTP | Code / action |
-| --- | --- | --- |
-| Malformed body, identifier, or address | 400 | `INVALID_REGISTRATION` |
-| Missing/invalid caller credentials | 401 | `UNAUTHENTICATED` |
-| Caller lacks permission or target violates policy | 403 | `FORBIDDEN` |
-| Registration absent on an authorized read/update | 404 | `PRODUCT_NOT_REGISTERED` |
-| Unsupported integration version/required feature | 422 | `UNSUPPORTED_INTEGRATION` |
-| Existing enrollment, identity mismatch, or reused key with different contents | 409 | `REGISTRATION_CONFLICT` |
-| Missing conditional header | 428 | `PRECONDITION_REQUIRED` |
-| Stale update/removal revision, or failed create precondition | 412 | `REGISTRATION_PRECONDITION_FAILED`; read/reconcile |
-| Product unreachable during verification | 503 | `PRODUCT_UNREACHABLE`; retryable, with bounded retries |
-| Required Backend dependency temporarily unavailable | 503 | `INTEGRATION_UNAVAILABLE`; no false success |
+| Situation                                                                     | HTTP | Code / action                                          |
+| ----------------------------------------------------------------------------- | ---- | ------------------------------------------------------ |
+| Malformed body, identifier, or address                                        | 400  | `INVALID_REGISTRATION`                                 |
+| Missing/invalid caller credentials                                            | 401  | `UNAUTHENTICATED`                                      |
+| Caller lacks permission or target violates policy                             | 403  | `FORBIDDEN`                                            |
+| Registration absent on an authorized read/update                              | 404  | `PRODUCT_NOT_REGISTERED`                               |
+| Unsupported integration version/required feature                              | 422  | `UNSUPPORTED_INTEGRATION`                              |
+| Existing enrollment, identity mismatch, or reused key with different contents | 409  | `REGISTRATION_CONFLICT`                                |
+| Missing conditional header                                                    | 428  | `PRECONDITION_REQUIRED`                                |
+| Stale update/removal revision, or failed create precondition                  | 412  | `REGISTRATION_PRECONDITION_FAILED`; read/reconcile     |
+| Product unreachable during verification                                       | 503  | `PRODUCT_UNREACHABLE`; retryable, with bounded retries |
+| Required Backend dependency temporarily unavailable                           | 503  | `INTEGRATION_UNAVAILABLE`; no false success            |
 
 For create, a matching existing identity/deployment still fails `If-None-Match` with 412 unless it is a recognized idempotent replay. The 409 enrollment conflict covers attempts to replace a different verified identity/association rather than a simple failed conditional write.
 
@@ -249,14 +249,14 @@ Existing products and SDK consumers continue working unchanged before migration.
 
 ## 9. SDK implementation target
 
-| Area | Implemented shared SDK work |
-| --- | --- |
-| `contracts/` | Separate product declaration, registration request/record, and management error schemas; shared integration corpus |
-| `scripts/sync-contracts.mjs` | Generate/package native copies and TypeScript validators without repurposing existing schemas |
+| Area                                  | Implemented shared SDK work                                                                                                                                                                  |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contracts/`                          | Separate product declaration, registration request/record, and management error schemas; shared integration corpus                                                                           |
+| `scripts/sync-contracts.mjs`          | Generate/package native copies and TypeScript validators without repurposing existing schemas                                                                                                |
 | `typescript/src/`, `go/`, `rust/src/` | Additive portable types, complete-document loaders/validators, URL rules, pairing/delegation, bounded authorization reuse, registry/availability, aggregation, and runtime admission helpers |
-| Shared conformance runners | Compare normalized accepted documents, errors, optional/unknown field preservation, and address validation |
-| Existing packaging/CI | Ship schemas in external native packages without Node; retain all supported blocking jobs |
-| Documentation | Final contract reference, migration/integration examples, explicit support boundaries |
+| Shared conformance runners            | Compare normalized accepted documents, errors, optional/unknown field preservation, and address validation                                                                                   |
+| Existing packaging/CI                 | Ship schemas in external native packages without Node; retain all supported blocking jobs                                                                                                    |
+| Documentation                         | Final contract reference, migration/integration examples, explicit support boundaries                                                                                                        |
 
 The SDK does not persist the registry, run Docker, decide Google account approval, probe products on a background timer, render menus, load Portal code, or embed Backend-specific HTTP handlers. Backend/Yard/Gateway adapters implement those actions against the approved contracts.
 

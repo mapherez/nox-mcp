@@ -8,11 +8,11 @@ Step 2B adds separate optional contracts for CLI descriptors and incremental dis
 
 A structurally valid manifest does not grant authorization or guarantee that it can be executed.
 
-| Operation | TypeScript | Go | Rust | Guarantee |
-| --- | --- | --- | --- | --- |
-| Structural validation | `toolManifestSchema` | `ValidateFrame("manifest", ...)` | `validate_schema` with the authoritative schema | Document conforms to `manifest.schema.json`; tool schemas are not compiled. |
-| Execution preparation | `loadToolManifest` | `LoadToolManifest` | `load_manifest` | Structural validation, protocol `2.0`, unique names, object input/output roots, and compilation under the shared profile. Returns the complete document. |
-| Binding and execution | `createServerFromManifest` | `NewFromManifest` | `McpServer::from_manifest` | Binds application-supplied implementations, validates input/output, and enforces authorization requirements. |
+| Operation             | TypeScript                 | Go                               | Rust                                            | Guarantee                                                                                                                                                |
+| --------------------- | -------------------------- | -------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Structural validation | `toolManifestSchema`       | `ValidateFrame("manifest", ...)` | `validate_schema` with the authoritative schema | Document conforms to `manifest.schema.json`; tool schemas are not compiled.                                                                              |
+| Execution preparation | `loadToolManifest`         | `LoadToolManifest`               | `load_manifest`                                 | Structural validation, protocol `2.0`, unique names, object input/output roots, and compilation under the shared profile. Returns the complete document. |
+| Binding and execution | `createServerFromManifest` | `NewFromManifest`                | `McpServer::from_manifest`                      | Binds application-supplied implementations, validates input/output, and enforces authorization requirements.                                             |
 
 During structural validation, `schemaVersion` remains `1`, `protocolVersion` is a non-empty string of at most 32 characters, and tool schemas are opaque JSON objects. Duplicate tools or non-executable schemas may be valid for this operation. Annotations are a required object with optional booleans. Tests distinguish these results from execution requirements.
 
@@ -68,13 +68,13 @@ Timeout uses `TIMEOUT`; cancellation uses `CANCELLED`. Explicitly marked reads u
 
 These differences remain legitimate:
 
-| API area | Difference and limit |
-| --- | --- |
-| SDK projections | Rust `load_tools`, `parse_server_frame`, and Go/Rust discovery types represent only SDK fields. Use the complete loader to preserve every extension; do not round-trip a manifest through discovery types. Standard runtime listing omits `_meta.cli`; NoX definitions retain it and other metadata is preserved. |
-| Go errors | `Runtime.Execute` uses the idiomatic `error` return; MCP envelope normalization occurs in the handler. Tests compare that boundary. |
-| Physical cancellation | Go/TypeScript retain capacity while non-cooperating work continues; Rust may abort the future. Universal preemption and effect rollback do not exist. |
-| Transport | The SDK may suppress the response when a connection/request is cancelled. The contract defines the internal result when deliverable; it does not require a response on a closed connection. |
-| Local details | Human messages, generated IDs, deadline representation, and diagnostics vary. Codes, retryability, unknown-outcome details, and JSON data are comparable. |
+| API area              | Difference and limit                                                                                                                                                                                                                                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SDK projections       | Rust `load_tools`, `parse_server_frame`, and Go/Rust discovery types represent only SDK fields. Use the complete loader to preserve every extension; do not round-trip a manifest through discovery types. Standard runtime listing omits `_meta.cli`; NoX definitions retain it and other metadata is preserved. |
+| Go errors             | `Runtime.Execute` uses the idiomatic `error` return; MCP envelope normalization occurs in the handler. Tests compare that boundary.                                                                                                                                                                               |
+| Physical cancellation | Go/TypeScript retain capacity while non-cooperating work continues; Rust may abort the future. Universal preemption and effect rollback do not exist.                                                                                                                                                             |
+| Transport             | The SDK may suppress the response when a connection/request is cancelled. The contract defines the internal result when deliverable; it does not require a response on a closed connection.                                                                                                                       |
+| Local details         | Human messages, generated IDs, deadline representation, and diagnostics vary. Codes, retryability, unknown-outcome details, and JSON data are comparable.                                                                                                                                                         |
 
 MCP protocols, bridge frames `1.0`/`2.0`, tickets, heartbeats, and local brokers have not been redesigned. Prefixed IDs and numeric deadlines in the local Rust broker remain distinct from UUID/RFC3339 WebSocket envelopes.
 

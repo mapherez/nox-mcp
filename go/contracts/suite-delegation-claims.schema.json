@@ -27,9 +27,7 @@
           "maxLength": 256
         }
       },
-      "required": [
-        "sub"
-      ],
+      "required": ["sub"],
       "additionalProperties": true
     },
     "iat": {
@@ -103,9 +101,7 @@
       ],
       "additionalProperties": true,
       "not": {
-        "required": [
-          "purpose"
-        ]
+        "required": ["purpose"]
       }
     },
     "scope": {
@@ -114,17 +110,6 @@
       "maxLength": 128
     }
   },
-  "required": [
-    "iss",
-    "aud",
-    "sub",
-    "act",
-    "iat",
-    "nbf",
-    "exp",
-    "jti",
-    "nox",
-    "scope"
-  ],
+  "required": ["iss", "aud", "sub", "act", "iat", "nbf", "exp", "jti", "nox", "scope"],
   "additionalProperties": true
 }

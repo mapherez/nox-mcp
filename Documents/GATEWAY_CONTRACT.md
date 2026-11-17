@@ -20,19 +20,19 @@ In this document, **must** and **must not** identify conformance requirements; *
 
 ## 2. Authorities and distinct identities
 
-| Value or responsibility | Authority and meaning |
-| --- | --- |
-| Backend issuer | Persistent identifier of the configured Backend authority; survives normal restart |
-| `productId` | Stable product identity from the verified declaration and Backend registry |
-| Registration `revision` | Opaque accepted-configuration revision; never reused, including after re-enrollment |
-| `associationId` | Backend-issued opaque binding to the paired service/deployment; internal trust state, not another functional entity |
-| `serviceId` / service credential revision | Backend-issued technical identity and revocable credential generation |
-| Backend user ID / `keyId` / `authRevision` | User, personal API-key identifier, and authorization revision; raw keys are secrets |
-| MCP `serverId` / `viewId` | Product discovery identity and authorized tool view; not registry identifiers |
-| Original definition/catalog fingerprints | Product discovery values under the existing discovery contract |
-| Aggregated fingerprints/snapshot | Gateway's transformed, authorized definitions and the component versions it published |
-| Event cursor | Opaque position in the Backend event log; not a registration revision, timestamp, or tool hash |
-| Producer epoch/sequence | Authorized observation source generation and ordering within that source |
+| Value or responsibility                    | Authority and meaning                                                                                               |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Backend issuer                             | Persistent identifier of the configured Backend authority; survives normal restart                                  |
+| `productId`                                | Stable product identity from the verified declaration and Backend registry                                          |
+| Registration `revision`                    | Opaque accepted-configuration revision; never reused, including after re-enrollment                                 |
+| `associationId`                            | Backend-issued opaque binding to the paired service/deployment; internal trust state, not another functional entity |
+| `serviceId` / service credential revision  | Backend-issued technical identity and revocable credential generation                                               |
+| Backend user ID / `keyId` / `authRevision` | User, personal API-key identifier, and authorization revision; raw keys are secrets                                 |
+| MCP `serverId` / `viewId`                  | Product discovery identity and authorized tool view; not registry identifiers                                       |
+| Original definition/catalog fingerprints   | Product discovery values under the existing discovery contract                                                      |
+| Aggregated fingerprints/snapshot           | Gateway's transformed, authorized definitions and the component versions it published                               |
+| Event cursor                               | Opaque position in the Backend event log; not a registration revision, timestamp, or tool hash                      |
+| Producer epoch/sequence                    | Authorized observation source generation and ordering within that source                                            |
 
 Backend owns membership, accounts, API keys, service grants, and central capability mapping. Products own tool definitions and domain authorization. Gateway owns reconstructible routing/cache state and its observations of actual MCP availability. Yard owns deployment operations and reports their lifecycle. Future consumers render or execute published contracts without becoming authorities for these values.
 
@@ -62,16 +62,16 @@ Adapters must validate local target identity and filesystem paths, bound connect
 
 The Backend generates a cryptographically random service credential with at least 256 bits of entropy, stores a verifier rather than its plaintext for ordinary authentication, and assigns `serviceId`, credential revision, and explicit service grants. Service credentials are distinct from personal API keys and do not inherit the administrator's full session.
 
-| Service grant | Permitted use |
-| --- | --- |
-| `registry.read` | Read privileged registry/configuration needed for assigned communication |
-| `registry.manage-associated` | Register/update/remove only products bound to the caller's authorized deployments |
-| `authorization.delegate` | Gateway-only exchange of a valid personal API key for a product-specific delegated context |
-| `events.read` | Read only event categories and targets permitted to that service |
-| `lifecycle.report` | Report authorized deployment associations, not MCP readiness or membership removal |
-| `mcp.report` | Gateway-only reports of MCP readiness, not deployment ownership |
-| `mcp.probe` | Gateway-only, product-bound protocol readiness checks without user tools or data |
-| `pairing.manage-associated` | Create/resume pairing for an authorized deployment |
+| Service grant                | Permitted use                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| `registry.read`              | Read privileged registry/configuration needed for assigned communication                   |
+| `registry.manage-associated` | Register/update/remove only products bound to the caller's authorized deployments          |
+| `authorization.delegate`     | Gateway-only exchange of a valid personal API key for a product-specific delegated context |
+| `events.read`                | Read only event categories and targets permitted to that service                           |
+| `lifecycle.report`           | Report authorized deployment associations, not MCP readiness or membership removal         |
+| `mcp.report`                 | Gateway-only reports of MCP readiness, not deployment ownership                            |
+| `mcp.probe`                  | Gateway-only, product-bound protocol readiness checks without user tools or data           |
+| `pairing.manage-associated`  | Create/resume pairing for an authorized deployment                                         |
 
 These are technical grants, not new user roles. Backend maps actual existing roles to Suite capabilities. Each caller is checked against its active credential/grants on every Backend management request using Backend-local state. A product receives only the grants it needs; an ordinary product cannot mint user delegations or enroll unrelated products. Gateway cannot independently enroll products. The Backend's own tools use the same verified user/capability semantics through a local adapter where appropriate, without requiring an HTTP call to itself.
 
@@ -92,15 +92,15 @@ Pairing is resumable after a lost response. Backend may retain the same encrypte
 
 These are Backend management routes, not new MCP methods. They use the management error body and idempotency/precondition discipline from the integration design.
 
-| Operation | Route | Authorization/result |
-| --- | --- | --- |
-| Create pairing intent | `POST /api/nox/pairings` | Administrator or `pairing.manage-associated`; returns pending intent and one-time secret |
-| Complete/resume pairing | `POST /api/nox/pairings/{pairingId}/complete` | Bound challenge-response at the approved origin; returns the same provisioning result on an eligible retry |
-| Acknowledge persisted provisioning | `POST /api/nox/pairings/{pairingId}/ack` | Newly issued service credential; deletes recoverable plaintext-equivalent provisioning material |
-| Cancel pending pairing | `DELETE /api/nox/pairings/{pairingId}` | Authorized issuer/administrator; idempotent cancellation |
-| Rotate a service credential | `POST /api/nox/services/{serviceId}/credentials` | Current service or authorized administrator; conditional credential revision and durable idempotency |
-| Revoke a credential/service | `DELETE /api/nox/services/{serviceId}/credentials/{credentialId}` | Current service for itself or authorized administrator; emits invalidation |
-| Read issuer signing keys | `GET /api/nox/keys` | Trusted configured Backend origin; public verification keys only |
+| Operation                          | Route                                                             | Authorization/result                                                                                       |
+| ---------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Create pairing intent              | `POST /api/nox/pairings`                                          | Administrator or `pairing.manage-associated`; returns pending intent and one-time secret                   |
+| Complete/resume pairing            | `POST /api/nox/pairings/{pairingId}/complete`                     | Bound challenge-response at the approved origin; returns the same provisioning result on an eligible retry |
+| Acknowledge persisted provisioning | `POST /api/nox/pairings/{pairingId}/ack`                          | Newly issued service credential; deletes recoverable plaintext-equivalent provisioning material            |
+| Cancel pending pairing             | `DELETE /api/nox/pairings/{pairingId}`                            | Authorized issuer/administrator; idempotent cancellation                                                   |
+| Rotate a service credential        | `POST /api/nox/services/{serviceId}/credentials`                  | Current service or authorized administrator; conditional credential revision and durable idempotency       |
+| Revoke a credential/service        | `DELETE /api/nox/services/{serviceId}/credentials/{credentialId}` | Current service for itself or authorized administrator; emits invalidation                                 |
+| Read issuer signing keys           | `GET /api/nox/keys`                                               | Trusted configured Backend origin; public verification keys only                                           |
 
 Rotation provisions the replacement before retiring the previous credential. The overlap is bounded to five minutes and ends earlier on acknowledgment. Revocation is checked immediately at the Backend and emits a service invalidation event. Already issued delegations have the bounded residual lifetime in section 6. Credential loss does not reset a persisted association automatically; administrator/authorized-installer recovery is required. TLS pin changes require a verified old association or explicit administrator re-pairing, never trust-on-first-use during reconnect.
 
@@ -202,16 +202,16 @@ On product removal/replacement, invalidate every matching old association, not j
 
 ### 6.3 Outage and restart behavior
 
-| Situation | Required behavior |
-| --- | --- |
-| Backend temporarily unreachable/5xx, matching unexpired grant | Existing authorized calls may proceed within the original scopes, association, and expiry |
-| No grant, expired grant, changed target, or known invalidation | No new integrated execution until successful authorization; return authority unavailability when that is the cause |
-| Explicit Backend 401/403 or a relevant revocation event | Reject/invalidate; do not treat denial as a network outage |
-| Backend role/key change while disconnected | Residual authority ends at expiry; do not promise immediate effect without notification |
-| Gateway restart | Discard in-memory authorizations; reauthenticate on first use; persisted definition/registry copies grant no access |
-| Backend restart | Recover identities, keys, registry, idempotency results, and event log from persistent local state |
-| Internet unavailable, required local services running | Existing prepared accounts/keys continue working; no per-call Google contact |
-| Yard unavailable | Existing registrations and Gateway execution remain usable independently |
+| Situation                                                      | Required behavior                                                                                                   |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Backend temporarily unreachable/5xx, matching unexpired grant  | Existing authorized calls may proceed within the original scopes, association, and expiry                           |
+| No grant, expired grant, changed target, or known invalidation | No new integrated execution until successful authorization; return authority unavailability when that is the cause  |
+| Explicit Backend 401/403 or a relevant revocation event        | Reject/invalidate; do not treat denial as a network outage                                                          |
+| Backend role/key change while disconnected                     | Residual authority ends at expiry; do not promise immediate effect without notification                             |
+| Gateway restart                                                | Discard in-memory authorizations; reauthenticate on first use; persisted definition/registry copies grant no access |
+| Backend restart                                                | Recover identities, keys, registry, idempotency results, and event log from persistent local state                  |
+| Internet unavailable, required local services running          | Existing prepared accounts/keys continue working; no per-call Google contact                                        |
+| Yard unavailable                                               | Existing registrations and Gateway execution remain usable independently                                            |
 
 On recovery, resume ordered events/reconciliation before treating the authority view as synchronized. A refused or expired event cursor causes complete registry reconciliation and clearing of affected authorization state; it cannot silently preserve possibly missed revocations. Cached data may remain for diagnosis but cannot be presented as a fresh authorized catalog after its authorization becomes invalid.
 
@@ -219,10 +219,10 @@ On recovery, resume ordered events/reconciliation before treating the authority 
 
 ### 7.1 Shared capabilities
 
-| Capability | Meaning |
-| --- | --- |
-| `nox:inspect` | Normal, non-sensitive inspection |
-| `nox:write` | Operations that mutate product or external state |
+| Capability           | Meaning                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| `nox:inspect`        | Normal, non-sensitive inspection                                                                     |
+| `nox:write`          | Operations that mutate product or external state                                                     |
 | `nox:sensitive-read` | Reads exposing secrets, credentials, private diagnostics, or other product-classified sensitive data |
 
 Backend grants inspection to approved non-admin accounts and all three capabilities to administrators, following its actual role model. No new user role enum or per-user/per-tool administration matrix is introduced. A combined write/sensitive operation requires both capabilities plus inspection. Confirmation and MCP annotations are not permission grants.
@@ -424,17 +424,17 @@ A multi-hour CLI session is not a multi-hour RPC. A product may expose generic t
 
 ## 12. Error surfaces, MCP compatibility, and consumers
 
-| Boundary/case | Required behavior |
-| --- | --- |
-| Invalid personal credential or invalid delegated token | HTTP 401 at the authentication boundary; never execute a tool |
-| No valid authorization and Backend temporarily unavailable | HTTP 503 with a sanitized transport error identifying `INTEGRATION_UNAVAILABLE`; never reuse an expired grant |
-| Verified identity lacks a tool capability/domain permission | Existing MCP tool error `FORBIDDEN`, without successful `structuredContent` |
-| Stale aggregated/source definition | Existing discovery `STALE_DEFINITION` / `STALE_CATALOG` reason and JSON-RPC boundary; respect SDK-specific HTTP mappings |
-| Destination known unavailable before dispatch | Sanitized tool `UNAVAILABLE`; identify known non-execution when certain |
-| Timeout/cancellation/unknown write outcome | Existing `TIMEOUT` / `CANCELLED` or transport-failure code with unknown-outcome semantics from section 11 |
-| Invalid classification/required feature/declaration | Explicit incompatibility diagnostic; no unauthorized fallback |
-| Expired event cursor | Management HTTP 410 `EVENT_CURSOR_EXPIRED`; reconcile snapshot |
-| Expired/mismatched pairing | Management error `PAIRING_EXPIRED` / `PAIRING_CONFLICT`; no membership activation |
+| Boundary/case                                               | Required behavior                                                                                                        |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Invalid personal credential or invalid delegated token      | HTTP 401 at the authentication boundary; never execute a tool                                                            |
+| No valid authorization and Backend temporarily unavailable  | HTTP 503 with a sanitized transport error identifying `INTEGRATION_UNAVAILABLE`; never reuse an expired grant            |
+| Verified identity lacks a tool capability/domain permission | Existing MCP tool error `FORBIDDEN`, without successful `structuredContent`                                              |
+| Stale aggregated/source definition                          | Existing discovery `STALE_DEFINITION` / `STALE_CATALOG` reason and JSON-RPC boundary; respect SDK-specific HTTP mappings |
+| Destination known unavailable before dispatch               | Sanitized tool `UNAVAILABLE`; identify known non-execution when certain                                                  |
+| Timeout/cancellation/unknown write outcome                  | Existing `TIMEOUT` / `CANCELLED` or transport-failure code with unknown-outcome semantics from section 11                |
+| Invalid classification/required feature/declaration         | Explicit incompatibility diagnostic; no unauthorized fallback                                                            |
+| Expired event cursor                                        | Management HTTP 410 `EVENT_CURSOR_EXPIRED`; reconcile snapshot                                                           |
+| Expired/mismatched pairing                                  | Management error `PAIRING_EXPIRED` / `PAIRING_CONFLICT`; no membership activation                                        |
 
 Management responses use the separate `{error:{code,message,retryable}}` envelope from the integration design. They are not MCP tool errors. Transport errors must not contain raw credentials, tokens, internal exception traces, or unfiltered connection configuration. An unavailable Backend is not a false `FORBIDDEN`, and an authorization denial is not a retryable outage.
 
@@ -462,39 +462,39 @@ Implementation order: shared contracts/helpers; Backend authority/management; in
 
 Portable contract fixtures must use varied fictional products and exercise each shared rule in all three languages. No existing product's endpoint names, tenants, tool counts, or menu conventions may become an implicit schema restriction.
 
-| Flow/case | Required observable result |
-| --- | --- |
-| Unknown conforming product is registered and discovered | Appears through contracts/data; no SDK/Gateway/CLI product-specific code |
-| Product declares no Suite MCP | Membership accepted; no invented tools or Portal loader |
-| Arbitrary product-owned tenant/workspace schemas | Arguments/options route unchanged; product enforces ownership |
-| Pairing proof wrong, expired, replayed for another target, or self-announced | No service association or membership authority |
-| Lost provisioning/enrollment response and ordinary restart | Same eligible outcome resumes; no second credential or duplicate registration |
-| Service tries another installer's deployment or reports another producer | Denied before mutation |
-| Wrong JWT issuer, algorithm/type, audience, actor/association, time, or unknown key | Rejected before execution; token-supplied key URLs ignored |
-| Admin/non-admin and argument-dependent sensitive access | Same policy enforced in catalogs and execution; annotations cannot grant authority |
-| Concurrent calls from different keys/users through one runtime | Identity, scopes, caches, and limits remain isolated/shared at their correct scopes |
-| Three-hour session with active calls and long idle periods | No 30-second authorization churn or repeat Google login; renewal on demand at expiry |
-| Many calls within one grant | Local checks reuse grant; unchanged definitions are not downloaded per call |
-| Readiness checks without any active user | Reuse a restricted service probe grant; cannot list/call user tools or impersonate a user |
-| Role/key/service revocation event, including during renewal | Affected state invalidated; late renewal cannot repopulate it |
-| Lost invalidation followed by Backend outage | Only original matching grants remain usable, never beyond five minutes |
-| Expired grant during outage, explicit denial, or Gateway restart | No stale positive fallback or authorization from disk definitions |
-| Offline Internet and restarted local services | Prepared users/keys work with persistent Backend authority; new Google login remains Internet-dependent |
+| Flow/case                                                                              | Required observable result                                                                               |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Unknown conforming product is registered and discovered                                | Appears through contracts/data; no SDK/Gateway/CLI product-specific code                                 |
+| Product declares no Suite MCP                                                          | Membership accepted; no invented tools or Portal loader                                                  |
+| Arbitrary product-owned tenant/workspace schemas                                       | Arguments/options route unchanged; product enforces ownership                                            |
+| Pairing proof wrong, expired, replayed for another target, or self-announced           | No service association or membership authority                                                           |
+| Lost provisioning/enrollment response and ordinary restart                             | Same eligible outcome resumes; no second credential or duplicate registration                            |
+| Service tries another installer's deployment or reports another producer               | Denied before mutation                                                                                   |
+| Wrong JWT issuer, algorithm/type, audience, actor/association, time, or unknown key    | Rejected before execution; token-supplied key URLs ignored                                               |
+| Admin/non-admin and argument-dependent sensitive access                                | Same policy enforced in catalogs and execution; annotations cannot grant authority                       |
+| Concurrent calls from different keys/users through one runtime                         | Identity, scopes, caches, and limits remain isolated/shared at their correct scopes                      |
+| Three-hour session with active calls and long idle periods                             | No 30-second authorization churn or repeat Google login; renewal on demand at expiry                     |
+| Many calls within one grant                                                            | Local checks reuse grant; unchanged definitions are not downloaded per call                              |
+| Readiness checks without any active user                                               | Reuse a restricted service probe grant; cannot list/call user tools or impersonate a user                |
+| Role/key/service revocation event, including during renewal                            | Affected state invalidated; late renewal cannot repopulate it                                            |
+| Lost invalidation followed by Backend outage                                           | Only original matching grants remain usable, never beyond five minutes                                   |
+| Expired grant during outage, explicit denial, or Gateway restart                       | No stale positive fallback or authorization from disk definitions                                        |
+| Offline Internet and restarted local services                                          | Prepared users/keys work with persistent Backend authority; new Google login remains Internet-dependent  |
 | Cursor page duplication, unknown event generation, truncation, or interrupted snapshot | Safe repeated delivery or complete replacement; no membership resurrection or missed-revocation fallback |
-| Observation sequence above JavaScript's exact integer range | Exact decimal-string comparison agrees across languages |
-| Old producer epoch, wrong association, delayed observation | Cannot overwrite replacement/current state or refresh stale readiness |
-| Yard stopped while Gateway/product remain ready | Existing authorized execution continues |
-| Product offline/restarting/recreated | Membership survives; source identity checked before cache reuse |
-| Removal/re-enrollment and a delayed old uninstall/call | Old association cannot delete or silently route to replacement; expired old grants do not renew |
-| Duplicate canonical tool names across products; long/Unicode names | Stable aliases under 64 characters, with deterministic hash fallback and collision rejection |
-| Auxiliary references, literals, unknown optional fields, and missing permissions | Rewrite only known same-source references; no permission escalation or arbitrary string substitution |
-| Original/aggregate fingerprints, pagination, and source change during assembly | Existing hash rules preserved; no partial/mixed source commit |
-| Two equal roles with distinct domain visibility | No cross-user/view catalog leakage |
-| Conventional source/client without NoX discovery | Correct basic MCP behavior; no fabricated atomic stale-definition guarantee |
-| Concurrent HTTP requests exceed configured capacity | Limit applies across factories/connections, not only within a batch |
-| Delayed authorization/discovery then product execution | One shrinking total deadline; no timeout reset |
-| Disconnect/cancel/shutdown or uncertain write transport outcome | Best-effort propagation, sanitized error, no automatic tool retry or false rollback |
-| Direct MCP disabled, Suite credential valid | Suite remains available; direct and Suite policies cannot substitute for one another |
+| Observation sequence above JavaScript's exact integer range                            | Exact decimal-string comparison agrees across languages                                                  |
+| Old producer epoch, wrong association, delayed observation                             | Cannot overwrite replacement/current state or refresh stale readiness                                    |
+| Yard stopped while Gateway/product remain ready                                        | Existing authorized execution continues                                                                  |
+| Product offline/restarting/recreated                                                   | Membership survives; source identity checked before cache reuse                                          |
+| Removal/re-enrollment and a delayed old uninstall/call                                 | Old association cannot delete or silently route to replacement; expired old grants do not renew          |
+| Duplicate canonical tool names across products; long/Unicode names                     | Stable aliases under 64 characters, with deterministic hash fallback and collision rejection             |
+| Auxiliary references, literals, unknown optional fields, and missing permissions       | Rewrite only known same-source references; no permission escalation or arbitrary string substitution     |
+| Original/aggregate fingerprints, pagination, and source change during assembly         | Existing hash rules preserved; no partial/mixed source commit                                            |
+| Two equal roles with distinct domain visibility                                        | No cross-user/view catalog leakage                                                                       |
+| Conventional source/client without NoX discovery                                       | Correct basic MCP behavior; no fabricated atomic stale-definition guarantee                              |
+| Concurrent HTTP requests exceed configured capacity                                    | Limit applies across factories/connections, not only within a batch                                      |
+| Delayed authorization/discovery then product execution                                 | One shrinking total deadline; no timeout reset                                                           |
+| Disconnect/cancel/shutdown or uncertain write transport outcome                        | Best-effort propagation, sanitized error, no automatic tool retry or false rollback                      |
+| Direct MCP disabled, Suite credential valid                                            | Suite remains available; direct and Suite policies cannot substitute for one another                     |
 
 Run SDK conformance/packaging/regression checks after implementation. End-to-end certification uses the newly implemented/adapted components and failure paths, not an assumption that unchanged existing products already implement this contract. Source-only documentation review is not runtime certification.
 

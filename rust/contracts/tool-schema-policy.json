@@ -39,22 +39,9 @@
     "writeOnly",
     "$comment"
   ],
-  "maps": [
-    "properties",
-    "patternProperties",
-    "definitions"
-  ],
-  "single": [
-    "additionalProperties",
-    "items",
-    "not",
-    "propertyNames"
-  ],
-  "arrays": [
-    "allOf",
-    "anyOf",
-    "oneOf"
-  ],
+  "maps": ["properties", "patternProperties", "definitions"],
+  "single": ["additionalProperties", "items", "not", "propertyNames"],
+  "arrays": ["allOf", "anyOf", "oneOf"],
   "annotations": [
     "title",
     "description",

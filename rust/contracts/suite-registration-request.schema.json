@@ -29,16 +29,10 @@
           "maxLength": 256
         }
       },
-      "required": [
-        "productId",
-        "deploymentId"
-      ],
+      "required": ["productId", "deploymentId"],
       "additionalProperties": true
     }
   },
-  "required": [
-    "contractVersion",
-    "baseUrl"
-  ],
+  "required": ["contractVersion", "baseUrl"],
   "additionalProperties": true
 }

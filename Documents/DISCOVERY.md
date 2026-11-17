@@ -13,11 +13,11 @@ This also applies to runtimes without NoX discovery, on supported legacy/modern
 protocols and transports. Published 0.7.2 packages retain their earlier behavior;
 consumers receive this correction by explicitly updating to 0.7.3 or later.
 
-| Publication | Contents |
-| --- | --- |
-| Standard `tools/list` | Normal MCP definitions, without `_meta.cli` or interactive descriptors |
-| NoX `nox/tools/definitions` | Complete canonical `tool`, including its original `_meta.cli`, and optional separate `cli` descriptor |
-| Source manifests and complete document loaders | Original metadata preserved losslessly |
+| Publication                                    | Contents                                                                                              |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Standard `tools/list`                          | Normal MCP definitions, without `_meta.cli` or interactive descriptors                                |
+| NoX `nox/tools/definitions`                    | Complete canonical `tool`, including its original `_meta.cli`, and optional separate `cli` descriptor |
+| Source manifests and complete document loaders | Original metadata preserved losslessly                                                                |
 
 Advanced descriptors are separate documents: they are not inserted into `_meta`
 and do not duplicate schemas. The projection never mutates the registered source,
@@ -54,7 +54,7 @@ The client queries `server/discover`, checks the extension, and selects `1.0`. E
 Capabilities are not inferred from an earlier request. Under MCP `2026-07-28`, both methods require `clientCapabilities.extensions["nox/discovery"].version: "1.0"`. If that capability is missing or advertises an incompatible version, they respond with JSON-RPC `-32021` (`MissingRequiredClientCapability`) and the following data:
 
 ```json
-{"requiredCapabilities":{"extensions":{"nox/discovery":{"version":"1.0"}}}}
+{ "requiredCapabilities": { "extensions": { "nox/discovery": { "version": "1.0" } } } }
 ```
 
 An incompatible extension version is not an incompatible protocol version. An unknown protocol produces `-32022`, with `data.requested` and `data.supported`. A missing required `io.modelcontextprotocol/clientCapabilities` field in the modern envelope is a malformed request (`-32602`); a valid capabilities object missing the required extension produces `-32021`.
@@ -132,15 +132,20 @@ Longer workflows use `workflow`, a sequential list of steps with unique `id` and
   "workflow": [
     { "id": "choose", "type": "input", "parameters": ["/id"] },
     {
-      "id": "preview", "type": "call", "tool": "item_delete_preview",
+      "id": "preview",
+      "type": "call",
+      "tool": "item_delete_preview",
       "arguments": { "id": { "from": "input", "pointer": "/id" } }
     },
     {
-      "id": "approve", "type": "confirm",
+      "id": "approve",
+      "type": "confirm",
       "confirmation": { "mode": "typed", "matchPointer": "/id", "bindPointer": "/confirm" }
     },
     {
-      "id": "execute", "type": "call", "tool": "item_delete",
+      "id": "execute",
+      "type": "call",
+      "tool": "item_delete",
       "arguments": {
         "id": { "from": "input", "pointer": "/id" },
         "fingerprint": { "from": "step", "step": "preview", "pointer": "/fingerprint" },
@@ -160,26 +165,31 @@ Client confirmation and annotations are hints, not authorization. Products verif
 Exports use the existing `@nox/mcp` entry point. Simple tools continue using `createServer` without additional options.
 
 ```ts
-import { createServer, createHttpHandler, interpretCli } from '@nox/mcp';
-import { z } from 'zod';
+import { createServer, createHttpHandler, interpretCli } from "@nox/mcp";
+import { z } from "zod";
 
 const tool = {
-  name: 'item_get', description: 'Get item', _meta: { cli: 'item show' },
+  name: "item_get",
+  description: "Get item",
+  _meta: { cli: "item show" },
   inputSchema: z.object({ id: z.string() }),
   outputSchema: z.object({ name: z.string() }),
   execute: async (input: unknown) => ({ name: (input as { id: string }).id }),
 };
 
 const options = {
-  appId: 'example', name: 'example', version: '1', tools: [tool],
+  appId: "example",
+  name: "example",
+  version: "1",
+  tools: [tool],
   discovery: {
-    serverId: 'example-installation-01',
-    descriptors: { item_get: interpretCli({ version: '1.0' }) },
+    serverId: "example-installation-01",
+    descriptors: { item_get: interpretCli({ version: "1.0" }) },
     resolveView: async (context, tools) => {
       const policy = await resolveCurrentPolicy(context); // supplied by the product
       return {
         viewId: policy.opaqueRevision,
-        visible: tools.filter(t => policy.canCall(t.name)).map(t => t.name),
+        visible: tools.filter((t) => policy.canCall(t.name)).map((t) => t.name),
         unavailable: policy.unavailableTools,
       };
     },
@@ -194,19 +204,20 @@ const http = createHttpHandler(options); // or mount the existing HTTP handler
 For clients, supply an adapter that sends method and parameters over the connected MCP transport, returning the `result` object or rejecting JSON-RPC errors:
 
 ```ts
-import { DiscoveryCache, discoveryMeta } from '@nox/mcp';
+import { DiscoveryCache, discoveryMeta } from "@nox/mcp";
 
 // One instance per trusted origin and credential partition, without storing the API key.
-const cache = new DiscoveryCache('configured-server-01', 'account-a:tenant-01');
+const cache = new DiscoveryCache("configured-server-01", "account-a:tenant-01");
 await cache.sync(requestMcp); // requestMcp(method, params) -> Promise<result>
 await cache.sync(requestMcp); // unchanged definitions are not requested again
 
-const definition = cache.definitions.get('item_get');
-await requestMcp('tools/call', {
-  name: definition.tool.name, arguments: { id: '42' },
+const definition = cache.definitions.get("item_get");
+await requestMcp("tools/call", {
+  name: definition.tool.name,
+  arguments: { id: "42" },
   _meta: {
     ...discoveryMeta(),
-    'nox/discovery': { expectedFingerprint: definition.fingerprint },
+    "nox/discovery": { expectedFingerprint: definition.fingerprint },
   },
 });
 ```
@@ -337,10 +348,10 @@ The `Supported / Required compatibility` workflow compares observations across l
 `npm run benchmark:discovery` measures minified JSON-RPC requests and responses in UTF-8 bytes, without compression. It uses synthetic catalogs with the same schemas on both paths and optional descriptors on 25% of tools:
 
 | Tools | Full `tools/list` | Initial incremental | Unchanged | One changed | One removed |
-| ---: | ---: | ---: | ---: | ---: | ---: |
-| 10 | 17 555 | 21 173 | 526 | 3 853 | 1 318 |
-| 100 | 173 615 | 203 851 | 526 | 11 863 | 9 328 |
-| 1 000 | 1 734 215 | 2 033 665 | 526 | 91 963 | 89 428 |
+| ----: | ----------------: | ------------------: | --------: | ----------: | ----------: |
+|    10 |            17 555 |              21 173 |       526 |       3 853 |       1 318 |
+|   100 |           173 615 |             203 851 |       526 |      11 863 |       9 328 |
+| 1 000 |         1 734 215 |           2 033 665 |       526 |      91 963 |      89 428 |
 
 One changed tool reduces transfer by 78.1%, 93.2%, and 94.7%, respectively. The first load costs more because it transfers the catalog and descriptors. A fresh conventional MCP cache can also transfer zero bytes. These figures do not measure latency or production products; compression and schema composition change the results.
 

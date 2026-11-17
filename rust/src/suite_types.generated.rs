@@ -41,7 +41,11 @@ pub struct SuiteAuthorizationRequest {
     pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
-impl std::fmt::Debug for SuiteAuthorizationRequest { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str("SuiteAuthorizationRequest(secrets redacted)") } }
+impl std::fmt::Debug for SuiteAuthorizationRequest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SuiteAuthorizationRequest(secrets redacted)")
+    }
+}
 #[derive(Clone, Serialize, Deserialize, PartialEq)]
 pub struct SuiteAuthorizationResponse {
     #[serde(rename = "contractVersion")]
@@ -58,7 +62,11 @@ pub struct SuiteAuthorizationResponse {
     pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
-impl std::fmt::Debug for SuiteAuthorizationResponse { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str("SuiteAuthorizationResponse(secrets redacted)") } }
+impl std::fmt::Debug for SuiteAuthorizationResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SuiteAuthorizationResponse(secrets redacted)")
+    }
+}
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct SuiteCredentialRotation {
     #[serde(rename = "contractVersion")]
@@ -263,13 +271,25 @@ pub struct SuiteGatewaySnapshotCatalog {
     pub ttl_ms: u64,
     #[serde(rename = "cacheScope")]
     pub cache_scope: String,
-    #[serde(rename = "notModified", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "notModified",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub not_modified: Option<bool>,
-    #[serde(rename = "presentation", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "presentation",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub presentation: Option<serde_json::Map<String, serde_json::Value>>,
     #[serde(rename = "tools", default, skip_serializing_if = "Option::is_none")]
     pub tools: Option<Vec<SuiteGatewaySnapshotCatalogToolsItem>>,
-    #[serde(rename = "nextCursor", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "nextCursor",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub next_cursor: Option<u64>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, serde_json::Value>,
@@ -281,7 +301,11 @@ pub struct SuiteGatewaySnapshotCatalogToolsItem {
     pub name: String,
     #[serde(rename = "fingerprint")]
     pub fingerprint: String,
-    #[serde(rename = "availability", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "availability",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub availability: Option<String>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, serde_json::Value>,
@@ -295,7 +319,11 @@ pub struct SuiteGatewaySnapshotDefinitionsItem {
     pub cli: Option<serde_json::Map<String, serde_json::Value>>,
     #[serde(rename = "fingerprint")]
     pub fingerprint: String,
-    #[serde(rename = "availability", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "availability",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub availability: Option<String>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, serde_json::Value>,
@@ -307,7 +335,11 @@ pub struct SuiteGatewaySnapshotDefinitionsItemTool {
     pub name: String,
     #[serde(rename = "inputSchema")]
     pub input_schema: serde_json::Map<String, serde_json::Value>,
-    #[serde(rename = "outputSchema", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "outputSchema",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub output_schema: Option<serde_json::Map<String, serde_json::Value>>,
     #[serde(rename = "_meta", default, skip_serializing_if = "Option::is_none")]
     pub _meta: Option<serde_json::Map<String, serde_json::Value>>,
@@ -341,7 +373,11 @@ pub struct SuiteGatewaySource {
     pub definitions: Vec<SuiteSourceDefinition>,
     #[serde(rename = "catalog", default, skip_serializing_if = "Option::is_none")]
     pub catalog: Option<String>,
-    #[serde(rename = "presentation", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "presentation",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub presentation: Option<serde_json::Map<String, serde_json::Value>>,
     #[serde(rename = "ttlMs", default, skip_serializing_if = "Option::is_none")]
     pub ttl_ms: Option<u64>,
@@ -427,9 +463,17 @@ pub struct SuiteSourceDefinition {
     pub tool: SuiteGatewaySnapshotDefinitionsItemTool,
     #[serde(rename = "cli", default, skip_serializing_if = "Option::is_none")]
     pub cli: Option<serde_json::Map<String, serde_json::Value>>,
-    #[serde(rename = "fingerprint", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "fingerprint",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub fingerprint: Option<String>,
-    #[serde(rename = "availability", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "availability",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub availability: Option<String>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, serde_json::Value>,
@@ -545,7 +589,11 @@ pub struct SuitePairingBinding {
     pub declaration_fingerprint: String,
     #[serde(rename = "baseUrl")]
     pub base_url: String,
-    #[serde(rename = "tlsPublicKeyFingerprint", default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "tlsPublicKeyFingerprint",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
     pub tls_public_key_fingerprint: Option<String>,
     #[serde(flatten)]
     pub extra: serde_json::Map<String, serde_json::Value>,
@@ -575,7 +623,11 @@ pub struct SuitePairingIntent {
     pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
-impl std::fmt::Debug for SuitePairingIntent { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str("SuitePairingIntent(secrets redacted)") } }
+impl std::fmt::Debug for SuitePairingIntent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SuitePairingIntent(secrets redacted)")
+    }
+}
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct SuitePairingProof {
     #[serde(rename = "contractVersion")]
@@ -706,7 +758,11 @@ pub struct SuiteProbeResponse {
     pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
-impl std::fmt::Debug for SuiteProbeResponse { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str("SuiteProbeResponse(secrets redacted)") } }
+impl std::fmt::Debug for SuiteProbeResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SuiteProbeResponse(secrets redacted)")
+    }
+}
 #[derive(Clone, Serialize, Deserialize, PartialEq)]
 pub struct SuiteProvisioning {
     #[serde(rename = "contractVersion")]
@@ -727,7 +783,11 @@ pub struct SuiteProvisioning {
     pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
-impl std::fmt::Debug for SuiteProvisioning { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str("SuiteProvisioning(secrets redacted)") } }
+impl std::fmt::Debug for SuiteProvisioning {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SuiteProvisioning(secrets redacted)")
+    }
+}
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct SuiteServiceIdentity {
     #[serde(rename = "contractVersion")]
@@ -798,40 +858,110 @@ pub struct SuiteSigningKey {
     pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
-pub fn load_suite_authorization_context(input: &str) -> SuiteResult<SuiteAuthorizationContext> { load_suite_typed("authorization-context",input) }
-pub fn load_suite_authorization_request(input: &str) -> SuiteResult<SuiteAuthorizationRequest> { load_suite_typed("authorization-request",input) }
-pub fn load_suite_authorization_response(input: &str) -> SuiteResult<SuiteAuthorizationResponse> { load_suite_typed("authorization-response",input) }
-pub fn load_suite_credential_rotation(input: &str) -> SuiteResult<SuiteCredentialRotation> { load_suite_typed("credential-rotation",input) }
-pub fn load_suite_delegation_claims(input: &str) -> SuiteResult<SuiteDelegationClaims> { load_suite_typed("delegation-claims",input) }
-pub fn load_suite_event_page(input: &str) -> SuiteResult<SuiteEventPage> { load_suite_typed("event-page",input) }
-pub fn load_suite_event(input: &str) -> SuiteResult<SuiteEvent> { load_suite_typed("event",input) }
-pub fn load_suite_gateway_origin(input: &str) -> SuiteResult<SuiteGatewayOrigin> { load_suite_typed("gateway-origin",input) }
-pub fn load_suite_gateway_presentation(input: &str) -> SuiteResult<SuiteGatewayPresentation> { load_suite_typed("gateway-presentation",input) }
-pub fn load_suite_gateway_route(input: &str) -> SuiteResult<SuiteGatewayRoute> { load_suite_typed("gateway-route",input) }
-pub fn load_suite_gateway_snapshot(input: &str) -> SuiteResult<SuiteGatewaySnapshot> { load_suite_typed("gateway-snapshot",input) }
-pub fn load_suite_gateway_source(input: &str) -> SuiteResult<SuiteGatewaySource> { load_suite_typed("gateway-source",input) }
-pub fn load_suite_management_error(input: &str) -> SuiteResult<SuiteManagementError> { load_suite_typed("management-error",input) }
-pub fn load_suite_observation_envelope(input: &str) -> SuiteResult<SuiteObservationEnvelope> { load_suite_typed("observation-envelope",input) }
-pub fn load_suite_observation_epoch_request(input: &str) -> SuiteResult<SuiteObservationEpochRequest> { load_suite_typed("observation-epoch-request",input) }
-pub fn load_suite_observation_epoch(input: &str) -> SuiteResult<SuiteObservationEpoch> { load_suite_typed("observation-epoch",input) }
-pub fn load_suite_observation(input: &str) -> SuiteResult<SuiteObservation> { load_suite_typed("observation",input) }
-pub fn load_suite_pairing_binding(input: &str) -> SuiteResult<SuitePairingBinding> { load_suite_typed("pairing-binding",input) }
-pub fn load_suite_pairing_intent(input: &str) -> SuiteResult<SuitePairingIntent> { load_suite_typed("pairing-intent",input) }
-pub fn load_suite_pairing_proof(input: &str) -> SuiteResult<SuitePairingProof> { load_suite_typed("pairing-proof",input) }
-pub fn load_suite_pairing_request(input: &str) -> SuiteResult<SuitePairingRequest> { load_suite_typed("pairing-request",input) }
-pub fn load_suite_policy(input: &str) -> SuiteResult<SuitePolicy> { load_suite_typed("policy",input) }
-pub fn load_suite_probe_claims(input: &str) -> SuiteResult<SuiteProbeClaims> { load_suite_typed("probe-claims",input) }
-pub fn load_suite_probe_context(input: &str) -> SuiteResult<SuiteProbeContext> { load_suite_typed("probe-context",input) }
-pub fn load_suite_probe_request(input: &str) -> SuiteResult<SuiteProbeRequest> { load_suite_typed("probe-request",input) }
-pub fn load_suite_probe_response(input: &str) -> SuiteResult<SuiteProbeResponse> { load_suite_typed("probe-response",input) }
-pub fn load_suite_product_declaration(input: &str) -> SuiteResult<SuiteProductDeclaration> { load_suite_typed("product-declaration",input) }
-pub fn load_suite_provisioning(input: &str) -> SuiteResult<SuiteProvisioning> { load_suite_typed("provisioning",input) }
-pub fn load_suite_registration_record(input: &str) -> SuiteResult<SuiteRegistrationRecord> { load_suite_typed("registration-record",input) }
-pub fn load_suite_registration_request(input: &str) -> SuiteResult<SuiteRegistrationRequest> { load_suite_typed("registration-request",input) }
-pub fn load_suite_registry_snapshot(input: &str) -> SuiteResult<SuiteRegistrySnapshot> { load_suite_typed("registry-snapshot",input) }
-pub fn load_suite_service_identity(input: &str) -> SuiteResult<SuiteServiceIdentity> { load_suite_typed("service-identity",input) }
-pub fn load_suite_signing_key(input: &str) -> SuiteResult<SuiteSigningKey> { load_suite_typed("signing-key",input) }
-pub fn load_suite_source_definition(input: &str) -> SuiteResult<SuiteSourceDefinition> { load_suite_typed("source-definition",input) }
+pub fn load_suite_authorization_context(input: &str) -> SuiteResult<SuiteAuthorizationContext> {
+    load_suite_typed("authorization-context", input)
+}
+pub fn load_suite_authorization_request(input: &str) -> SuiteResult<SuiteAuthorizationRequest> {
+    load_suite_typed("authorization-request", input)
+}
+pub fn load_suite_authorization_response(input: &str) -> SuiteResult<SuiteAuthorizationResponse> {
+    load_suite_typed("authorization-response", input)
+}
+pub fn load_suite_credential_rotation(input: &str) -> SuiteResult<SuiteCredentialRotation> {
+    load_suite_typed("credential-rotation", input)
+}
+pub fn load_suite_delegation_claims(input: &str) -> SuiteResult<SuiteDelegationClaims> {
+    load_suite_typed("delegation-claims", input)
+}
+pub fn load_suite_event_page(input: &str) -> SuiteResult<SuiteEventPage> {
+    load_suite_typed("event-page", input)
+}
+pub fn load_suite_event(input: &str) -> SuiteResult<SuiteEvent> {
+    load_suite_typed("event", input)
+}
+pub fn load_suite_gateway_origin(input: &str) -> SuiteResult<SuiteGatewayOrigin> {
+    load_suite_typed("gateway-origin", input)
+}
+pub fn load_suite_gateway_presentation(input: &str) -> SuiteResult<SuiteGatewayPresentation> {
+    load_suite_typed("gateway-presentation", input)
+}
+pub fn load_suite_gateway_route(input: &str) -> SuiteResult<SuiteGatewayRoute> {
+    load_suite_typed("gateway-route", input)
+}
+pub fn load_suite_gateway_snapshot(input: &str) -> SuiteResult<SuiteGatewaySnapshot> {
+    load_suite_typed("gateway-snapshot", input)
+}
+pub fn load_suite_gateway_source(input: &str) -> SuiteResult<SuiteGatewaySource> {
+    load_suite_typed("gateway-source", input)
+}
+pub fn load_suite_management_error(input: &str) -> SuiteResult<SuiteManagementError> {
+    load_suite_typed("management-error", input)
+}
+pub fn load_suite_observation_envelope(input: &str) -> SuiteResult<SuiteObservationEnvelope> {
+    load_suite_typed("observation-envelope", input)
+}
+pub fn load_suite_observation_epoch_request(
+    input: &str,
+) -> SuiteResult<SuiteObservationEpochRequest> {
+    load_suite_typed("observation-epoch-request", input)
+}
+pub fn load_suite_observation_epoch(input: &str) -> SuiteResult<SuiteObservationEpoch> {
+    load_suite_typed("observation-epoch", input)
+}
+pub fn load_suite_observation(input: &str) -> SuiteResult<SuiteObservation> {
+    load_suite_typed("observation", input)
+}
+pub fn load_suite_pairing_binding(input: &str) -> SuiteResult<SuitePairingBinding> {
+    load_suite_typed("pairing-binding", input)
+}
+pub fn load_suite_pairing_intent(input: &str) -> SuiteResult<SuitePairingIntent> {
+    load_suite_typed("pairing-intent", input)
+}
+pub fn load_suite_pairing_proof(input: &str) -> SuiteResult<SuitePairingProof> {
+    load_suite_typed("pairing-proof", input)
+}
+pub fn load_suite_pairing_request(input: &str) -> SuiteResult<SuitePairingRequest> {
+    load_suite_typed("pairing-request", input)
+}
+pub fn load_suite_policy(input: &str) -> SuiteResult<SuitePolicy> {
+    load_suite_typed("policy", input)
+}
+pub fn load_suite_probe_claims(input: &str) -> SuiteResult<SuiteProbeClaims> {
+    load_suite_typed("probe-claims", input)
+}
+pub fn load_suite_probe_context(input: &str) -> SuiteResult<SuiteProbeContext> {
+    load_suite_typed("probe-context", input)
+}
+pub fn load_suite_probe_request(input: &str) -> SuiteResult<SuiteProbeRequest> {
+    load_suite_typed("probe-request", input)
+}
+pub fn load_suite_probe_response(input: &str) -> SuiteResult<SuiteProbeResponse> {
+    load_suite_typed("probe-response", input)
+}
+pub fn load_suite_product_declaration(input: &str) -> SuiteResult<SuiteProductDeclaration> {
+    load_suite_typed("product-declaration", input)
+}
+pub fn load_suite_provisioning(input: &str) -> SuiteResult<SuiteProvisioning> {
+    load_suite_typed("provisioning", input)
+}
+pub fn load_suite_registration_record(input: &str) -> SuiteResult<SuiteRegistrationRecord> {
+    load_suite_typed("registration-record", input)
+}
+pub fn load_suite_registration_request(input: &str) -> SuiteResult<SuiteRegistrationRequest> {
+    load_suite_typed("registration-request", input)
+}
+pub fn load_suite_registry_snapshot(input: &str) -> SuiteResult<SuiteRegistrySnapshot> {
+    load_suite_typed("registry-snapshot", input)
+}
+pub fn load_suite_service_identity(input: &str) -> SuiteResult<SuiteServiceIdentity> {
+    load_suite_typed("service-identity", input)
+}
+pub fn load_suite_signing_key(input: &str) -> SuiteResult<SuiteSigningKey> {
+    load_suite_typed("signing-key", input)
+}
+pub fn load_suite_source_definition(input: &str) -> SuiteResult<SuiteSourceDefinition> {
+    load_suite_typed("source-definition", input)
+}
 
 pub const CONTRACT_VERSION: &str = "1.0";
 pub const AUTHORIZATION_LIFETIME_MS: u64 = 300000;
@@ -853,38 +983,140 @@ pub const MAX_AUTHORIZATION_BYTES: u64 = 8388608;
 pub const MAX_GATEWAY_SNAPSHOT_BYTES: u64 = 8388608;
 
 pub const SUITE_SCHEMAS: &[(&str, &str)] = &[
-    ("authorization-context", include_str!("../contracts/suite-authorization-context.schema.json")),
-    ("authorization-request", include_str!("../contracts/suite-authorization-request.schema.json")),
-    ("authorization-response", include_str!("../contracts/suite-authorization-response.schema.json")),
-    ("credential-rotation", include_str!("../contracts/suite-credential-rotation.schema.json")),
-    ("delegation-claims", include_str!("../contracts/suite-delegation-claims.schema.json")),
-    ("event-page", include_str!("../contracts/suite-event-page.schema.json")),
-    ("event", include_str!("../contracts/suite-event.schema.json")),
-    ("gateway-origin", include_str!("../contracts/suite-gateway-origin.schema.json")),
-    ("gateway-presentation", include_str!("../contracts/suite-gateway-presentation.schema.json")),
-    ("gateway-route", include_str!("../contracts/suite-gateway-route.schema.json")),
-    ("gateway-snapshot", include_str!("../contracts/suite-gateway-snapshot.schema.json")),
-    ("gateway-source", include_str!("../contracts/suite-gateway-source.schema.json")),
-    ("management-error", include_str!("../contracts/suite-management-error.schema.json")),
-    ("observation-envelope", include_str!("../contracts/suite-observation-envelope.schema.json")),
-    ("observation-epoch-request", include_str!("../contracts/suite-observation-epoch-request.schema.json")),
-    ("observation-epoch", include_str!("../contracts/suite-observation-epoch.schema.json")),
-    ("observation", include_str!("../contracts/suite-observation.schema.json")),
-    ("pairing-binding", include_str!("../contracts/suite-pairing-binding.schema.json")),
-    ("pairing-intent", include_str!("../contracts/suite-pairing-intent.schema.json")),
-    ("pairing-proof", include_str!("../contracts/suite-pairing-proof.schema.json")),
-    ("pairing-request", include_str!("../contracts/suite-pairing-request.schema.json")),
-    ("policy", include_str!("../contracts/suite-policy.schema.json")),
-    ("probe-claims", include_str!("../contracts/suite-probe-claims.schema.json")),
-    ("probe-context", include_str!("../contracts/suite-probe-context.schema.json")),
-    ("probe-request", include_str!("../contracts/suite-probe-request.schema.json")),
-    ("probe-response", include_str!("../contracts/suite-probe-response.schema.json")),
-    ("product-declaration", include_str!("../contracts/suite-product-declaration.schema.json")),
-    ("provisioning", include_str!("../contracts/suite-provisioning.schema.json")),
-    ("registration-record", include_str!("../contracts/suite-registration-record.schema.json")),
-    ("registration-request", include_str!("../contracts/suite-registration-request.schema.json")),
-    ("registry-snapshot", include_str!("../contracts/suite-registry-snapshot.schema.json")),
-    ("service-identity", include_str!("../contracts/suite-service-identity.schema.json")),
-    ("signing-key", include_str!("../contracts/suite-signing-key.schema.json")),
-    ("source-definition", include_str!("../contracts/suite-source-definition.schema.json")),
+    (
+        "authorization-context",
+        include_str!("../contracts/suite-authorization-context.schema.json"),
+    ),
+    (
+        "authorization-request",
+        include_str!("../contracts/suite-authorization-request.schema.json"),
+    ),
+    (
+        "authorization-response",
+        include_str!("../contracts/suite-authorization-response.schema.json"),
+    ),
+    (
+        "credential-rotation",
+        include_str!("../contracts/suite-credential-rotation.schema.json"),
+    ),
+    (
+        "delegation-claims",
+        include_str!("../contracts/suite-delegation-claims.schema.json"),
+    ),
+    (
+        "event-page",
+        include_str!("../contracts/suite-event-page.schema.json"),
+    ),
+    (
+        "event",
+        include_str!("../contracts/suite-event.schema.json"),
+    ),
+    (
+        "gateway-origin",
+        include_str!("../contracts/suite-gateway-origin.schema.json"),
+    ),
+    (
+        "gateway-presentation",
+        include_str!("../contracts/suite-gateway-presentation.schema.json"),
+    ),
+    (
+        "gateway-route",
+        include_str!("../contracts/suite-gateway-route.schema.json"),
+    ),
+    (
+        "gateway-snapshot",
+        include_str!("../contracts/suite-gateway-snapshot.schema.json"),
+    ),
+    (
+        "gateway-source",
+        include_str!("../contracts/suite-gateway-source.schema.json"),
+    ),
+    (
+        "management-error",
+        include_str!("../contracts/suite-management-error.schema.json"),
+    ),
+    (
+        "observation-envelope",
+        include_str!("../contracts/suite-observation-envelope.schema.json"),
+    ),
+    (
+        "observation-epoch-request",
+        include_str!("../contracts/suite-observation-epoch-request.schema.json"),
+    ),
+    (
+        "observation-epoch",
+        include_str!("../contracts/suite-observation-epoch.schema.json"),
+    ),
+    (
+        "observation",
+        include_str!("../contracts/suite-observation.schema.json"),
+    ),
+    (
+        "pairing-binding",
+        include_str!("../contracts/suite-pairing-binding.schema.json"),
+    ),
+    (
+        "pairing-intent",
+        include_str!("../contracts/suite-pairing-intent.schema.json"),
+    ),
+    (
+        "pairing-proof",
+        include_str!("../contracts/suite-pairing-proof.schema.json"),
+    ),
+    (
+        "pairing-request",
+        include_str!("../contracts/suite-pairing-request.schema.json"),
+    ),
+    (
+        "policy",
+        include_str!("../contracts/suite-policy.schema.json"),
+    ),
+    (
+        "probe-claims",
+        include_str!("../contracts/suite-probe-claims.schema.json"),
+    ),
+    (
+        "probe-context",
+        include_str!("../contracts/suite-probe-context.schema.json"),
+    ),
+    (
+        "probe-request",
+        include_str!("../contracts/suite-probe-request.schema.json"),
+    ),
+    (
+        "probe-response",
+        include_str!("../contracts/suite-probe-response.schema.json"),
+    ),
+    (
+        "product-declaration",
+        include_str!("../contracts/suite-product-declaration.schema.json"),
+    ),
+    (
+        "provisioning",
+        include_str!("../contracts/suite-provisioning.schema.json"),
+    ),
+    (
+        "registration-record",
+        include_str!("../contracts/suite-registration-record.schema.json"),
+    ),
+    (
+        "registration-request",
+        include_str!("../contracts/suite-registration-request.schema.json"),
+    ),
+    (
+        "registry-snapshot",
+        include_str!("../contracts/suite-registry-snapshot.schema.json"),
+    ),
+    (
+        "service-identity",
+        include_str!("../contracts/suite-service-identity.schema.json"),
+    ),
+    (
+        "signing-key",
+        include_str!("../contracts/suite-signing-key.schema.json"),
+    ),
+    (
+        "source-definition",
+        include_str!("../contracts/suite-source-definition.schema.json"),
+    ),
 ];

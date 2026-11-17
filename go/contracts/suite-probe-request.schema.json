@@ -20,10 +20,6 @@
       "maxLength": 256
     }
   },
-  "required": [
-    "contractVersion",
-    "productId",
-    "registrationRevision"
-  ],
+  "required": ["contractVersion", "productId", "registrationRevision"],
   "additionalProperties": true
 }

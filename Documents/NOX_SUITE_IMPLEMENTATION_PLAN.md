@@ -45,14 +45,14 @@ The CLI may access the Gateway remotely when it is published. The network restri
 
 ## 3. Terminology
 
-| Term | Meaning in this plan |
-| --- | --- |
-| Product/application | An autonomous product such as Backend, Yard, Bot, NoteX, Gateway, CLI, or Portal |
-| Registered product | A product associated with the environment and known to the Backend |
-| NoX Suite environment | Products and users administered by the same Backend |
-| UI contribution | A page/component supplied by a product for presentation in the Portal |
-| Direct MCP | A client accessing a product's own MCP server under its local policy |
-| NoX Suite MCP | Integrated access through the Gateway under central identity and policy |
+| Term                  | Meaning in this plan                                                             |
+| --------------------- | -------------------------------------------------------------------------------- |
+| Product/application   | An autonomous product such as Backend, Yard, Bot, NoteX, Gateway, CLI, or Portal |
+| Registered product    | A product associated with the environment and known to the Backend               |
+| NoX Suite environment | Products and users administered by the same Backend                              |
+| UI contribution       | A page/component supplied by a product for presentation in the Portal            |
+| Direct MCP            | A client accessing a product's own MCP server under its local policy             |
+| NoX Suite MCP         | Integrated access through the Gateway under central identity and policy          |
 
 There is no additional functional entity called a **module**, or a mandatory application/module/instance hierarchy. Those terms appeared in old plans without an approved definition.
 
@@ -60,16 +60,16 @@ In this work, the old term **Module Contract** refers to the **product integrati
 
 ## 4. Component responsibilities
 
-| Component | Responsibility |
-| --- | --- |
-| NoX MCP | TypeScript/Go/Rust SDK, contracts, validation, and shared execution, authorization, and discovery mechanisms |
-| NoX Auth | Google authentication, central account admission and shared human login/session authority; no management frontend |
-| NoX Backend | API keys, capability/delegation policy, service trust and registration using the Auth identity; retains existing data and synchronization services |
-| NoX Gateway | Consults the registry, discovers MCP servers, aggregates tools, and routes authorized calls |
-| NoX Yard | Installs and manages Docker products; triggers authorized integration and reports lifecycle operations |
-| NoX CLI | Interactive navigation and execution of Suite tools through Gateway |
-| NoX Portal | Aggregates management interfaces supplied by products |
-| Each product | Executes functionality, owns its data, and enforces effective operation restrictions |
+| Component    | Responsibility                                                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NoX MCP      | TypeScript/Go/Rust SDK, contracts, validation, and shared execution, authorization, and discovery mechanisms                                       |
+| NoX Auth     | Google authentication, central account admission and shared human login/session authority; no management frontend                                  |
+| NoX Backend  | API keys, capability/delegation policy, service trust and registration using the Auth identity; retains existing data and synchronization services |
+| NoX Gateway  | Consults the registry, discovers MCP servers, aggregates tools, and routes authorized calls                                                        |
+| NoX Yard     | Installs and manages Docker products; triggers authorized integration and reports lifecycle operations                                             |
+| NoX CLI      | Interactive navigation and execution of Suite tools through Gateway                                                                                |
+| NoX Portal   | Aggregates management interfaces supplied by products                                                                                              |
+| Each product | Executes functionality, owns its data, and enforces effective operation restrictions                                                               |
 
 ### NoX MCP
 
@@ -95,12 +95,12 @@ It holds only the operational state required for communication and reconstructib
 
 This snapshot reflects the local analysis on October 23, 2026. It does not claim recent execution of test suites or validation of production installations.
 
-| Product | Reviewed revision | Observed MCP integration |
-| --- | --- | --- |
-| NoX Backend | `a2382ec` | Go, SDK 0.6.1, HTTP JSON, 10 tools; per-user API key and vault ownership |
-| NoX Yard | `376e528` | Go, SDK 0.6.1, HTTP JSON, 35 tools in the full catalog; local token, permissions, and operation management |
-| NoteX | `6bd2005` | SDK 0.6.1 in TypeScript/Rust; 34-tool contract, local desktop server, and retained remote code |
-| NoX Bot | Earlier local analysis during this preparation | TypeScript, dependency 0.6.1, MCP per Discord server; existing tools and CLI paths |
+| Product     | Reviewed revision                              | Observed MCP integration                                                                                   |
+| ----------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| NoX Backend | `a2382ec`                                      | Go, SDK 0.6.1, HTTP JSON, 10 tools; per-user API key and vault ownership                                   |
+| NoX Yard    | `376e528`                                      | Go, SDK 0.6.1, HTTP JSON, 35 tools in the full catalog; local token, permissions, and operation management |
+| NoteX       | `6bd2005`                                      | SDK 0.6.1 in TypeScript/Rust; 34-tool contract, local desktop server, and retained remote code             |
+| NoX Bot     | Earlier local analysis during this preparation | TypeScript, dependency 0.6.1, MCP per Discord server; existing tools and CLI paths                         |
 
 Updating dependencies to 0.6.1 was not a functional migration to the SDK's new capabilities. All four products still need the planned adaptation. The reviewed integrations did not enable `nox/discovery` or publish advanced CLI descriptors.
 
@@ -128,10 +128,10 @@ Google remains the upstream identity provider; the authorized NoX Auth service c
 
 The approved central rule is:
 
-| Role | Normal inspection | Writes | Sensitive reads |
-| --- | --- | --- | --- |
-| Admin | Allowed | Allowed | Allowed |
-| Non-admin | Allowed | Denied | Denied |
+| Role      | Normal inspection | Writes  | Sensitive reads |
+| --------- | ----------------- | ------- | --------------- |
+| Admin     | Allowed           | Allowed | Allowed         |
+| Non-admin | Allowed           | Denied  | Denied          |
 
 Concrete capability/role mappings must follow the Backend contract and consume Auth's central human authority when adapted. The requirement is the distinction above, not an unnecessary new enum named `guest`. This update adds no per-app account-approval list or new role-management UI.
 
@@ -159,10 +159,10 @@ This supersedes the earlier discussion suggestion of a separate 30-second, argum
 
 Approved exposure model, using illustrative values only:
 
-| Endpoint | Purpose |
-| --- | --- |
-| `https://192.168.10.10:8095/` | Product's native web application |
-| `https://192.168.10.10:8095/mcp` | MCP integrated with NoX Suite |
+| Endpoint                         | Purpose                                                 |
+| -------------------------------- | ------------------------------------------------------- |
+| `https://192.168.10.10:8095/`    | Product's native web application                        |
+| `https://192.168.10.10:8095/mcp` | MCP integrated with NoX Suite                           |
 | `https://192.168.10.10:8096/mcp` | Direct MCP for independent clients under product policy |
 
 Do not hardcode these IPs, ports, bind addresses, Docker publication settings, or access URLs. A registered base address is an origin: IP/hostname with an optional port, or a dedicated domain/subdomain. Application prefixes such as `/apps/example` are **not supported**. `/nox/integration` is the bootstrap path; the protected Suite MCP path is declared by the product. HTTPS can use a trusted deployment certificate or an explicitly provisioned certificate pin, as defined in the Gateway Contract.
@@ -201,11 +201,11 @@ Partial failures across deployment, registration, and discovery must be represen
 
 ## 9. Availability and lifecycle
 
-| Component | Information it owns |
-| --- | --- |
-| Yard | Known operations: stop, restart, recreate, update, and removal |
-| Gateway | Effective communication and MCP server availability |
-| Backend | Persistent registry and consolidated state |
+| Component | Information it owns                                            |
+| --------- | -------------------------------------------------------------- |
+| Yard      | Known operations: stop, restart, recreate, update, and removal |
+| Gateway   | Effective communication and MCP server availability            |
+| Backend   | Persistent registry and consolidated state                     |
 
 Approved rules:
 
@@ -312,31 +312,31 @@ Future integration must respect the web version's actual storage and execution m
 
 ## 15. Implementation order and progression criteria
 
-| Stage | Work | Condition for proceeding |
-| --- | --- | --- |
-| 1. Consolidate requirements | This document and analysis of existing implementations | Decisions separated from hypotheses; compatibility requirements identified |
-| 2. Design integration/registration | Product identity, capabilities, registration, update, removal, and relationship to MCP/UI | Approved proposal, examples, and clear failure cases |
-| 3. Define the Gateway Contract | Routing, trust, authorization, catalogs, fingerprints, and availability | [Complete contract](GATEWAY_CONTRACT.md) consistent with stage 2 and existing contracts |
-| 4. Implement SDK contracts | Authoritative schemas, TypeScript/Go/Rust APIs/validation, generation, documentation, and conformance | Tested equivalence, working external packages, and regression verification |
-| 5. Adapt products incrementally | Backend registry, Yard integration/lifecycle, two MCP access paths, product classification and descriptors | Real integrations validated, including failures and independent operation |
-| 6. Build Gateway and CLI | Gateway service and interactive CLI; AI MCP clients connect directly to Gateway | Complete: real Backend/Yard tool execution through Gateway/CLI, conventional MCP catalog tests, and owner-confirmed CLI installation and use on Windows and macOS |
-| 7. Build Portal | Shared structure and dynamic loading of contributions | Product integration without rebuilding and consistent authorization |
+| Stage                              | Work                                                                                                       | Condition for proceeding                                                                                                                                          |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Consolidate requirements        | This document and analysis of existing implementations                                                     | Decisions separated from hypotheses; compatibility requirements identified                                                                                        |
+| 2. Design integration/registration | Product identity, capabilities, registration, update, removal, and relationship to MCP/UI                  | Approved proposal, examples, and clear failure cases                                                                                                              |
+| 3. Define the Gateway Contract     | Routing, trust, authorization, catalogs, fingerprints, and availability                                    | [Complete contract](GATEWAY_CONTRACT.md) consistent with stage 2 and existing contracts                                                                           |
+| 4. Implement SDK contracts         | Authoritative schemas, TypeScript/Go/Rust APIs/validation, generation, documentation, and conformance      | Tested equivalence, working external packages, and regression verification                                                                                        |
+| 5. Adapt products incrementally    | Backend registry, Yard integration/lifecycle, two MCP access paths, product classification and descriptors | Real integrations validated, including failures and independent operation                                                                                         |
+| 6. Build Gateway and CLI           | Gateway service and interactive CLI; AI MCP clients connect directly to Gateway                            | Complete: real Backend/Yard tool execution through Gateway/CLI, conventional MCP catalog tests, and owner-confirmed CLI installation and use on Windows and macOS |
+| 7. Build Portal                    | Shared structure and dynamic loading of contributions                                                      | Product integration without rebuilding and consistent authorization                                                                                               |
 
 Contract design precedes service implementation and product adaptation. No pilot using the current Backend/Yard implementations is a prerequisite for completing it. Shared fixtures validate SDK implementation against the contract; end-to-end tests follow once services and products have been implemented/adapted. Integrated CLI AI and the Portal are not prerequisites for validating the SDK.
 
 ### Areas affected by repository
 
-| Repository/product | Planned evolution |
-| --- | --- |
-| `nox-mcp` | Shared contracts, validation and APIs in all three languages, corpus, packages, and CI |
-| `nox-auth` | Headless Google-backed NoX Login service, central admission/session authority, reusable client integration, persistent state and deployment documentation; see section 20 |
-| `nox-backend` | Persistent registry, administrative configuration, central operation authorization, integration APIs, own Suite adaptation, and separate frontend/backend builds, images, and containers in the same project; subsequently consume NoX Login and expose Suite logout while preserving existing services and frontend integrations |
-| `nox-yard` | Authorized post-deployment integration, lifecycle signals, and separation of Suite/direct MCP |
-| NoX Bot and other host products | Integration/registration, capabilities, a Suite path independent of direct access, and optional descriptors |
-| NoteX and other desktop/web products | Adapt relevant integrations to the shared contracts, respecting each product's storage, execution, and independent-access model |
-| Future Gateway | Aggregation and routing according to approved contracts |
-| NoX CLI | Generic navigation and manual execution through Gateway |
-| Future Portal | Aggregation of UI contributions supplied by products |
+| Repository/product                   | Planned evolution                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nox-mcp`                            | Shared contracts, validation and APIs in all three languages, corpus, packages, and CI                                                                                                                                                                                                                                            |
+| `nox-auth`                           | Headless Google-backed NoX Login service, central admission/session authority, reusable client integration, persistent state and deployment documentation; see section 20                                                                                                                                                         |
+| `nox-backend`                        | Persistent registry, administrative configuration, central operation authorization, integration APIs, own Suite adaptation, and separate frontend/backend builds, images, and containers in the same project; subsequently consume NoX Login and expose Suite logout while preserving existing services and frontend integrations |
+| `nox-yard`                           | Authorized post-deployment integration, lifecycle signals, and separation of Suite/direct MCP                                                                                                                                                                                                                                     |
+| NoX Bot and other host products      | Integration/registration, capabilities, a Suite path independent of direct access, and optional descriptors                                                                                                                                                                                                                       |
+| NoteX and other desktop/web products | Adapt relevant integrations to the shared contracts, respecting each product's storage, execution, and independent-access model                                                                                                                                                                                                   |
+| Future Gateway                       | Aggregation and routing according to approved contracts                                                                                                                                                                                                                                                                           |
+| NoX CLI                              | Generic navigation and manual execution through Gateway                                                                                                                                                                                                                                                                           |
+| Future Portal                        | Aggregation of UI contributions supplied by products                                                                                                                                                                                                                                                                              |
 
 Do not update consumers automatically merely because a new SDK version was published. Migrations must be explicit and tested.
 
@@ -367,16 +367,16 @@ Tests must not replace authorization checks with hidden UI options. Visual confi
 
 The following design areas are specified. Shared SDK mechanisms are published in `0.7.0`; service responsibilities remain to be implemented. See [SDK integration](INTEGRATION.md) for the implemented APIs and exact boundaries:
 
-| Area | Reference |
-| --- | --- |
-| Product declaration, identity, registration, conditional updates, removal, and durable idempotency | [Product integration](PRODUCT_INTEGRATION_PROPOSAL.md) |
-| Pairing, service credentials, same-host transport, signed delegated identity, and capability classification | [Gateway Contract](GATEWAY_CONTRACT.md), sections 3–7, with [authorized transport corrections](SUITE_SAME_HOST_INTEGRATION.md) |
-| Shared Google-backed human login and central admission | Section 20, `nox-auth/NOX_AUTH_CONTRACT.md` and its `docs/integration.md`; Auth service/Go client implemented in source; five-minute admission-check interval confirmed; installed product adapters pending |
-| Five-minute authorization reuse, event invalidation, on-demand renewal, and Backend outages | Gateway Contract, section 6 |
-| Durable events, reconciliation, observation sequences, and availability intervals | Gateway Contract, section 8 |
-| Aggregated names, reference rewriting, original/aggregate fingerprints, and private snapshots | Gateway Contract, sections 9–10 |
-| Deadlines, cancellation, limits, error propagation, and conventional MCP compatibility | Gateway Contract, sections 11–12 |
-| Origin-only deployment addresses and preservation of direct/Suite access during migration | Product integration and Gateway Contract, sections 3 and 13 |
+| Area                                                                                                        | Reference                                                                                                                                                                                                   |
+| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product declaration, identity, registration, conditional updates, removal, and durable idempotency          | [Product integration](PRODUCT_INTEGRATION_PROPOSAL.md)                                                                                                                                                      |
+| Pairing, service credentials, same-host transport, signed delegated identity, and capability classification | [Gateway Contract](GATEWAY_CONTRACT.md), sections 3–7, with [authorized transport corrections](SUITE_SAME_HOST_INTEGRATION.md)                                                                              |
+| Shared Google-backed human login and central admission                                                      | Section 20, `nox-auth/NOX_AUTH_CONTRACT.md` and its `docs/integration.md`; Auth service/Go client implemented in source; five-minute admission-check interval confirmed; installed product adapters pending |
+| Five-minute authorization reuse, event invalidation, on-demand renewal, and Backend outages                 | Gateway Contract, section 6                                                                                                                                                                                 |
+| Durable events, reconciliation, observation sequences, and availability intervals                           | Gateway Contract, section 8                                                                                                                                                                                 |
+| Aggregated names, reference rewriting, original/aggregate fingerprints, and private snapshots               | Gateway Contract, sections 9–10                                                                                                                                                                             |
+| Deadlines, cancellation, limits, error propagation, and conventional MCP compatibility                      | Gateway Contract, sections 11–12                                                                                                                                                                            |
+| Origin-only deployment addresses and preservation of direct/Suite access during migration                   | Product integration and Gateway Contract, sections 3 and 13                                                                                                                                                 |
 
 Separate product work still includes the Portal UI contribution/loading contract and each product's storage/execution adapters. These do not reopen the completed integration/Gateway design or imply that those products already exist. CLI presentation must retain `_meta.cli`; no `_meta.nox` hierarchy is introduced.
 
@@ -398,16 +398,16 @@ The detailed routes, payloads, and validation rules in the Gateway Contract form
 
 ### Explicit corrections to old plans
 
-| Old idea | Current decision |
-| --- | --- |
-| Autonomous registry in the Gateway | Registry in the Backend; Gateway holds cache and operational state |
-| Modules and instances as a formal hierarchy | Registered products; no such hierarchy in the agreed scope |
-| Gateway outbound channels to products on other networks | Gateway reaches products on the environment's network |
-| CLI connects directly to NoX products | CLI uses Gateway; AI MCP clients also connect directly to Gateway |
-| Portal must replace all frontends | Products retain frontends; Portal aggregates dedicated contributions |
-| Adding any Compose service registers it automatically | Yard initiates authorized integration for prepared products; Compose alone does not register them |
-| Disabling MCP in the application also disables Suite access | The switch controls only direct MCP |
-| Automatic expiry deletes offline products | Registration persists; removal requires an explicit confirmed action |
+| Old idea                                                    | Current decision                                                                                  |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Autonomous registry in the Gateway                          | Registry in the Backend; Gateway holds cache and operational state                                |
+| Modules and instances as a formal hierarchy                 | Registered products; no such hierarchy in the agreed scope                                        |
+| Gateway outbound channels to products on other networks     | Gateway reaches products on the environment's network                                             |
+| CLI connects directly to NoX products                       | CLI uses Gateway; AI MCP clients also connect directly to Gateway                                 |
+| Portal must replace all frontends                           | Products retain frontends; Portal aggregates dedicated contributions                              |
+| Adding any Compose service registers it automatically       | Yard initiates authorized integration for prepared products; Compose alone does not register them |
+| Disabling MCP in the application also disables Suite access | The switch controls only direct MCP                                                               |
+| Automatic expiry deletes offline products                   | Registration persists; removal requires an explicit confirmed action                              |
 
 ## 19. Current delivery and next work: Backend
 
@@ -415,14 +415,14 @@ Delivery baseline as of **October 30, 2026**:
 
 The following tables retain that historical Backend work sequence, including its then-native Google authentication. They are not a new instruction to keep Google credentials/account admission in Backend: the authorized November 3 target in section 20 supersedes that responsibility. Use the correction record for subsequent released work and outstanding tasks.
 
-| Item | State |
-| --- | --- |
-| Shared integration/Gateway contract | Defined; wire compatibility version `1.0` |
-| NoX MCP SDK | `0.7.0` published on GitHub after CI approval; available for explicit consumer migrations |
-| Backend authority and own Suite adaptation | Next implementation scope; pending |
-| Backend frontend/backend separation | Separate builds, images, and containers within the same `nox-backend` project; native frontend retained; pending |
-| Gateway, installer/product adaptations, and CLI | Follow their service dependencies; pending |
-| Generic Portal | Separate application and contribution/loading work; pending; does not replace the Backend frontend |
+| Item                                            | State                                                                                                            |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Shared integration/Gateway contract             | Defined; wire compatibility version `1.0`                                                                        |
+| NoX MCP SDK                                     | `0.7.0` published on GitHub after CI approval; available for explicit consumer migrations                        |
+| Backend authority and own Suite adaptation      | Next implementation scope; pending                                                                               |
+| Backend frontend/backend separation             | Separate builds, images, and containers within the same `nox-backend` project; native frontend retained; pending |
+| Gateway, installer/product adaptations, and CLI | Follow their service dependencies; pending                                                                       |
+| Generic Portal                                  | Separate application and contribution/loading work; pending; does not replace the Backend frontend               |
 
 The SDK implementation and release delivery are complete for this scope. This does not certify service implementations, consumer adaptations, or end-to-end Suite operation. Existing products must be adapted to the published contracts; unchanged Backend/Yard deployments are not a prerequisite for starting this work.
 
@@ -430,16 +430,16 @@ The SDK implementation and release delivery are complete for this scope. This do
 
 The table is an implementation sequence for the complete Backend scope, not a list of temporary product versions. It organizes the approved plan and the clarified frontend/backend deployment separation without changing any other approved decision. Use the linked contracts for exact routes, payloads, limits, and failure behavior; do not redefine those rules in Backend-local documents.
 
-| Work | Required result |
-| --- | --- |
-| 1. Establish the consumer baseline | Pin SDK `v0.7.0` in the Backend Go module and update its lock data; record existing API, authentication, MCP, dashboard, storage, deployment, and dependent-product frontend integration behavior before changing it. |
-| 2. Separate frontend/backend delivery and operations | Keep both components in the same `nox-backend` repository/project with independent builds, images, and containers. Frontend updates must not require rebuilding the backend image. Move business/permission rules into backend operations shared by HTTP APIs, direct MCP, and Suite MCP; the native frontend consumes authenticated backend APIs. Preserve SQLite, `/data`, blobs, vaults, synchronization, and existing client APIs. |
+| Work                                                 | Required result                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1. Establish the consumer baseline                   | Pin SDK `v0.7.0` in the Backend Go module and update its lock data; record existing API, authentication, MCP, dashboard, storage, deployment, and dependent-product frontend integration behavior before changing it.                                                                                                                                                                                                                                                                                                                                        |
+| 2. Separate frontend/backend delivery and operations | Keep both components in the same `nox-backend` repository/project with independent builds, images, and containers. Frontend updates must not require rebuilding the backend image. Move business/permission rules into backend operations shared by HTTP APIs, direct MCP, and Suite MCP; the native frontend consumes authenticated backend APIs. Preserve SQLite, `/data`, blobs, vaults, synchronization, and existing client APIs.                                                                                                                       |
 | 3. Complete administration APIs and retain native UI | Expose the operations currently available through the dashboard through authenticated APIs, including account/role administration, personal key management, and relevant vault operations. Retain their frontend functionality and add the initial foundation-service connection configuration required by the plan. Keep Google authentication/session authority in Backend. JSON APIs must return API results/errors rather than depend on HTML or dashboard redirects. Preserve existing browser-facing authentication and dependent-product integration. |
-| 4. Implement persistent service trust | Add issuer identity, signing-key storage/rotation and public verification keys, scoped service credentials, pairing/provisioning recovery, credential rotation/revocation, and persistent associations under [Gateway Contract sections 3–6](GATEWAY_CONTRACT.md#3-addresses-and-authenticated-transport). |
-| 5. Implement registry and durable events | Add verified declaration retrieval, registration revisions, conditional management operations, durable idempotency, role-filtered snapshots, event delivery/reconciliation, and authorized observations under the [integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway Contract section 8](GATEWAY_CONTRACT.md#8-registry-events-lifecycle-and-availability). Commit registration mutations, idempotency outcomes, and their events atomically. |
-| 6. Implement authorization issuance | Map existing roles to agreed capabilities and issue signed, product-bound user delegations and distinct service probe tokens. Enforce current key/service/association revisions and emit invalidation events for relevant changes. Use the already agreed five-minute bounds and offline behavior; do not add repeated Google login or per-call remote authorization. |
-| 7. Adapt Backend as a Suite product | Serve `/nox/integration`, declare and implement a protected Suite MCP path, classify tools, and enforce verified identity, scopes, ownership, deadlines, and limits. Preserve or explicitly migrate the existing direct `/mcp` policy; both paths share operations and remain independently configurable. |
-| 8. Integrate administration and validate delivery | Make foundation-service configuration usable through APIs and the native frontend, with accurate partial-failure states. Update Backend docs, migrations, separate image build/release jobs, Compose deployment, and required CI for the actual implementation. Verify installed/packaged behavior, independent frontend delivery, and the existing dependent-product frontend integration before claiming completion. |
+| 4. Implement persistent service trust                | Add issuer identity, signing-key storage/rotation and public verification keys, scoped service credentials, pairing/provisioning recovery, credential rotation/revocation, and persistent associations under [Gateway Contract sections 3–6](GATEWAY_CONTRACT.md#3-addresses-and-authenticated-transport).                                                                                                                                                                                                                                                   |
+| 5. Implement registry and durable events             | Add verified declaration retrieval, registration revisions, conditional management operations, durable idempotency, role-filtered snapshots, event delivery/reconciliation, and authorized observations under the [integration design](PRODUCT_INTEGRATION_PROPOSAL.md) and [Gateway Contract section 8](GATEWAY_CONTRACT.md#8-registry-events-lifecycle-and-availability). Commit registration mutations, idempotency outcomes, and their events atomically.                                                                                                |
+| 6. Implement authorization issuance                  | Map existing roles to agreed capabilities and issue signed, product-bound user delegations and distinct service probe tokens. Enforce current key/service/association revisions and emit invalidation events for relevant changes. Use the already agreed five-minute bounds and offline behavior; do not add repeated Google login or per-call remote authorization.                                                                                                                                                                                        |
+| 7. Adapt Backend as a Suite product                  | Serve `/nox/integration`, declare and implement a protected Suite MCP path, classify tools, and enforce verified identity, scopes, ownership, deadlines, and limits. Preserve or explicitly migrate the existing direct `/mcp` policy; both paths share operations and remain independently configurable.                                                                                                                                                                                                                                                    |
+| 8. Integrate administration and validate delivery    | Make foundation-service configuration usable through APIs and the native frontend, with accurate partial-failure states. Update Backend docs, migrations, separate image build/release jobs, Compose deployment, and required CI for the actual implementation. Verify installed/packaged behavior, independent frontend delivery, and the existing dependent-product frontend integration before claiming completion.                                                                                                                                       |
 
 ### Backend completion criteria
 
@@ -541,15 +541,15 @@ This checkpoint is the current handoff for continuing Suite work. It supersedes 
 
 ### Implemented foundation
 
-| Component | Current implementation and evidence |
-| --- | --- |
-| NoX MCP | SDK 0.7.3 is released. Shared contracts and native TypeScript/Go/Rust helpers are implemented. Conventional MCP tool listing excludes human CLI metadata; NoX discovery retains the canonical definitions. |
-| NoX Auth | Service 0.0.2 provides shared Google-backed NoX Login, automatic client-enrollment APIs, private account admission and session revocation. The reusable Go client is consumed at 0.0.1. Installed Backend/Yard login and shared-session logout initiated in Backend were confirmed. |
+| Component   | Current implementation and evidence                                                                                                                                                                                                                                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NoX MCP     | SDK 0.7.3 is released. Shared contracts and native TypeScript/Go/Rust helpers are implemented. Conventional MCP tool listing excludes human CLI metadata; NoX discovery retains the canonical definitions.                                                                                                                        |
+| NoX Auth    | Service 0.0.2 provides shared Google-backed NoX Login, automatic client-enrollment APIs, private account admission and session revocation. The reusable Go client is consumed at 0.0.1. Installed Backend/Yard login and shared-session logout initiated in Backend were confirmed.                                               |
 | NoX Backend | Authority, service pairing, deployment delegation, durable registry/events, authorization issuance and its own MCP publication are implemented. Its native frontend is retained in the same project with independent frontend/backend images. Installed Backend 1.2.2 service-status execution through Gateway/CLI was confirmed. |
-| NoX Gateway | Same-host enrollment, private discovery/aggregation, authorization, routing, probes and lifecycle observation are implemented. Gateway 0.0.2 was reported by the CLI. It preserves exact structured-result numbers and MCP error semantics. |
-| NoX Yard | NoX Login, same-host pairing and registration, participating deployment preparation and job-driven registration/lifecycle recovery are implemented. Installed Yard registration was confirmed; source is tagged 1.4.2. A source tag alone does not establish the installed image. |
-| NoX CLI | The six implementation stages are implemented. The owner executed Yard and Backend tools through Gateway/CLI and confirmed that the published CLI installs and works on Windows and macOS. The optional custom installer domain has not been reported as published. |
-| NoX Portal | Not implemented. It remains a separate future application and does not replace Backend's native frontend. |
+| NoX Gateway | Same-host enrollment, private discovery/aggregation, authorization, routing, probes and lifecycle observation are implemented. Gateway 0.0.2 was reported by the CLI. It preserves exact structured-result numbers and MCP error semantics.                                                                                       |
+| NoX Yard    | NoX Login, same-host pairing and registration, participating deployment preparation and job-driven registration/lifecycle recovery are implemented. Installed Yard registration was confirmed; source is tagged 1.4.2. A source tag alone does not establish the installed image.                                                 |
+| NoX CLI     | The six implementation stages are implemented. The owner executed Yard and Backend tools through Gateway/CLI and confirmed that the published CLI installs and works on Windows and macOS. The optional custom installer domain has not been reported as published.                                                               |
+| NoX Portal  | Not implemented. It remains a separate future application and does not replace Backend's native frontend.                                                                                                                                                                                                                         |
 
 ### Position in the existing work sequence
 

@@ -26,10 +26,7 @@
     },
     "source": {
       "type": "string",
-      "enum": [
-        "yard",
-        "gateway"
-      ]
+      "enum": ["yard", "gateway"]
     },
     "producerEpoch": {
       "type": "string",

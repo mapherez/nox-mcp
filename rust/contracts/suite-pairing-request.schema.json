@@ -22,11 +22,7 @@
     },
     "purpose": {
       "type": "string",
-      "enum": [
-        "product",
-        "gateway",
-        "installer"
-      ]
+      "enum": ["product", "gateway", "installer"]
     },
     "managedBy": {
       "type": "object",
@@ -44,18 +40,10 @@
           "maxLength": 256
         }
       },
-      "required": [
-        "productId",
-        "deploymentId"
-      ],
+      "required": ["productId", "deploymentId"],
       "additionalProperties": true
     }
   },
-  "required": [
-    "contractVersion",
-    "productId",
-    "baseUrl",
-    "purpose"
-  ],
+  "required": ["contractVersion", "productId", "baseUrl", "purpose"],
   "additionalProperties": true
 }

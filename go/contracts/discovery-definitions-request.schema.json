@@ -1,10 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": [
-    "catalog",
-    "tools"
-  ],
+  "required": ["catalog", "tools"],
   "properties": {
     "_meta": {
       "type": "object"
@@ -19,10 +16,7 @@
       "maxItems": 64,
       "items": {
         "type": "object",
-        "required": [
-          "name",
-          "fingerprint"
-        ],
+        "required": ["name", "fingerprint"],
         "properties": {
           "name": {
             "type": "string",

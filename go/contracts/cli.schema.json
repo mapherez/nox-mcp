@@ -1,9 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": [
-    "version"
-  ],
+  "required": ["version"],
   "additionalProperties": true,
   "properties": {
     "version": {
@@ -62,9 +60,7 @@
     },
     "source": {
       "type": "object",
-      "required": [
-        "tool"
-      ],
+      "required": ["tool"],
       "properties": {
         "tool": {
           "type": "string",
@@ -90,9 +86,7 @@
       "oneOf": [
         {
           "type": "object",
-          "required": [
-            "value"
-          ],
+          "required": ["value"],
           "properties": {
             "value": {}
           },
@@ -100,10 +94,7 @@
         },
         {
           "type": "object",
-          "required": [
-            "from",
-            "pointer"
-          ],
+          "required": ["from", "pointer"],
           "properties": {
             "from": {
               "const": "input"
@@ -116,11 +107,7 @@
         },
         {
           "type": "object",
-          "required": [
-            "from",
-            "step",
-            "pointer"
-          ],
+          "required": ["from", "step", "pointer"],
           "properties": {
             "from": {
               "const": "step"
@@ -144,15 +131,7 @@
           "type": "number"
         },
         "control": {
-          "enum": [
-            "text",
-            "password",
-            "select",
-            "multiselect",
-            "checkbox",
-            "number",
-            "textarea"
-          ]
+          "enum": ["text", "password", "select", "multiselect", "checkbox", "number", "textarea"]
         },
         "options": {
           "allOf": [
@@ -204,15 +183,10 @@
     },
     "confirmation": {
       "type": "object",
-      "required": [
-        "mode"
-      ],
+      "required": ["mode"],
       "properties": {
         "mode": {
-          "enum": [
-            "boolean",
-            "typed"
-          ]
+          "enum": ["boolean", "typed"]
         },
         "message": {
           "type": "string"
@@ -228,21 +202,14 @@
     },
     "step": {
       "type": "object",
-      "required": [
-        "id",
-        "type"
-      ],
+      "required": ["id", "type"],
       "properties": {
         "id": {
           "type": "string",
           "minLength": 1
         },
         "type": {
-          "enum": [
-            "input",
-            "call",
-            "confirm"
-          ]
+          "enum": ["input", "call", "confirm"]
         },
         "parameters": {
           "type": "array",

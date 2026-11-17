@@ -65,10 +65,11 @@
     "hooks:install": "node scripts/install-hooks.mjs",
     "precommit": "node scripts/git-hooks.mjs commit",
     "check": "node scripts/git-hooks.mjs check",
-    "format": "node scripts/git-hooks.mjs format",
-    "prepush": "npm run check",
+    "format": "node scripts/format-files.mjs",
+    "prepush": "node scripts/format-files.mjs --check --revision HEAD && npm run check",
     "check:code": "vp check",
-    "format:check": "vp fmt --check"
+    "format:check": "node scripts/format-files.mjs --check",
+    "test:format": "node --test scripts/format-files.test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.3.1",
@@ -77,8 +78,11 @@
   "devDependencies": {
     "@modelcontextprotocol/client": "^2.3.1",
     "@modelcontextprotocol/node": "^2.0.0",
+    "@prettier/plugin-xml": "3.4.2",
     "@types/node": "^24.10.13",
     "@types/ws": "^8.18.1",
+    "prettier": "3.10.1",
+    "prettier-plugin-sh": "0.20.2",
     "typescript": "^5.9.3",
     "vite-plus": "1.6.0",
     "ws": "^8.19.0",

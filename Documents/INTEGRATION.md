@@ -36,19 +36,19 @@ Refresh and commit the consuming Rust lockfile. SDK release `0.7.3` and wire con
 
 `contracts/suite-*.schema.json` is authoritative. `suite-defaults.json` contains timing and resource defaults. `suite-conformance.json` contains shared document, crypto, address, namespace, observation, registry, and aggregation cases. Run `npm run contracts:sync` after editing these sources; commit the generated native copies and DTOs together. `npm run contracts:check` rejects drift.
 
-| Operation | TypeScript root export | Go package `noxmcp` | Rust module `nox_mcp::suite` |
-| --- | --- | --- | --- |
-| Complete declaration loader | `loadSuiteDocument('product-declaration', input)` | `LoadSuiteProductDeclaration(bytes)` | `load_suite_product_declaration(json)` |
-| Other complete documents | `loadSuiteDocument(name, input)` | `LoadSuiteDocument(name, bytes)` or `LoadSuite…` | `load_suite_document(name, json)` or `load_suite_…` |
-| Canonical origin/path | `normalizeSuiteOrigin`, `normalizeSuitePath` | `NormalizeSuiteOrigin`, `NormalizeSuitePath` | `normalize_suite_origin`, `normalize_suite_path` |
-| Pairing proof | `createSuitePairingProof`, `verifySuitePairingProof` | `CreateSuitePairingProof`, `VerifySuitePairingProof` | `create_suite_pairing_proof`, `verify_suite_pairing_proof` |
-| Verify delegated authority | `verifySuiteToken`, `verifySuiteAuthorizationResponse` | `VerifySuiteToken`, `VerifySuiteAuthorizationResponse` | `verify_suite_token`, `verify_suite_authorization_response` |
-| Reusable authorization | `SuiteAuthorizationCache` | `NewSuiteAuthorizationCache` | `SuiteAuthorizationCache` |
-| Aggregate discovery | `composeSuiteGateway`, `selectSuiteRoute` | `ComposeSuiteGateway`, `SelectSuiteRoute` | `compose_suite_gateway`, `select_suite_route` |
-| Accept producer observation | `acceptSuiteObservation` | `AcceptSuiteObservation` | `accept_suite_observation` |
-| Apply a registry event page | `reduceSuiteRegistry` | `ReduceSuiteRegistry` | `reduce_suite_registry` |
-| Shrinking call budget | `suiteRequestBudget` | `SuiteRequestBudget` | `suite_request_budget` |
-| Product Suite execution | `createSuiteHttpHandler` | `NewSuite` and `Runtime.HTTPHandler()` | `McpServer::with_suite`, `admit_suite_http_request` |
+| Operation                   | TypeScript root export                                 | Go package `noxmcp`                                    | Rust module `nox_mcp::suite`                                |
+| --------------------------- | ------------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------------------------- |
+| Complete declaration loader | `loadSuiteDocument('product-declaration', input)`      | `LoadSuiteProductDeclaration(bytes)`                   | `load_suite_product_declaration(json)`                      |
+| Other complete documents    | `loadSuiteDocument(name, input)`                       | `LoadSuiteDocument(name, bytes)` or `LoadSuite…`       | `load_suite_document(name, json)` or `load_suite_…`         |
+| Canonical origin/path       | `normalizeSuiteOrigin`, `normalizeSuitePath`           | `NormalizeSuiteOrigin`, `NormalizeSuitePath`           | `normalize_suite_origin`, `normalize_suite_path`            |
+| Pairing proof               | `createSuitePairingProof`, `verifySuitePairingProof`   | `CreateSuitePairingProof`, `VerifySuitePairingProof`   | `create_suite_pairing_proof`, `verify_suite_pairing_proof`  |
+| Verify delegated authority  | `verifySuiteToken`, `verifySuiteAuthorizationResponse` | `VerifySuiteToken`, `VerifySuiteAuthorizationResponse` | `verify_suite_token`, `verify_suite_authorization_response` |
+| Reusable authorization      | `SuiteAuthorizationCache`                              | `NewSuiteAuthorizationCache`                           | `SuiteAuthorizationCache`                                   |
+| Aggregate discovery         | `composeSuiteGateway`, `selectSuiteRoute`              | `ComposeSuiteGateway`, `SelectSuiteRoute`              | `compose_suite_gateway`, `select_suite_route`               |
+| Accept producer observation | `acceptSuiteObservation`                               | `AcceptSuiteObservation`                               | `accept_suite_observation`                                  |
+| Apply a registry event page | `reduceSuiteRegistry`                                  | `ReduceSuiteRegistry`                                  | `reduce_suite_registry`                                     |
+| Shrinking call budget       | `suiteRequestBudget`                                   | `SuiteRequestBudget`                                   | `suite_request_budget`                                      |
+| Product Suite execution     | `createSuiteHttpHandler`                               | `NewSuite` and `Runtime.HTTPHandler()`                 | `McpServer::with_suite`, `admit_suite_http_request`         |
 
 Loaders validate the complete document without defaults, coercion, or property removal. Generated native DTOs retain unknown fields through `Extra`/`extra`; optional absence stays absent. Constructing a DTO or parsing claims is not cryptographic verification. Only a verifier-produced `VerifiedSuiteIdentity` carries authority. Its ordinary debug/serialization representation does not expose its bearer token; `accessToken()` / `AccessToken()` / `access_token()` explicitly returns the secret when forwarding requires it. Wire DTOs containing credentials are still secrets and must not be logged.
 
@@ -73,20 +73,23 @@ The host supplies an immutable local trust/registry snapshot: issuer, exact audi
 TypeScript, using application-supplied `tools` and a local trust store:
 
 ```ts
-import { createSuiteHttpHandler, suitePolicy } from '@nox/mcp';
+import { createSuiteHttpHandler, suitePolicy } from "@nox/mcp";
 
 const suite = createSuiteHttpHandler({
-  appId: 'example-product', name: 'example-product', version: '1', tools,
+  appId: "example-product",
+  name: "example-product",
+  version: "1",
+  tools,
   verification: () => trustStore.current(),
   policies: {
-    record_list: suitePolicy(['nox:inspect']),
-    record_update: suitePolicy(['nox:inspect', 'nox:write'], true),
+    record_list: suitePolicy(["nox:inspect"]),
+    record_update: suitePolicy(["nox:inspect", "nox:write"], true),
   },
-  isActive: identity => revocations.isActive(identity.context()),
+  isActive: (identity) => revocations.isActive(identity.context()),
   additionalScopes: async (name, input, context) =>
     localPolicy.additionalRequirements(name, input, context),
   discovery: {
-    serverId: 'example-product-mcp',
+    serverId: "example-product-mcp",
     resolveView: (context, tools) => localPolicy.discoveryView(context, tools),
   },
 });
