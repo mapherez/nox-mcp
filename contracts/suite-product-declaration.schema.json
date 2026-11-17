@@ -37,9 +37,7 @@
               "x-nox-kind": "path"
             }
           },
-          "required": [
-            "path"
-          ],
+          "required": ["path"],
           "additionalProperties": true
         }
       },
@@ -56,12 +54,6 @@
       "uniqueItems": true
     }
   },
-  "required": [
-    "contractVersion",
-    "productId",
-    "productVersion",
-    "displayName",
-    "capabilities"
-  ],
+  "required": ["contractVersion", "productId", "productVersion", "displayName", "capabilities"],
   "additionalProperties": true
 }

@@ -1,59 +1,138 @@
-import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
-import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { consumerProfile } from './consumer-options.mjs';
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { consumerProfile } from "./consumer-options.mjs";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const temporary = await mkdtemp(resolve(tmpdir(), 'nox-package-'));
-const minimum = consumerProfile(process.argv.slice(2),process.env)==='minimum';
-const destination = process.argv.slice(2).find(arg=>!arg.startsWith('--'));
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const temporary = await mkdtemp(resolve(tmpdir(), "nox-package-"));
+const minimum = consumerProfile(process.argv.slice(2), process.env) === "minimum";
+const destination = process.argv.slice(2).find((arg) => !arg.startsWith("--"));
 
 try {
-  if (!process.env.npm_execpath) throw new Error('Executa com npm run package:check.');
-  const npm = (cwd, ...args) => execFileSync(process.execPath, [process.env.npm_execpath, ...args], {
-    cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'],
-  });
+  if (!process.env.npm_execpath) throw new Error("Executa com npm run package:check.");
+  const npm = (cwd, ...args) =>
+    execFileSync(process.execPath, [process.env.npm_execpath, ...args], {
+      cwd,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "inherit"],
+    });
   // Use the normal pack lifecycle: prepack builds dist, with no special CI artifact.
-  const packOutput = JSON.parse(npm(root, 'pack', '--json', '--pack-destination', temporary));
+  const packOutput = JSON.parse(npm(root, "pack", "--json", "--pack-destination", temporary));
   // npm 11 returns an array; npm 12 keys the same records by package name.
   const packages = Array.isArray(packOutput) ? packOutput : Object.values(packOutput);
-  assert.equal(packages.length, 1, 'Expected exactly one packed package');
+  assert.equal(packages.length, 1, "Expected exactly one packed package");
   const [packed] = packages;
-  const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
-  const paths = new Set(packed.files.map(file => file.path));
+  const pkg = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
+  const paths = new Set(packed.files.map((file) => file.path));
   assert.equal(packed.version, pkg.version);
   for (const path of paths) {
     // npm also includes license files in ancestors of a files entry.
-    assert.ok(['package.json', 'README.md', 'Documents/README.md', 'Documents/COMPATIBILITY.md', 'Documents/DISCOVERY.md', 'Documents/INTEGRATION.md', 'Documents/SUITE_SAME_HOST_INTEGRATION.md', 'Documents/GATEWAY_CONTRACT.md', 'Documents/PRODUCT_INTEGRATION_PROPOSAL.md', 'Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md', 'contracts/README.md', 'LICENSE', 'typescript/LICENSE'].includes(path) || path.startsWith('typescript/dist/'), `Unexpected packed file: ${path}`);
+    assert.ok(
+      [
+        "package.json",
+        "README.md",
+        "Documents/README.md",
+        "Documents/COMPATIBILITY.md",
+        "Documents/DISCOVERY.md",
+        "Documents/INTEGRATION.md",
+        "Documents/SUITE_SAME_HOST_INTEGRATION.md",
+        "Documents/GATEWAY_CONTRACT.md",
+        "Documents/PRODUCT_INTEGRATION_PROPOSAL.md",
+        "Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md",
+        "contracts/README.md",
+        "LICENSE",
+        "typescript/LICENSE",
+      ].includes(path) || path.startsWith("typescript/dist/"),
+      `Unexpected packed file: ${path}`,
+    );
   }
-  for (const file of ['Documents/README.md', 'Documents/COMPATIBILITY.md', 'Documents/DISCOVERY.md', 'Documents/INTEGRATION.md', 'Documents/SUITE_SAME_HOST_INTEGRATION.md', 'Documents/GATEWAY_CONTRACT.md', 'Documents/PRODUCT_INTEGRATION_PROPOSAL.md', 'Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md', 'contracts/README.md']) assert.ok(paths.has(file), `Missing current documentation: ${file}`);
+  for (const file of [
+    "Documents/README.md",
+    "Documents/COMPATIBILITY.md",
+    "Documents/DISCOVERY.md",
+    "Documents/INTEGRATION.md",
+    "Documents/SUITE_SAME_HOST_INTEGRATION.md",
+    "Documents/GATEWAY_CONTRACT.md",
+    "Documents/PRODUCT_INTEGRATION_PROPOSAL.md",
+    "Documents/NOX_SUITE_IMPLEMENTATION_PLAN.md",
+    "contracts/README.md",
+  ])
+    assert.ok(paths.has(file), `Missing current documentation: ${file}`);
   for (const entry of Object.values(pkg.exports)) {
-    for (const path of Object.values(entry)) assert.ok(paths.has(path.replace(/^\.\//, '')), `Missing export: ${path}`);
+    for (const path of Object.values(entry))
+      assert.ok(paths.has(path.replace(/^\.\//, "")), `Missing export: ${path}`);
   }
-  assert.ok(!['preinstall', 'install', 'postinstall', 'prepare'].some(script => pkg.scripts[script]), 'Consumer install must not run build hooks');
+  assert.ok(
+    !["preinstall", "install", "postinstall", "prepare"].some((script) => pkg.scripts[script]),
+    "Consumer install must not run build hooks",
+  );
 
-  const consumer = resolve(temporary, 'consumer');
+  const consumer = resolve(temporary, "consumer");
   await mkdir(consumer);
-  await writeFile(resolve(consumer, 'package.json'), JSON.stringify({ name: 'nox-consumer-check', version: '1.0.0', private: true, type: 'module',
-    dependencies: Object.fromEntries(Object.entries({...pkg.dependencies,...pkg.peerDependencies}).map(([name,range])=>[name,minimum?range.replace(/^[~^]/,''):range])),
-  }));
+  await writeFile(
+    resolve(consumer, "package.json"),
+    JSON.stringify({
+      name: "nox-consumer-check",
+      version: "1.0.0",
+      private: true,
+      type: "module",
+      dependencies: Object.fromEntries(
+        Object.entries({ ...pkg.dependencies, ...pkg.peerDependencies }).map(([name, range]) => [
+          name,
+          minimum ? range.replace(/^[~^]/, "") : range,
+        ]),
+      ),
+    }),
+  );
   const tarball = resolve(temporary, packed.filename);
   // Keep lifecycle scripts enabled: this must work without tsc or SDK dev deps.
-  npm(consumer, 'install', '--strict-peer-deps', '--foreground-scripts', '--no-audit', '--no-fund', tarball);
-  const lock = JSON.parse(await readFile(resolve(consumer, 'package-lock.json'), 'utf8'));
-  assert.ok(!Object.keys(lock.packages).some(path => /(?:^|\/)node_modules\/typescript$/.test(path)), 'Consumer unexpectedly installed TypeScript');
-  assert.ok(!lock.packages['node_modules/@nox/mcp'].hasInstallScript, 'Package unexpectedly has an install hook');
-  const installed = JSON.parse(await readFile(resolve(consumer, 'node_modules/@nox/mcp/package.json'), 'utf8'));
+  npm(
+    consumer,
+    "install",
+    "--strict-peer-deps",
+    "--foreground-scripts",
+    "--no-audit",
+    "--no-fund",
+    tarball,
+  );
+  const lock = JSON.parse(await readFile(resolve(consumer, "package-lock.json"), "utf8"));
+  assert.ok(
+    !Object.keys(lock.packages).some((path) => /(?:^|\/)node_modules\/typescript$/.test(path)),
+    "Consumer unexpectedly installed TypeScript",
+  );
+  assert.ok(
+    !lock.packages["node_modules/@nox/mcp"].hasInstallScript,
+    "Package unexpectedly has an install hook",
+  );
+  const installed = JSON.parse(
+    await readFile(resolve(consumer, "node_modules/@nox/mcp/package.json"), "utf8"),
+  );
   assert.equal(installed.version, pkg.version);
-  assert.deepEqual(Object.keys(installed.exports).sort(),['.','./bridge','./bridge/client','./bridge/server','./contract','./node'].sort(),'Unexpected public entry points');
-  if(minimum)for(const [name,range]of Object.entries({...pkg.dependencies,...pkg.peerDependencies})){
-    const dependency=JSON.parse(await readFile(resolve(consumer,'node_modules',name,'package.json'),'utf8'));
-    assert.equal(dependency.version,range.replace(/^[~^]/,''),`Minimum ${name} was not installed`);
-  }
-  execFileSync(process.execPath, ['--input-type=module', '-e', `
+  assert.deepEqual(
+    Object.keys(installed.exports).sort(),
+    [".", "./bridge", "./bridge/client", "./bridge/server", "./contract", "./node"].sort(),
+    "Unexpected public entry points",
+  );
+  if (minimum)
+    for (const [name, range] of Object.entries({ ...pkg.dependencies, ...pkg.peerDependencies })) {
+      const dependency = JSON.parse(
+        await readFile(resolve(consumer, "node_modules", name, "package.json"), "utf8"),
+      );
+      assert.equal(
+        dependency.version,
+        range.replace(/^[~^]/, ""),
+        `Minimum ${name} was not installed`,
+      );
+    }
+  execFileSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "-e",
+      `
     import assert from 'node:assert/strict';
     import { createServer, createServerFromManifest, interpretCli, DiscoveryService, fingerprint, loadSuiteDocument, suitePolicy, createSuiteHttpHandler, normalizeSuiteOrigin, SuiteAuthorizationCache } from '@nox/mcp';
     import { compileToolSchema, loadToolManifest } from '@nox/mcp/contract';
@@ -76,33 +155,83 @@ try {
     await import('@nox/mcp/bridge/client');
     await import('@nox/mcp/bridge/server');
     await import('@nox/mcp/node');
-  `], { cwd: consumer, stdio: 'inherit' });
+  `,
+    ],
+    { cwd: consumer, stdio: "inherit" },
+  );
 
-  await copyFile(resolve(root,'contracts/suite-conformance.json'),resolve(consumer,'suite-conformance.json'));
-  const suiteTests=(await readdir(resolve(root,'typescript/test'))).filter(name=>name.startsWith('suite')&&name.endsWith('.test.mjs')).sort();
-  assert.ok(suiteTests.includes('suite.test.mjs')&&suiteTests.includes('suite-http.test.mjs'),'Missing Suite conformance or runtime tests');
-  for(const name of suiteTests){
-    const source=(await readFile(resolve(root,'typescript/test',name),'utf8'))
-      .replace(/from\s+(['"])\.\.\/dist\/[^'"]+\.js\1/g,"from '@nox/mcp'")
-      .replaceAll("new URL('../../contracts/suite-conformance.json',import.meta.url)","new URL('./suite-conformance.json',import.meta.url)");
-    assert.doesNotMatch(source,/\.\.\/dist\/|\.\.\/\.\.\/contracts\//,'Installed Suite tests must use public package exports and local fixtures');
-    await writeFile(resolve(consumer,name),source);
+  await copyFile(
+    resolve(root, "contracts/suite-conformance.json"),
+    resolve(consumer, "suite-conformance.json"),
+  );
+  const suiteTests = (await readdir(resolve(root, "typescript/test")))
+    .filter((name) => name.startsWith("suite") && name.endsWith(".test.mjs"))
+    .sort();
+  assert.ok(
+    suiteTests.includes("suite.test.mjs") && suiteTests.includes("suite-http.test.mjs"),
+    "Missing Suite conformance or runtime tests",
+  );
+  for (const name of suiteTests) {
+    const source = (await readFile(resolve(root, "typescript/test", name), "utf8"))
+      .replace(/from\s+(['"])\.\.\/dist\/[^'"]+\.js\1/g, "from '@nox/mcp'")
+      .replace(
+        /new URL\(\s*(['"])\.\.\/\.\.\/contracts\/suite-conformance\.json\1,\s*import\.meta\.url\s*,?\s*\)/g,
+        "new URL('./suite-conformance.json',import.meta.url)",
+      );
+    assert.doesNotMatch(
+      source,
+      /\.\.\/dist\/|\.\.\/\.\.\/contracts\//,
+      "Installed Suite tests must use public package exports and local fixtures",
+    );
+    await writeFile(resolve(consumer, name), source);
   }
-  execFileSync(process.execPath,['--test',...suiteTests],{cwd:consumer,stdio:'inherit'});
+  execFileSync(process.execPath, ["--test", ...suiteTests], { cwd: consumer, stdio: "inherit" });
 
   // Exercise the installed tarball through the public Node adapter, with no
   // checkout imports and no application-level transport adaptation.
-  await copyFile(resolve(root, 'scripts/consumer-http.mjs'), resolve(consumer, 'consumer-http.mjs'));
-  execFileSync(process.execPath, ['consumer-http.mjs'], { cwd: consumer, stdio: 'inherit' });
+  await copyFile(
+    resolve(root, "scripts/consumer-http.mjs"),
+    resolve(consumer, "consumer-http.mjs"),
+  );
+  execFileSync(process.execPath, ["consumer-http.mjs"], { cwd: consumer, stdio: "inherit" });
 
-  console.log('Independent npm graph: '+npm(consumer,'ls','--depth=0'));
+  console.log("Independent npm graph: " + npm(consumer, "ls", "--depth=0"));
   // Compilation belongs to the consuming app, not to an SDK install hook.
-  npm(consumer,'install','--strict-peer-deps','--save-dev','--no-audit','--no-fund','typescript@'+pkg.devDependencies.typescript.replace(/^[~^]/,''),'@types/node@'+pkg.devDependencies['@types/node'].replace(/^[~^]/,''),'@types/ws@'+pkg.devDependencies['@types/ws'].replace(/^[~^]/,''));
-  await writeFile(resolve(consumer,'consumer.ts'),`import {createServer,interpretCli,DiscoveryService,loadSuiteDocument,suitePolicy,createSuiteHttpHandler,type SuiteProductDeclaration} from '@nox/mcp';\nimport {compileToolSchema} from '@nox/mcp/contract';\nimport '@nox/mcp/node';\nimport '@nox/mcp/bridge';\nimport '@nox/mcp/bridge/client';\nimport '@nox/mcp/bridge/server';\nimport {z} from 'zod';\nconst server=createServer({appId:'consumer',name:'consumer',version:'0.5.0',tools:[{name:'echo',description:'External TS build',inputSchema:z.object({value:z.string()}),outputSchema:z.object({value:z.string()}),execute:async input=>input as {value:string}}]});\nif(!compileToolSchema({type:'string'})('value'))throw Error('schema');\ninterpretCli({version:'1.0'});\nnew DiscoveryService('external');\nconst declaration:SuiteProductDeclaration=loadSuiteDocument('product-declaration',{contractVersion:'1.0',productId:'future-product',productVersion:'1',displayName:'Future',capabilities:{}});\nsuitePolicy(['nox:inspect']);\nif(typeof createSuiteHttpHandler!=='function'||!declaration.productId)throw Error('Suite package');\nawait server.close();\n`);
-  execFileSync(process.execPath,[resolve(consumer,'node_modules/typescript/bin/tsc'),'consumer.ts','--module','nodenext','--target','es2022','--strict','--outDir','built'],{cwd:consumer,stdio:'inherit'});
-  execFileSync(process.execPath,['built/consumer.js'],{cwd:consumer,stdio:'inherit'});
+  npm(
+    consumer,
+    "install",
+    "--strict-peer-deps",
+    "--save-dev",
+    "--no-audit",
+    "--no-fund",
+    "typescript@" + pkg.devDependencies.typescript.replace(/^[~^]/, ""),
+    "@types/node@" + pkg.devDependencies["@types/node"].replace(/^[~^]/, ""),
+    "@types/ws@" + pkg.devDependencies["@types/ws"].replace(/^[~^]/, ""),
+  );
+  await writeFile(
+    resolve(consumer, "consumer.ts"),
+    `import {createServer,interpretCli,DiscoveryService,loadSuiteDocument,suitePolicy,createSuiteHttpHandler,type SuiteProductDeclaration} from '@nox/mcp';\nimport {compileToolSchema} from '@nox/mcp/contract';\nimport '@nox/mcp/node';\nimport '@nox/mcp/bridge';\nimport '@nox/mcp/bridge/client';\nimport '@nox/mcp/bridge/server';\nimport {z} from 'zod';\nconst server=createServer({appId:'consumer',name:'consumer',version:'0.5.0',tools:[{name:'echo',description:'External TS build',inputSchema:z.object({value:z.string()}),outputSchema:z.object({value:z.string()}),execute:async input=>input as {value:string}}]});\nif(!compileToolSchema({type:'string'})('value'))throw Error('schema');\ninterpretCli({version:'1.0'});\nnew DiscoveryService('external');\nconst declaration:SuiteProductDeclaration=loadSuiteDocument('product-declaration',{contractVersion:'1.0',productId:'future-product',productVersion:'1',displayName:'Future',capabilities:{}});\nsuitePolicy(['nox:inspect']);\nif(typeof createSuiteHttpHandler!=='function'||!declaration.productId)throw Error('Suite package');\nawait server.close();\n`,
+  );
+  execFileSync(
+    process.execPath,
+    [
+      resolve(consumer, "node_modules/typescript/bin/tsc"),
+      "consumer.ts",
+      "--module",
+      "nodenext",
+      "--target",
+      "es2022",
+      "--strict",
+      "--outDir",
+      "built",
+    ],
+    { cwd: consumer, stdio: "inherit" },
+  );
+  execFileSync(process.execPath, ["built/consumer.js"], { cwd: consumer, stdio: "inherit" });
   if (destination) await copyFile(tarball, resolve(destination));
-  console.log(`Verified @nox/mcp ${pkg.version}: ${packed.files.length} files, ${packed.size} bytes; ${minimum?'minimum':'latest compatible'} dependencies, consumer build and HTTP JSON/SSE passed.`);
+  console.log(
+    `Verified @nox/mcp ${pkg.version}: ${packed.files.length} files, ${packed.size} bytes; ${minimum ? "minimum" : "latest compatible"} dependencies, consumer build and HTTP JSON/SSE passed.`,
+  );
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }

@@ -2,7 +2,7 @@
 
 on:
   workflow_run:
-    workflows: ['Supported / Required compatibility']
+    workflows: ["Supported / Required compatibility"]
     types: [completed]
     branches: [master]
 
@@ -32,11 +32,23 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version: "24"
           package-manager-cache: false
-      - name: Verify approved SHA and 17 jobs, package and publish last
+      - name: Reuse the complete source compatibility matrix
+        id: approval
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { pathToFileURL } = require('node:url');
+            const { requireApprovedCI } = await import(pathToFileURL(`${process.env.GITHUB_WORKSPACE}/scripts/ci-policy.mjs`).href);
+            const approval = await requireApprovedCI({ github, ...context.repo, revision: context.payload.workflow_run.head_sha });
+            core.setOutput('run_id', String(approval.runId));
+            core.notice(`Reusing source CI ${approval.runId}; no compatibility tests are repeated.`);
+      - name: Verify approved source matrix, package and publish last
         run: node scripts/publish-release.mjs
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          APPROVED_CI_RUN: ${{ steps.approval.outputs.run_id }}

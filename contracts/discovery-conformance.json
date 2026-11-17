@@ -239,9 +239,7 @@
                     "title": "Identificador"
                   }
                 },
-                "required": [
-                  "id"
-                ],
+                "required": ["id"],
                 "additionalProperties": false
               },
               "outputSchema": {
@@ -251,9 +249,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "name"
-                ]
+                "required": ["name"]
               },
               "annotations": {
                 "readOnlyHint": true,
@@ -264,11 +260,7 @@
               "_meta": {
                 "cli": "item show",
                 "custom": {
-                  "preserve": [
-                    1,
-                    null,
-                    "á"
-                  ]
+                  "preserve": [1, null, "á"]
                 }
               }
             },
@@ -317,9 +309,7 @@
           "title": "Identificador"
         }
       },
-      "required": [
-        "id"
-      ],
+      "required": ["id"],
       "additionalProperties": false
     },
     "outputSchema": {
@@ -329,9 +319,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name"
-      ]
+      "required": ["name"]
     },
     "annotations": {
       "readOnlyHint": true,
@@ -342,11 +330,7 @@
     "_meta": {
       "cli": "item show",
       "custom": {
-        "preserve": [
-          1,
-          null,
-          "á"
-        ]
+        "preserve": [1, null, "á"]
       }
     }
   },
@@ -363,53 +347,22 @@
   "jcs": [
     {
       "input": [
-        0,
-        0,
-        5e-324,
-        -5e-324,
-        1.7976931348623157e+308,
-        -1.7976931348623157e+308,
-        9007199254740992,
-        -9007199254740992,
-        295147905179352830000,
-        9.999999999999997e+22,
-        1e+23,
-        1.0000000000000001e+23,
-        999999999999999700000,
-        999999999999999900000,
-        1e+21,
-        9.999999999999997e-7,
-        0.000001,
-        333333333.3333332,
-        333333333.33333325,
-        333333333.3333333,
-        333333333.3333334,
+        0, 0, 5e-324, -5e-324, 1.7976931348623157e308, -1.7976931348623157e308, 9007199254740992,
+        -9007199254740992, 295147905179352830000, 9.999999999999997e22, 1e23, 1.0000000000000001e23,
+        999999999999999700000, 999999999999999900000, 1e21, 9.999999999999997e-7, 0.000001,
+        333333333.3333332, 333333333.33333325, 333333333.3333333, 333333333.3333334,
         333333333.33333343
       ],
       "canonical": "[0,0,5e-324,-5e-324,1.7976931348623157e+308,-1.7976931348623157e+308,9007199254740992,-9007199254740992,295147905179352830000,9.999999999999997e+22,1e+23,1.0000000000000001e+23,999999999999999700000,999999999999999900000,1e+21,9.999999999999997e-7,0.000001,333333333.3333332,333333333.33333325,333333333.3333333,333333333.3333334,333333333.33333343]"
     },
     {
-      "input": [
-        "\\u2028",
-        " ",
-        " ",
-        "<>&"
-      ],
+      "input": ["\\u2028", " ", " ", "<>&"],
       "canonical": "[\"\\\\u2028\",\" \",\" \",\"<>&\"]"
     },
     {
       "input": {
         "b": 1,
-        "a": [
-          null,
-          true,
-          "€\u000f\nA'B\"\\/",
-          333333333.3333333,
-          1e+30,
-          4.5,
-          0.002,
-          1e-27
-        ]
+        "a": [null, true, "€\u000f\nA'B\"\\/", 333333333.3333333, 1e30, 4.5, 0.002, 1e-27]
       },
       "canonical": "{\"a\":[null,true,\"€\\u000f\\nA'B\\\"\\\\/\",333333333.3333333,1e+30,4.5,0.002,1e-27],\"b\":1}"
     },
@@ -424,15 +377,7 @@
       "canonical": "{\"\\r\":\"control\",\"1\":\"one\",\"ö\":\"umlaut\",\"😀\":\"astral\",\"\":\"private\"}"
     },
     {
-      "input": [
-        0,
-        1e-7,
-        0.000001,
-        100000000000000000000,
-        1e+21,
-        1e+23,
-        9007199254740992
-      ],
+      "input": [0, 1e-7, 0.000001, 100000000000000000000, 1e21, 1e23, 9007199254740992],
       "canonical": "[0,1e-7,0.000001,100000000000000000000,1e+21,1e+23,9007199254740992]"
     }
   ],
@@ -463,10 +408,7 @@
       "value": {
         "version": "1.0",
         "custom": {
-          "x": [
-            null,
-            1
-          ]
+          "x": [null, 1]
         }
       },
       "valid": true
@@ -477,9 +419,7 @@
         "version": "1.0",
         "preview": {
           "tool": "preview",
-          "input": [
-            "/id"
-          ],
+          "input": ["/id"],
           "bind": {
             "/fingerprint": "/fingerprint"
           },
@@ -501,9 +441,7 @@
           {
             "id": "input",
             "type": "input",
-            "parameters": [
-              "/id"
-            ]
+            "parameters": ["/id"]
           },
           {
             "id": "preview",
@@ -553,9 +491,7 @@
       "name": "requires",
       "value": {
         "version": "1.0",
-        "requires": [
-          "unknown-execution"
-        ]
+        "requires": ["unknown-execution"]
       },
       "valid": false
     },
@@ -673,10 +609,7 @@
       "metadata": {
         "cli": "resource create",
         "custom": {
-          "flags": [
-            "one",
-            "two"
-          ],
+          "flags": ["one", "two"],
           "enabled": true,
           "count": 2,
           "value": null
@@ -684,10 +617,7 @@
       },
       "expectedMetadata": {
         "custom": {
-          "flags": [
-            "one",
-            "two"
-          ],
+          "flags": ["one", "two"],
           "enabled": true,
           "count": 2,
           "value": null
@@ -714,18 +644,10 @@
             }
           ]
         },
-        "other": [
-          "unchanged",
-          2,
-          null
-        ]
+        "other": ["unchanged", 2, null]
       },
       "expectedMetadata": {
-        "other": [
-          "unchanged",
-          2,
-          null
-        ]
+        "other": ["unchanged", 2, null]
       }
     },
     {
@@ -737,9 +659,7 @@
         },
         "nox/authorization": {
           "version": "1.0",
-          "requiredScopes": [
-            "nox:inspect"
-          ]
+          "requiredScopes": ["nox:inspect"]
         }
       },
       "expectedMetadata": {
@@ -748,9 +668,7 @@
         },
         "nox/authorization": {
           "version": "1.0",
-          "requiredScopes": [
-            "nox:inspect"
-          ]
+          "requiredScopes": ["nox:inspect"]
         }
       }
     }

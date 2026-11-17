@@ -1,0 +1,28 @@
+{
+  "workflow": "contracts.yml",
+  "marker": "NoX-Release:",
+  "branch": "master",
+  "files": [
+    {
+      "path": "package.json",
+      "fields": [["version"]]
+    },
+    {
+      "path": "package-lock.json",
+      "fields": [["version"], ["packages", "", "version"]]
+    },
+    {
+      "path": "rust/Cargo.toml",
+      "section": "package",
+      "name": "nox-mcp"
+    },
+    {
+      "path": "rust/Cargo.lock",
+      "section": "[[package]]",
+      "name": "nox-mcp"
+    }
+  ],
+  "markerVersionOnly": true,
+  "allowEmpty": true,
+  "ciBranch": "master"
+}

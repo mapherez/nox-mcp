@@ -26,10 +26,7 @@
     },
     "source": {
       "type": "string",
-      "enum": [
-        "yard",
-        "gateway"
-      ]
+      "enum": ["yard", "gateway"]
     },
     "producerId": {
       "type": "string",
@@ -76,10 +73,7 @@
           "maxLength": 256
         }
       },
-      "required": [
-        "productId",
-        "deploymentId"
-      ],
+      "required": ["productId", "deploymentId"],
       "additionalProperties": true
     }
   },
@@ -131,18 +125,11 @@
               "maxLength": 256
             }
           },
-          "required": [
-            "productId",
-            "deploymentId"
-          ],
+          "required": ["productId", "deploymentId"],
           "additionalProperties": true
         }
       },
-      "required": [
-        "source",
-        "state",
-        "managedBy"
-      ],
+      "required": ["source", "state", "managedBy"],
       "additionalProperties": true
     },
     {
@@ -152,19 +139,10 @@
           "const": "gateway"
         },
         "state": {
-          "enum": [
-            "ready",
-            "unreachable",
-            "notReady",
-            "incompatible",
-            "unknown"
-          ]
+          "enum": ["ready", "unreachable", "notReady", "incompatible", "unknown"]
         }
       },
-      "required": [
-        "source",
-        "state"
-      ],
+      "required": ["source", "state"],
       "additionalProperties": true
     }
   ]

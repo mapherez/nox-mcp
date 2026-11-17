@@ -45,9 +45,7 @@
     },
     "policy": {
       "version": "1.0",
-      "requiredScopes": [
-        "nox:inspect"
-      ],
+      "requiredScopes": ["nox:inspect"],
       "argumentDependent": false
     },
     "pairing-request": {
@@ -104,9 +102,7 @@
       "productId": "example-inventory",
       "registrationRevision": "reg-1",
       "associationId": "association-1",
-      "scopes": [
-        "nox:inspect"
-      ]
+      "scopes": ["nox:inspect"]
     },
     "delegation-claims": {
       "iss": "urn:nox:backend:fixture",
@@ -256,9 +252,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       }
     },
     "probe-response": {
@@ -412,17 +406,12 @@
           "cli": "record list",
           "nox/authorization": {
             "version": "1.0",
-            "requiredScopes": [
-              "nox:inspect"
-            ],
+            "requiredScopes": ["nox:inspect"],
             "argumentDependent": false
           },
           "custom": {
             "literal": "record_preview",
-            "unknown": [
-              null,
-              false
-            ]
+            "unknown": [null, false]
           }
         }
       }
@@ -471,17 +460,12 @@
               "cli": "record list",
               "nox/authorization": {
                 "version": "1.0",
-                "requiredScopes": [
-                  "nox:inspect"
-                ],
+                "requiredScopes": ["nox:inspect"],
                 "argumentDependent": false
               },
               "custom": {
                 "literal": "record_preview",
-                "unknown": [
-                  null,
-                  false
-                ]
+                "unknown": [null, false]
               }
             }
           }
@@ -505,17 +489,12 @@
               "cli": "record preview",
               "nox/authorization": {
                 "version": "1.0",
-                "requiredScopes": [
-                  "nox:inspect"
-                ],
+                "requiredScopes": ["nox:inspect"],
                 "argumentDependent": false
               },
               "custom": {
                 "literal": "record_preview",
-                "unknown": [
-                  null,
-                  false
-                ]
+                "unknown": [null, false]
               }
             }
           }
@@ -539,26 +518,18 @@
               "cli": "record delete",
               "nox/authorization": {
                 "version": "1.0",
-                "requiredScopes": [
-                  "nox:inspect",
-                  "nox:write"
-                ],
+                "requiredScopes": ["nox:inspect", "nox:write"],
                 "argumentDependent": false
               },
               "custom": {
                 "literal": "record_preview",
-                "unknown": [
-                  null,
-                  false
-                ]
+                "unknown": [null, false]
               }
             }
           },
           "cli": {
             "version": "1.0",
-            "requires": [
-              "preview"
-            ],
+            "requires": ["preview"],
             "parameters": {
               "/id": {
                 "options": {
@@ -694,17 +665,12 @@
               "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
               "nox/authorization": {
                 "version": "1.0",
-                "requiredScopes": [
-                  "nox:inspect"
-                ],
+                "requiredScopes": ["nox:inspect"],
                 "argumentDependent": false
               },
               "custom": {
                 "literal": "record_preview",
-                "unknown": [
-                  null,
-                  false
-                ]
+                "unknown": [null, false]
               },
               "nox/gateway": {
                 "version": "1.0",
@@ -737,17 +703,12 @@
               "cli": "record list",
               "nox/authorization": {
                 "version": "1.0",
-                "requiredScopes": [
-                  "nox:inspect"
-                ],
+                "requiredScopes": ["nox:inspect"],
                 "argumentDependent": false
               },
               "custom": {
                 "literal": "record_preview",
-                "unknown": [
-                  null,
-                  false
-                ]
+                "unknown": [null, false]
               },
               "nox/gateway": {
                 "version": "1.0",
@@ -781,18 +742,12 @@
               "cli": "record delete",
               "nox/authorization": {
                 "version": "1.0",
-                "requiredScopes": [
-                  "nox:inspect",
-                  "nox:write"
-                ],
+                "requiredScopes": ["nox:inspect", "nox:write"],
                 "argumentDependent": false
               },
               "custom": {
                 "literal": "record_preview",
-                "unknown": [
-                  null,
-                  false
-                ]
+                "unknown": [null, false]
               },
               "nox/gateway": {
                 "version": "1.0",
@@ -806,9 +761,7 @@
           },
           "cli": {
             "version": "1.0",
-            "requires": [
-              "preview"
-            ],
+            "requires": ["preview"],
             "parameters": {
               "/id": {
                 "options": {
@@ -845,17 +798,12 @@
               "cli": "record list",
               "nox/authorization": {
                 "version": "1.0",
-                "requiredScopes": [
-                  "nox:inspect"
-                ],
+                "requiredScopes": ["nox:inspect"],
                 "argumentDependent": false
               },
               "custom": {
                 "literal": "record_preview",
-                "unknown": [
-                  null,
-                  false
-                ]
+                "unknown": [null, false]
               },
               "nox/gateway": {
                 "version": "1.0",
@@ -888,17 +836,12 @@
               "cli": "record preview",
               "nox/authorization": {
                 "version": "1.0",
-                "requiredScopes": [
-                  "nox:inspect"
-                ],
+                "requiredScopes": ["nox:inspect"],
                 "argumentDependent": false
               },
               "custom": {
                 "literal": "record_preview",
-                "unknown": [
-                  null,
-                  false
-                ]
+                "unknown": [null, false]
               },
               "nox/gateway": {
                 "version": "1.0",
@@ -1398,9 +1341,7 @@
       "schema": "policy",
       "data": {
         "version": "1.0",
-        "requiredScopes": [
-          "nox:inspect"
-        ],
+        "requiredScopes": ["nox:inspect"],
         "argumentDependent": false
       },
       "valid": true
@@ -1410,9 +1351,7 @@
       "schema": "policy",
       "data": {
         "version": "1.0",
-        "requiredScopes": [
-          "nox:inspect"
-        ],
+        "requiredScopes": ["nox:inspect"],
         "argumentDependent": false,
         "custom": {
           "preserve": [
@@ -1436,9 +1375,7 @@
       "id": "policy-missing-version",
       "schema": "policy",
       "data": {
-        "requiredScopes": [
-          "nox:inspect"
-        ],
+        "requiredScopes": ["nox:inspect"],
         "argumentDependent": false
       },
       "error": "INVALID_INTEGRATION"
@@ -1457,9 +1394,7 @@
       "schema": "policy",
       "data": {
         "version": "1.0",
-        "requiredScopes": [
-          "nox:inspect"
-        ]
+        "requiredScopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2104,9 +2039,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "valid": true
     },
@@ -2123,9 +2056,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ],
+        "scopes": ["nox:inspect"],
         "custom": {
           "preserve": [
             null,
@@ -2156,9 +2087,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2174,9 +2103,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2192,9 +2119,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2210,9 +2135,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2228,9 +2151,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2246,9 +2167,7 @@
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2264,9 +2183,7 @@
         "serviceCredentialRevision": "credential-1",
         "registrationRevision": "reg-1",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2282,9 +2199,7 @@
         "serviceCredentialRevision": "credential-1",
         "productId": "example-inventory",
         "associationId": "association-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -2300,9 +2215,7 @@
         "serviceCredentialRevision": "credential-1",
         "productId": "example-inventory",
         "registrationRevision": "reg-1",
-        "scopes": [
-          "nox:inspect"
-        ]
+        "scopes": ["nox:inspect"]
       },
       "error": "INVALID_INTEGRATION"
     },
@@ -4041,9 +3954,7 @@
           "productId": "example-inventory",
           "registrationRevision": "reg-1",
           "associationId": "association-1",
-          "scopes": [
-            "nox:inspect"
-          ]
+          "scopes": ["nox:inspect"]
         }
       },
       "valid": true
@@ -4066,9 +3977,7 @@
           "productId": "example-inventory",
           "registrationRevision": "reg-1",
           "associationId": "association-1",
-          "scopes": [
-            "nox:inspect"
-          ]
+          "scopes": ["nox:inspect"]
         },
         "custom": {
           "preserve": [
@@ -4105,9 +4014,7 @@
           "productId": "example-inventory",
           "registrationRevision": "reg-1",
           "associationId": "association-1",
-          "scopes": [
-            "nox:inspect"
-          ]
+          "scopes": ["nox:inspect"]
         }
       },
       "error": "INVALID_INTEGRATION"
@@ -4129,9 +4036,7 @@
           "productId": "example-inventory",
           "registrationRevision": "reg-1",
           "associationId": "association-1",
-          "scopes": [
-            "nox:inspect"
-          ]
+          "scopes": ["nox:inspect"]
         }
       },
       "error": "INVALID_INTEGRATION"
@@ -4153,9 +4058,7 @@
           "productId": "example-inventory",
           "registrationRevision": "reg-1",
           "associationId": "association-1",
-          "scopes": [
-            "nox:inspect"
-          ]
+          "scopes": ["nox:inspect"]
         }
       },
       "error": "INVALID_INTEGRATION"
@@ -4177,9 +4080,7 @@
           "productId": "example-inventory",
           "registrationRevision": "reg-1",
           "associationId": "association-1",
-          "scopes": [
-            "nox:inspect"
-          ]
+          "scopes": ["nox:inspect"]
         }
       },
       "error": "INVALID_INTEGRATION"
@@ -5205,9 +5106,7 @@
             "path": "/mcp"
           }
         },
-        "requires": [
-          "dangerous-feature"
-        ]
+        "requires": ["dangerous-feature"]
       },
       "error": "UNSUPPORTED_INTEGRATION"
     },
@@ -5698,9 +5597,7 @@
       "schema": "policy",
       "data": {
         "version": "1.0",
-        "requiredScopes": [
-          "nox:write"
-        ],
+        "requiredScopes": ["nox:write"],
         "argumentDependent": false
       },
       "error": "INVALID_INTEGRATION"
@@ -5822,17 +5719,12 @@
             "cli": "record list",
             "nox/authorization": {
               "version": "1.0",
-              "requiredScopes": [
-                "nox:inspect"
-              ],
+              "requiredScopes": ["nox:inspect"],
               "argumentDependent": false
             },
             "custom": {
               "literal": "record_preview",
-              "unknown": [
-                null,
-                false
-              ]
+              "unknown": [null, false]
             }
           }
         }
@@ -5892,17 +5784,12 @@
                 "cli": "record list",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 }
               }
             }
@@ -5926,17 +5813,12 @@
                 "cli": "record preview",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 }
               }
             }
@@ -5960,26 +5842,18 @@
                 "cli": "record delete",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect",
-                    "nox:write"
-                  ],
+                  "requiredScopes": ["nox:inspect", "nox:write"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 }
               }
             },
             "cli": {
               "version": "1.0",
-              "requires": [
-                "preview"
-              ],
+              "requires": ["preview"],
               "parameters": {
                 "/id": {
                   "options": {
@@ -6059,10 +5933,7 @@
         "sourceFingerprint": "FJneUmxFovtNLVnu87ZshDkDmF6J13YTLYeAz0A9fgs",
         "fingerprint": "rcXEnqztvjlDiU-bQXkV8O0c4Mz27CQjzxNcXroOSVU",
         "availability": "available",
-        "custom": [
-          null,
-          false
-        ]
+        "custom": [null, false]
       }
     },
     {
@@ -6162,17 +6033,12 @@
                 "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6205,17 +6071,12 @@
                 "cli": "record list",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6249,18 +6110,12 @@
                 "cli": "record delete",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect",
-                    "nox:write"
-                  ],
+                  "requiredScopes": ["nox:inspect", "nox:write"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6274,9 +6129,7 @@
             },
             "cli": {
               "version": "1.0",
-              "requires": [
-                "preview"
-              ],
+              "requires": ["preview"],
               "parameters": {
                 "/id": {
                   "options": {
@@ -6313,17 +6166,12 @@
                 "cli": "record list",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6356,17 +6204,12 @@
                 "cli": "record preview",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6542,17 +6385,12 @@
                 "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6585,17 +6423,12 @@
                 "cli": "record list",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6629,18 +6462,12 @@
                 "cli": "record delete",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect",
-                    "nox:write"
-                  ],
+                  "requiredScopes": ["nox:inspect", "nox:write"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6654,9 +6481,7 @@
             },
             "cli": {
               "version": "1.0",
-              "requires": [
-                "preview"
-              ],
+              "requires": ["preview"],
               "parameters": {
                 "/id": {
                   "options": {
@@ -6693,17 +6518,12 @@
                 "cli": "record list",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6736,17 +6556,12 @@
                 "cli": "record preview",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -6829,10 +6644,7 @@
           }
         ],
         "diagnostics": [],
-        "custom": [
-          null,
-          false
-        ]
+        "custom": [null, false]
       }
     },
     {
@@ -7173,17 +6985,12 @@
                 "cli": "record list",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 }
               }
             }
@@ -7207,17 +7014,12 @@
                 "cli": "record preview",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 }
               }
             }
@@ -7241,26 +7043,18 @@
                 "cli": "record delete",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect",
-                    "nox:write"
-                  ],
+                  "requiredScopes": ["nox:inspect", "nox:write"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 }
               }
             },
             "cli": {
               "version": "1.0",
-              "requires": [
-                "preview"
-              ],
+              "requires": ["preview"],
               "parameters": {
                 "/id": {
                   "options": {
@@ -7390,17 +7184,12 @@
                 "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -7433,17 +7222,12 @@
                 "cli": "record list",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -7477,18 +7261,12 @@
                 "cli": "record delete",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect",
-                    "nox:write"
-                  ],
+                  "requiredScopes": ["nox:inspect", "nox:write"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -7502,9 +7280,7 @@
             },
             "cli": {
               "version": "1.0",
-              "requires": [
-                "preview"
-              ],
+              "requires": ["preview"],
               "parameters": {
                 "/id": {
                   "options": {
@@ -7541,17 +7317,12 @@
                 "cli": "record list",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -7584,17 +7355,12 @@
                 "cli": "record preview",
                 "nox/authorization": {
                   "version": "1.0",
-                  "requiredScopes": [
-                    "nox:inspect"
-                  ],
+                  "requiredScopes": ["nox:inspect"],
                   "argumentDependent": false
                 },
                 "custom": {
                   "literal": "record_preview",
-                  "unknown": [
-                    null,
-                    false
-                  ]
+                  "unknown": [null, false]
                 },
                 "nox/gateway": {
                   "version": "1.0",
@@ -8302,9 +8068,7 @@
             "keyId": "key-1",
             "authRevision": "auth-1",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect"
-            ],
+            "scopes": ["nox:inspect"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -8327,9 +8091,7 @@
             "keyId": "key-1",
             "authRevision": "auth-1",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect"
-            ],
+            "scopes": ["nox:inspect"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -8391,11 +8153,7 @@
             "keyId": "key-1",
             "authRevision": "auth-1",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect",
-              "nox:write",
-              "nox:sensitive-read"
-            ],
+            "scopes": ["nox:inspect", "nox:write", "nox:sensitive-read"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -8436,9 +8194,7 @@
             "keyId": "key-1",
             "authRevision": "auth-1",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect"
-            ],
+            "scopes": ["nox:inspect"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -8459,9 +8215,7 @@
             "keyId": "key-2",
             "authRevision": "auth-1",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect"
-            ],
+            "scopes": ["nox:inspect"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -8482,9 +8236,7 @@
             "keyId": "key-1",
             "authRevision": "auth-2",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect"
-            ],
+            "scopes": ["nox:inspect"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -8507,9 +8259,7 @@
             "keyId": "key-1",
             "authRevision": "auth-1",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect"
-            ],
+            "scopes": ["nox:inspect"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -8775,9 +8525,7 @@
             "keyId": "key-1",
             "authRevision": "auth-1",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect"
-            ],
+            "scopes": ["nox:inspect"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -8830,9 +8578,7 @@
             "keyId": "key-1",
             "authRevision": "auth-1",
             "gatewayServiceId": "gateway-1",
-            "scopes": [
-              "nox:inspect"
-            ],
+            "scopes": ["nox:inspect"],
             "serviceCredentialRevision": "credential-1",
             "productId": "example-inventory",
             "registrationRevision": "reg-1",
@@ -9060,17 +8806,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9094,17 +8835,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9128,26 +8864,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -9210,17 +8938,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -9245,17 +8968,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9329,17 +9047,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9363,17 +9076,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9397,26 +9105,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -9479,17 +9179,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -9514,17 +9209,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9587,17 +9277,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9621,10 +9306,7 @@
                     "cli": "record preview",
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9648,26 +9330,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -9730,17 +9404,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -9765,17 +9434,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9784,10 +9448,7 @@
           }
         ]
       },
-      "diagnostics": [
-        "UNCLASSIFIED_TOOL",
-        "INVALID_CLI"
-      ]
+      "diagnostics": ["UNCLASSIFIED_TOOL", "INVALID_CLI"]
     },
     {
       "id": "reserved-origin-is-not-overwritten",
@@ -9842,17 +9503,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     },
                     "nox/gateway": {
                       "spoof": true
@@ -9879,17 +9535,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -9913,26 +9564,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -9995,17 +9638,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -10030,17 +9668,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10049,10 +9682,7 @@
           }
         ]
       },
-      "diagnostics": [
-        "RESERVED_METADATA",
-        "INVALID_CLI"
-      ]
+      "diagnostics": ["RESERVED_METADATA", "INVALID_CLI"]
     },
     {
       "id": "duplicate-product",
@@ -10107,17 +9737,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10141,17 +9766,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10175,26 +9795,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -10257,17 +9869,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -10292,17 +9899,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10353,17 +9955,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10387,17 +9984,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10421,26 +10013,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -10516,17 +10100,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10550,17 +10129,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10584,26 +10158,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -10639,17 +10205,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10700,17 +10261,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -10735,17 +10291,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10809,17 +10360,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10843,17 +10389,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -10877,26 +10418,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -10960,17 +10493,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -10995,17 +10523,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -11069,17 +10592,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -11104,17 +10622,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -11138,26 +10651,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -11220,17 +10725,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -11255,17 +10755,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -11329,17 +10824,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -11363,17 +10853,12 @@
                     "cli": "record preview",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }
@@ -11397,26 +10882,18 @@
                     "cli": "record delete",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect",
-                        "nox:write"
-                      ],
+                      "requiredScopes": ["nox:inspect", "nox:write"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
                 "cli": {
                   "version": "1.0",
-                  "requires": [
-                    "preview"
-                  ],
+                  "requires": ["preview"],
                   "parameters": {
                     "/id": {
                       "options": {
@@ -11479,17 +10956,12 @@
                     "cli": "record list",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 },
@@ -11514,17 +10986,12 @@
                     "cli": "record 🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨🎨",
                     "nox/authorization": {
                       "version": "1.0",
-                      "requiredScopes": [
-                        "nox:inspect"
-                      ],
+                      "requiredScopes": ["nox:inspect"],
                       "argumentDependent": false
                     },
                     "custom": {
                       "literal": "record_preview",
-                      "unknown": [
-                        null,
-                        false
-                      ]
+                      "unknown": [null, false]
                     }
                   }
                 }

@@ -84,14 +84,10 @@
       "not": {
         "anyOf": [
           {
-            "required": [
-              "keyId"
-            ]
+            "required": ["keyId"]
           },
           {
-            "required": [
-              "authRevision"
-            ]
+            "required": ["authRevision"]
           }
         ]
       }
@@ -101,21 +97,9 @@
       "const": "nox:mcp-probe"
     }
   },
-  "required": [
-    "iss",
-    "aud",
-    "sub",
-    "iat",
-    "nbf",
-    "exp",
-    "jti",
-    "nox",
-    "scope"
-  ],
+  "required": ["iss", "aud", "sub", "iat", "nbf", "exp", "jti", "nox", "scope"],
   "additionalProperties": true,
   "not": {
-    "required": [
-      "act"
-    ]
+    "required": ["act"]
   }
 }

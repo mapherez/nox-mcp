@@ -24,9 +24,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -35,9 +33,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -70,9 +66,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -81,9 +75,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -94,11 +86,7 @@
             "_meta": {
               "cli": "resource get",
               "custom": {
-                "flags": [
-                  "a",
-                  2,
-                  null
-                ],
+                "flags": ["a", 2, null],
                 "enabled": false
               }
             }
@@ -127,9 +115,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -138,9 +124,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {}
           }
@@ -168,9 +152,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -179,9 +161,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -190,14 +170,9 @@
               "openWorldHint": false,
               "custom": "hint"
             },
-            "extension": [
-              null,
-              0
-            ],
+            "extension": [null, 0],
             "scope": "resource:read",
-            "requiredScopes": [
-              "resource:read"
-            ]
+            "requiredScopes": ["resource:read"]
           }
         ],
         "custom": {
@@ -232,9 +207,7 @@
                   "$ref": "#/definitions/identifier"
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "additionalProperties": false
             },
             "outputSchema": {
@@ -295,9 +268,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -306,9 +277,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -341,9 +310,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -352,9 +319,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -374,9 +339,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -385,9 +348,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -423,9 +384,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -458,9 +417,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -469,9 +426,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -505,9 +460,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -516,9 +469,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -552,9 +503,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -563,9 +512,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             }
           }
         ]
@@ -592,9 +539,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -603,9 +548,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -638,9 +581,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -649,9 +590,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -684,9 +623,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -695,9 +632,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -730,9 +665,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -741,9 +674,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": "true",
@@ -776,9 +707,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -787,9 +716,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -797,9 +724,7 @@
               "idempotentHint": true,
               "openWorldHint": false
             },
-            "requiredScopes": [
-              3
-            ]
+            "requiredScopes": [3]
           }
         ]
       },
@@ -825,9 +750,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -860,9 +783,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": [],
             "annotations": {
@@ -1243,9 +1164,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1286,9 +1205,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1325,9 +1242,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1360,9 +1275,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -1371,9 +1284,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1381,9 +1292,7 @@
               "idempotentHint": true,
               "openWorldHint": false
             },
-            "requiredScopes": [
-              ""
-            ]
+            "requiredScopes": [""]
           }
         ]
       },
@@ -1409,9 +1318,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -1420,9 +1327,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1430,9 +1335,7 @@
               "idempotentHint": true,
               "openWorldHint": false
             },
-            "requiredScopes": [
-              "resource:read"
-            ]
+            "requiredScopes": ["resource:read"]
           }
         ]
       },
@@ -1458,9 +1361,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -1469,9 +1370,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1504,9 +1403,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -1515,9 +1412,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1550,9 +1445,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -1561,9 +1454,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1597,9 +1488,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "id"
-              ]
+              "required": ["id"]
             },
             "outputSchema": {
               "type": "object",
@@ -1608,9 +1497,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "value"
-              ]
+              "required": ["value"]
             },
             "annotations": {
               "readOnlyHint": true,
@@ -1651,9 +1538,7 @@
             }
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "additionalProperties": false
       },
       "data": {
@@ -1688,9 +1573,7 @@
             }
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "additionalProperties": false
       },
       "data": {},
@@ -1720,9 +1603,7 @@
             }
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "additionalProperties": false
       },
       "data": {
@@ -1755,9 +1636,7 @@
             }
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "additionalProperties": false
       },
       "data": {
@@ -1789,9 +1668,7 @@
             }
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "additionalProperties": false
       },
       "data": {
@@ -1817,9 +1694,7 @@
             ]
           }
         },
-        "required": [
-          "value"
-        ]
+        "required": ["value"]
       },
       "data": {
         "value": null
@@ -1841,9 +1716,7 @@
             "$ref": "#/definitions/value"
           }
         },
-        "required": [
-          "value"
-        ]
+        "required": ["value"]
       },
       "data": {
         "value": "ok"
@@ -2273,9 +2146,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "id"
-          ]
+          "required": ["id"]
         },
         "outputSchema": {
           "type": "object",
@@ -2284,9 +2155,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "value"
-          ]
+          "required": ["value"]
         },
         "annotations": {
           "readOnlyHint": true
@@ -2349,9 +2218,7 @@
       "input": {
         "id": "x"
       },
-      "requiredScopes": [
-        "resource:read"
-      ],
+      "requiredScopes": ["resource:read"],
       "grants": [],
       "result": {
         "value": "ok"
@@ -2369,9 +2236,7 @@
         "id": "x"
       },
       "scope": "resource:read",
-      "requiredScopes": [
-        "resource:read"
-      ],
+      "requiredScopes": ["resource:read"],
       "grants": [],
       "result": {
         "value": "ok"
@@ -2388,12 +2253,8 @@
       "input": {
         "id": "x"
       },
-      "requiredScopes": [
-        "resource:read"
-      ],
-      "grants": [
-        "resource:read"
-      ],
+      "requiredScopes": ["resource:read"],
+      "grants": ["resource:read"],
       "result": {
         "value": "ok"
       },
@@ -2411,12 +2272,8 @@
         "id": "x"
       },
       "requiredScopes": [],
-      "appRequiredScopes": [
-        "app:read"
-      ],
-      "grants": [
-        "resource:read"
-      ],
+      "appRequiredScopes": ["app:read"],
+      "grants": ["resource:read"],
       "result": {
         "value": "ok"
       },

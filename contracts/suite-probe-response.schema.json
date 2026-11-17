@@ -75,12 +75,6 @@
       "additionalProperties": true
     }
   },
-  "required": [
-    "contractVersion",
-    "tokenType",
-    "accessToken",
-    "expiresAt",
-    "context"
-  ],
+  "required": ["contractVersion", "tokenType", "accessToken", "expiresAt", "context"],
   "additionalProperties": true
 }

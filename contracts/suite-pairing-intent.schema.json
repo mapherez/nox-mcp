@@ -27,11 +27,7 @@
     },
     "purpose": {
       "type": "string",
-      "enum": [
-        "product",
-        "gateway",
-        "installer"
-      ]
+      "enum": ["product", "gateway", "installer"]
     },
     "nonce": {
       "type": "string",
@@ -68,10 +64,7 @@
           "maxLength": 256
         }
       },
-      "required": [
-        "productId",
-        "deploymentId"
-      ],
+      "required": ["productId", "deploymentId"],
       "additionalProperties": true
     }
   },

@@ -55,10 +55,7 @@
     },
     "availability": {
       "type": "string",
-      "enum": [
-        "available",
-        "unavailable"
-      ]
+      "enum": ["available", "unavailable"]
     }
   },
   "required": [

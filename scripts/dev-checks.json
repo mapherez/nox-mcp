@@ -1,0 +1,44 @@
+{
+  "policy": "scripts/ci-policy.mjs",
+  "go": true,
+  "vite": ["."],
+  "check": [
+    {
+      "command": "npm",
+      "args": ["run", "contracts:check"],
+      "cwd": "."
+    },
+    {
+      "command": "npm",
+      "args": ["run", "build"],
+      "cwd": "."
+    },
+    {
+      "command": "go",
+      "args": ["vet", "-mod=readonly", "./..."],
+      "cwd": "."
+    },
+    {
+      "command": "cargo",
+      "args": ["check", "--locked", "--manifest-path", "rust/Cargo.toml"],
+      "cwd": "."
+    },
+    {
+      "command": "npm",
+      "args": ["run", "check:code"],
+      "cwd": "."
+    }
+  ],
+  "format": [
+    {
+      "command": "npm",
+      "args": ["exec", "--no", "--", "vp", "fmt"],
+      "cwd": "."
+    },
+    {
+      "command": "cargo",
+      "args": ["fmt", "--manifest-path", "rust/Cargo.toml"],
+      "cwd": "."
+    }
+  ]
+}
