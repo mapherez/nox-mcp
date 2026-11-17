@@ -210,3 +210,16 @@ void test("push checks the committed bytes even when the working file has alread
   );
   assert.equal(readFileSync(join(directory, "example.css"), "utf8"), fixed);
 });
+
+void test("Rust formatting always emits LF and remains stable without an input newline", async () => {
+  for (const source of [
+    'pub fn f(){println!("hi");}',
+    'pub fn f(){println!("hi");}\n',
+    'pub fn f(){\r\nprintln!("hi");\r\n}\r\n',
+  ]) {
+    const formatted = await formatContent("new-file.rs", source);
+    assert.equal(formatted.includes("\r"), false);
+    assert.ok(formatted.endsWith("\n"));
+    assert.equal(await formatContent("new-file.rs", formatted), formatted);
+  }
+});

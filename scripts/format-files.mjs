@@ -144,7 +144,7 @@ export async function formatContent(path, contents) {
         "--emit",
         "stdout",
         "--config",
-        "skip_children=true",
+        "skip_children=true,newline_style=Unix",
       ],
       source,
     ).stdout;

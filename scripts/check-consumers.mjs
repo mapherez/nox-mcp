@@ -7,6 +7,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { exerciseDiscoveryFixtures } from "./discovery-wire.mjs";
 import { consumerOptions } from "./consumer-options.mjs";
+import { readRustDependencies, rustConsumerManifest } from "./consumer-manifest.mjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const { minimum, language, profile } = consumerOptions();
 console.log(`Supported / Required consumer: language=${language}, profile=${profile}`);
@@ -21,16 +22,6 @@ const output = (cmd, args, cwd, env = {}) =>
     encoding: "utf8",
     maxBuffer: 16 * 1024 * 1024,
   });
-const rustManifest = await readFile(resolve(root, "rust/Cargo.toml"), "utf8");
-// Full semantic floors, read from the actual manifest; no second version list.
-const direct = {};
-for (const line of rustManifest
-  .split(/\r?\n/)
-  .slice(rustManifest.split(/\r?\n/).indexOf("[dependencies]") + 1)) {
-  if (line.startsWith("[")) break;
-  const match = line.match(/^([\w-]+) = (?:\{ version = )?"([\d.]+)"/);
-  if (match) direct[match[1]] = match[2].split(".").concat(["0", "0"]).slice(0, 3).join(".");
-}
 try {
   if (language === "all" || language === "go") {
     const lib = resolve(temp, "go-sdk"),
@@ -80,6 +71,10 @@ try {
     await exerciseDiscoveryFixtures([["go", executable, []]]);
   }
   if (language === "all" || language === "rust") {
+    const dependencies = readRustDependencies(resolve(root, "rust/Cargo.toml"));
+    const direct = Object.fromEntries(
+      dependencies.map((dependency) => [dependency.name, dependency.minimumVersion]),
+    );
     // A local Git snapshot includes this reviewed working tree, not the old tag.
     // Consumers use git+rev and path independently; no changes to the real .git.
     const git = resolve(temp, "git-sdk");
@@ -119,19 +114,8 @@ try {
           : `path = ${JSON.stringify(resolve(git, "rust").replaceAll("\\", "/"))}`;
       // Equivalent to NoteX: the application itself still declares rmcp="3.0".
       const rustVersion = minimum ? "1.88" : output("rustc", ["--version"], app).split(" ")[1];
-      let manifest = `[package]\nname = "independent-${source}"\nversion = "0.0.0"\nedition = "2021"\nrust-version = "${rustVersion}"\n[dependencies]\nnox-mcp = { ${dependency} }\n`;
-      for (const [name, version] of Object.entries(direct)) {
-        const original = rustManifest.split(/\r?\n/).find((l) => l.startsWith(name + " = "));
-        let requirement = original.slice(original.indexOf(" = ") + 3);
-        // Exact pins belong only to the minimum test application, never to the SDK.
-        if (minimum) requirement = requirement.replace(/"[\d.]+"/, `"=${version}"`);
-        if (name === "rmcp")
-          requirement = requirement
-            .replace(/features = \[/, 'features = ["client", ')
-            .replace(/version = "=?[\d.]+"/, 'version = "3.0"');
-        manifest += `${name} = ${requirement}\n`;
-      }
-      manifest += '[dev-dependencies]\naxum = "0.8"\n';
+      const options = { source, sdk: dependency, rustVersion, dependencies, minimum };
+      const manifest = rustConsumerManifest(options);
       await writeFile(resolve(app, "Cargo.toml"), manifest);
       for (const name of ["tests", "contracts", "examples"])
         await cp(resolve(root, "rust", name), resolve(app, name), { recursive: true });
@@ -167,7 +151,7 @@ try {
       // integration tests: dev feature unification must not hide missing SDK flags.
       await writeFile(
         resolve(app, "Cargo.toml"),
-        manifest.replace('features = ["client", ', "features = ["),
+        rustConsumerManifest({ ...options, client: false }),
       );
       run("cargo", ["check", "--locked", "--bin", `independent-${source}`], app, env);
       await writeFile(resolve(app, "Cargo.toml"), manifest);
@@ -189,7 +173,7 @@ try {
       // An explicitly incompatible application requirement must fail resolution.
       await writeFile(
         resolve(app, "Cargo.toml"),
-        manifest.replace('rmcp = { version = "3.0"', 'rmcp = { version = "=3.2.0"'),
+        rustConsumerManifest({ ...options, rmcpVersion: "=3.2.0" }),
       );
       assert.throws(
         () => output("cargo", ["generate-lockfile"], app, env),
